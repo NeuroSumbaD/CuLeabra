@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-2020.css">
+    <title>CuLeabra</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://d3js.org/d3.v6.min.js"></script> <!-- Include D3.js -->
+    <script src="scripts/views.js"></script>
+    <script src="scripts/heatmaps.js"></script>
+    <script src="scripts/onload.js"></script>
+    <!-- <script src="scripts/viewports.js"></script> -->
+    <style>
+        .main-container {
+        /* Your existing styles for the main container */
+            position: relative; /* Necessary for absolute positioning of the SVG */
+        }
+
+        .view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+        }
+
+        .overlay {
+            position: absolute;
+            margin: 0px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlayBackground {
+            background-color: rgba(40,45,60,0.7);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .create-menu {
+            display: none;
+            z-index: 1001;
+        }
+
+        /* .netPage {
+            display: none;
+        }
+
+        svg, g {
+            display: block;
+        } */
+    </style>
+</head>
+<body class="w3-2020-brilliant-white">
+
+    <div class="w3-bar top-bar" id="navbar">
+        <div class="w3-bar w3-2020-navy-blazer" id="network-selector"><!-- Also consider w3-2019-galaxy-blue or w3-2019-eden-->
+            
+            <div class="w3-dropdown-hover ">
+                <button class="w3-button" >Create...</button>
+                <div class="w3-dropdown-content w3-bar-block w3-card-4" id="create-menu">
+                    <button class="w3-bar-item w3-button" id="create-net">Network</button>
+                    <button class="w3-bar-item w3-button" id="create-sim">Simulation</button>
+                    <button class="w3-bar-item w3-button" id="create-view">View</button>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="w3-bar w3-2020-ash" id="view-selector">
+            <button class="w3-bar-item w3-button" id="dummyView">dummyView</button>
+        </div>
+
+        <div class="w3-bar w3-2020-lark" id="sim-controller"><!-- Also consider w3-2020-ultramarine-green-->
+            <button class="w3-bar-item w3-button" id="start-run">Start Run</button>
+            <button class="w3-bar-item w3-button" id="start-stream">Start Stream</button>
+        </div>
+
+    </div>
+
+    <div class="overlay">
+        <div class="overlayBackground"></div>
+        <div class="w3-card-4 create-menu"  id="create-net-form">
+            <div class="w3-container w3-2020-navy-blazer">
+                <button class="w3-button w3-right w3-2020-cinnamon-stick w3-bottombar w3-border-deep-orange w3-hover-border-white" id="exit-form">X</button>
+                <h1>Create Net</h1>
+            </div>
+            <div class="w3-container w3-2020-brilliant-white">
+                <p>REPLACE this text with some sort of net creation form</p>
+                <p>There should be an option to create from file (probably python) or using the form</p>
+                <p>Look at the example form below</p>
+                <form class="w3-container">
+                    <label>Net Name</label>
+                    <input class="w3-input" type="text">
+
+                    <p>
+                        <input class="w3-check" type="checkbox" checked="checked">
+                        <label>Network exists on server</label>
+                    </p>
+                    
+                    <p>
+                        <input class="w3-check" type="checkbox" disabled>
+                        <label>Reject me</label>
+
+                        <input class="w3-check" type="checkbox" disabled>
+                        <label>Kill me</label>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <div class="w3-card-4 create-menu"  id="create-sim-form">
+            <div class="w3-container w3-2020-navy-blazer">
+                <button class="w3-button w3-right w3-2020-cinnamon-stick w3-bottombar w3-border-deep-orange w3-hover-border-white" id="exit-form">X</button>
+                <h1>Create Simulation</h1>
+            </div>
+            <div class="w3-container w3-2020-brilliant-white">
+                <p>REPLACE this text with some sort of simulation creation form</p>
+                <p>There should be an option to create from file (probably python) or using the form</p>
+                <p>Look at the example form below</p>
+                <form class="w3-container">
+                    <label>Simulation Name</label>
+                    <input class="w3-input" type="text">
+
+                    <p>
+                        <input class="w3-check" type="checkbox" checked="checked">
+                        <label>Give me love</label>
+                    </p>
+                    
+                    <p>
+                        <input class="w3-check" type="checkbox" disabled>
+                        <label>Reject me</label>
+
+                        <input class="w3-check" type="checkbox">
+                        <label>Kill me</label>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <div class="w3-card-4 create-menu"  id="create-view-form">
+            <div class="w3-container w3-2020-navy-blazer">
+                <button class="w3-button w3-right w3-2020-cinnamon-stick w3-bottombar w3-border-deep-orange w3-hover-border-white" id="exit-form">X</button>
+                <h1>Create View</h1>
+            </div>
+            <div class="w3-container w3-2020-brilliant-white">
+                <p>REPLACE this text with some sort of view creation form</p>
+                <p>There should be an option to create from file (probably python) or using the form</p>
+                <p>Look at the example form below</p>
+                <form class="w3-container">
+                    <label>View Name</label>
+                    <input class="w3-input" type="text">
+
+                    <p>
+                        <input class="w3-check" type="checkbox" checked="checked">
+                        <label>Give me love</label>
+                    </p>
+                    
+                    <p>
+                        <input class="w3-check" type="checkbox" disabled>
+                        <label>Reject me</label>
+
+                        <input class="w3-check" type="checkbox">
+                        <label>Kill me</label>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="w3-container  main-container" id="main-window"><!-- Also consider w3-2019-bluestone-->
+        <!-- <div id="ExampleNet" class="netPage view"><div id="defaultView" class="view"><svg id="svg-defaultView" length="100%" width="100%"></svg></div></div> -->
+    </div>
+
+</body>
+</html>

@@ -14,6 +14,8 @@ namespace fffb {
         Inhib();
         void Zero();
         void Decay(float decay);
+
+        void Init();
     };
     
     // Params parameterizes feedforward (FF) and feedback (FB) inhibition (FFFB)

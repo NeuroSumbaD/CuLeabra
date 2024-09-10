@@ -12,6 +12,8 @@ This is included in leabra.Layer to drive the computation.
 #include "chans.hpp"
 #include "minmax.hpp"
 #include "knadapt.hpp"
+#include "neuron.hpp"
+#include "rand.hpp"
 
 namespace leabra{
 
@@ -50,7 +52,7 @@ namespace leabra{
 
         DtParams(float Integ = 1, float VmTau = 3.3, float AvgTau = 200);
         void Update();
-        void GFmRaw(float geRaw, float &ge);
+        void GFromRaw(float geRaw, float &ge);
 
         void Defaults();
     };
@@ -73,10 +75,10 @@ namespace leabra{
     struct WtInitParams{
         float Mean;
         float Var;
-        std::uniform_real_distribution<float> Dist;
+        std::uniform_real_distribution<float> Type;
         bool Sym;
 
-        WtInitParams(float mean = 0.5, float var = 0.25): Mean(mean), Var(var){Dist = std::uniform_real_distribution<float>(mean-var, mean+var);};
+        WtInitParams(float mean = 0.5, float var = 0.25): Mean(mean), Var(var){Type = std::uniform_real_distribution<float>(mean-var, mean+var);};
 
         void Defaults();
     };
@@ -104,8 +106,8 @@ namespace leabra{
     };
 
     // ActNoiseParams contains parameters for activation-level noise
-    struct ActNoiseParams {
-        // I don't know what `erand.RndParams` does in Leabra/act.go:417...
+    struct ActNoiseParams: rands::Dist {
+
         ActNoiseType Type; // where and how to add processing noise (should be an enum)
         bool Fixed; // keep the same noise value over the entire alpha cycle -- prevents noise from being washed out and produces a stable effect that can be better used for learning -- this is strongly recommended for most learning situations
         
@@ -139,6 +141,23 @@ namespace leabra{
             {VmRange.Max = 2.0;ErevSubThr.SetFromOtherMinus(Erev, XX1.Thr);ThrSubErev.SetFromMinusOther(XX1.Thr, Erev);};
         void Defaults();
         void Update();
+
+        void InitGInc(Neuron &nrn);
+        void DecayState(Neuron &nrn, float decay);
+        void InitActs(Neuron &nrn);
+        void InitActQs(Neuron &nrn);
+
+        //Cycle
+        void GeFromRaw(Neuron &nrn, float geRaw);
+        void GiFromRaw(Neuron &nrn, float giRaw);
+        float InetFromG(float vm, float ge, float gi, float gk);
+        void VmFromG(Neuron &nrn);
+        float GeThrFromG(Neuron &nrn);
+        float GeThrFromGnoK(Neuron &nrn);
+        void ActFromG(Neuron &nrn);
+        bool HasHardClamp(Neuron &nrn);
+        void HardClamp(Neuron &nrn);
+        
     };
     
 }

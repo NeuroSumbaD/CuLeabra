@@ -43,6 +43,8 @@ namespace minmax {
         void CalcAvg();
         std::string String();
         void CopyFrom(AvgMax32* oth);
+
+        void Init();
     };
     
 }

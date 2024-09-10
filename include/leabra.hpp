@@ -39,8 +39,8 @@ namespace leabra {
         ActAvgParams(float init=0.15, bool fixed=false, bool useExtAct=false, bool useFirst=true, float tau=100, float adjust=1):Init(init),Fixed(fixed),UseExtAct(useExtAct),UseFirst(useFirst),Tau(tau),Adjust(adjust){Update();};
 
         float EffInit();
-        void AvgFmAct(float &avg, float act);
-        void EffFmAvg(float &eff, float avg);
+        void AvgFromAct(float &avg, float act);
+        void EffFromAvg(float &eff, float avg);
 
         void Update(){Dt = 1/Tau;};
         void Defaults(){Init=0.15, Fixed=false; UseExtAct=false; UseFirst=true; Tau=100; Adjust=1; Update();};

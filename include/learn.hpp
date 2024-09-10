@@ -97,6 +97,8 @@ namespace leabra {
         void AvgsFromAct(Neuron &nrn);
         void AvgLFromAvgM(Neuron &nrn);
 
+        void InitActAvg(Neuron &nrn);
+
     };
 
     // XCalParams are parameters for temporally eXtended Contrastive Attractor Learning function (XCAL)

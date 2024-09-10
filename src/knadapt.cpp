@@ -69,13 +69,13 @@ void knadapt::Params::Update() {
     Slow.Update();
 }
 
-void knadapt::Params::GcFmSpike(float *gKNaF, float *gKNaM, float *gKNaS, bool spike) {
+void knadapt::Params::GcFromSpike(float *gKNaF, float *gKNaM, float *gKNaS, bool spike) {
     Fast.GcFmSpike(gKNaF, spike);
 	Med.GcFmSpike(gKNaM, spike);
 	Slow.GcFmSpike(gKNaS, spike);
 }
 
-void knadapt::Params::GcFmRate(float *gKNaF, float *gKNaM, float *gKNaS, float act) {
+void knadapt::Params::GcFromRate(float *gKNaF, float *gKNaM, float *gKNaS, float act) {
     Fast.GcFmSpike(gKNaF, act);
 	Med.GcFmSpike(gKNaM, act);
 	Slow.GcFmSpike(gKNaS, act);

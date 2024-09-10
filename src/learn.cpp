@@ -64,6 +64,17 @@ void leabra::LearnNeurParams::AvgLFromAvgM(Neuron &nrn) {
 	AvgL.AvgLFromAvgM(nrn.AvgM, nrn.AvgL, nrn.AvgLLrn);
 }
 
+// InitActAvg initializes the running-average activation values that drive learning.
+// Called by InitWeights (at start of learning).
+void leabra::LearnNeurParams::InitActAvg(Neuron &nrn) {
+	nrn.AvgSS = ActAvg.Init;
+	nrn.AvgS = ActAvg.Init;
+	nrn.AvgM = ActAvg.Init;
+	nrn.AvgL = AvgL.Init;
+	nrn.AvgSLrn = 0;
+	nrn.ActAvg = ActAvg.Init;
+}
+
 // AvgLFromAvgM computes long-term average activation value, and learning factor, from given
 // medium-scale running average activation avgM
 void leabra::AvgLParams::AvgLFromAvgM(float avgM, float &avgL, float &lrn) {

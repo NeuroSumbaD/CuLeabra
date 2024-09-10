@@ -45,8 +45,8 @@ namespace knadapt {
         
         void Defaults();
         void Update();
-        void GcFmSpike(float* gKNaF, float* gKNaM, float* gKNaS, bool spike);
-        void GcFmRate(float* gKNaF, float* gKNaM, float* gKNaS, float act);
+        void GcFromSpike(float* gKNaF, float* gKNaM, float* gKNaS, bool spike);
+        void GcFromRate(float* gKNaF, float* gKNaM, float* gKNaS, float act);
     };
     
 }

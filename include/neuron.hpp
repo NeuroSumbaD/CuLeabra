@@ -34,6 +34,7 @@ namespace leabra {
         float ActQ1;
         float ActQ2;
         float ActQM;
+        float ActM;
         float ActP;
         float ActDif;
         float ActDel;
@@ -51,10 +52,10 @@ namespace leabra {
         float ISI;
         float ISIAvg;
         bool HasFlag(NeurFlags flag);
-        void SetFlag(NeurFlags flag);
-        void ClearFlag(NeurFlags flag);
-        void SetMask(int mask);
-        void ClearMask(int mask);
+        void SetFlag(bool on, std::vector<int> flags);
+        // void ClearFlag(NeurFlags flag);
+        // void SetMask(int mask);
+        // void ClearMask(int mask);
         bool IsOff();
     };
 }

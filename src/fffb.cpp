@@ -26,6 +26,12 @@ void fffb::Inhib::Decay(float decay) {
 	Gi -= decay * Gi;
 }
 
+void fffb::Inhib::Init() {
+    Zero();
+	Ge.Init();
+	Act.Init();
+}
+
 fffb::Params::Params(float Gi, float FF, float FB, float FBTau, float MaxVsAvg, float FF0) {
     //TODO Check if On needs to be intitialized to zero or one
     this->Gi = Gi;

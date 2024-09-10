@@ -16,7 +16,7 @@ float leabra::ActAvgParams::EffInit() {
     }
 }
 
-void leabra::ActAvgParams::AvgFmAct(float &avg, float act) {
+void leabra::ActAvgParams::AvgFromAct(float &avg, float act) {
     if (act < 0.0001) {
         return ;
     };
@@ -28,7 +28,7 @@ void leabra::ActAvgParams::AvgFmAct(float &avg, float act) {
     }
 }
 
-void leabra::ActAvgParams::EffFmAvg(float &eff, float avg) {
+void leabra::ActAvgParams::EffFromAvg(float &eff, float avg) {
     if (Fixed){
         eff = Init;
     } else {

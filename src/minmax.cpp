@@ -175,3 +175,12 @@ std::string minmax::AvgMax32::String() {
 void minmax::AvgMax32::CopyFrom(AvgMax32 *oth) {
     *this = *oth;
 }
+
+// Init initializes prior to new updates
+void minmax::AvgMax32::Init() {
+    Avg = 0;
+	Sum = 0;
+	N = 0;
+	Max = -std::numeric_limits<float>::max();
+	MaxIndex = -1;
+}

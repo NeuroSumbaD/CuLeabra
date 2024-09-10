@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 namespace bitflag{
     void SetMask32(int* bits, int mask);
@@ -10,6 +11,10 @@ namespace bitflag{
 
     void ClearMask32(int* bits, int mask);
     template <typename... Args> void Clear32(int* bits, Args... flags);
+
+    template <typename... Args> void Set32(int* bits, bool on, Args... flags);
+    
+    void Set32(int* bits, bool on, std::vector<int> flags);
 
     bool Has32(int bits, int flag);
 

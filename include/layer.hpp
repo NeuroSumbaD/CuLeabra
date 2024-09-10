@@ -133,7 +133,7 @@ namespace leabra {
         void InitWtSym();
         void InitExt();
 
-        std::tuple<bool, bool, bool> ApplyExtFlags();
+        std::tuple<std::vector<int>, std::vector<int>, bool> ApplyExtFlags();
         void ApplyExt(tensor::Tensor<float> ext);
         void ApplyExt2D(tensor::Tensor<float> ext);
         void ApplyExt2Dto4D(tensor::Tensor<float> ext);
@@ -153,7 +153,7 @@ namespace leabra {
         void DecayStatePool(int pool, float decay);
         void HardClamp();
         // Cycle
-        void InitGinc();
+        void InitGInc();
         void SendGDelta(Context* ctx);
         void GFromInc(Context* ctx);
         void RecvGInc(Context* ctx);

@@ -72,13 +72,13 @@ namespace leabra{
         void Update(){};
     };
 
-    struct WtInitParams{
-        float Mean;
-        float Var;
-        std::uniform_real_distribution<float> Type;
+    struct WtInitParams: rands::Dist {
+        // float Mean;
+        // float Var;
+        // std::uniform_real_distribution<float> Type;
         bool Sym;
 
-        WtInitParams(float mean = 0.5, float var = 0.25): Mean(mean), Var(var){Type = std::uniform_real_distribution<float>(mean-var, mean+var);};
+        WtInitParams(float mean = 0.5, float var = 0.25, float par=1, rands::RandDists type=rands::Uniform): Dist(mean, var, par, type){};
 
         void Defaults();
     };

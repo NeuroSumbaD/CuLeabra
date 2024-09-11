@@ -172,10 +172,10 @@ namespace leabra {
 
         void SetScalesRPool(tensor::Tensor<float> scales);
         void SetWtsFunc(std::function<float(int si, int ri, tensor::Shape& send, tensor::Shape& recv)> wtFun);
-        void SetScalesFunc(std::function<float(int si, int ri, tensor::Shape& send, tensor::Shape& recv)> wtFun);
+        void SetScalesFunc(std::function<float(int si, int ri, tensor::Shape& send, tensor::Shape& recv)> scaleFun);
         void InitWeightsSyn(Synapse& syn);
         void InitWeights();
-        void InitWtSym(Synapse& syn);
+        void InitWtSym(Path &rpt);
         void InitGInc();
         void SendGDelta(int si, float delta);
         void RecvGInc();
@@ -203,6 +203,8 @@ namespace leabra {
         float Dec;
 
         WtBalRecvPath(){Avg = 0; Fact = 0; Inc = 1; Dec = 1;};
+
+        void Init(){Avg = 0;Fact = 0;Inc = 1;Dec = 1;};
     };
     
 } // namespace leabra

@@ -24,6 +24,7 @@ namespace leabra {
         ActAvg ActAvgs; // running-average activation levels used for netinput scaling and adaptive inhibition
 
         Pool():Inhib(), ActM(), ActP(), ActAvgs(){StIndex = 0; EdIndex = 0;};
+        void Init(){Inhib.Init();};
     };
     
 } // namespace leabra

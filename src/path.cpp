@@ -228,3 +228,331 @@ void leabra::Path::SetScalesRPool(tensor::Tensor<float> scales) {
 		}
 	}
 }
+
+// SetWtsFunc initializes synaptic Wt value using given function
+// based on receiving and sending unit indexes.
+void leabra::Path::SetWtsFunc(std::function<float(int si, int ri, tensor::Shape &send, tensor::Shape &recv)> wtFun) {
+	tensor::Shape &rsh = Recv->Shape;
+	int rn = rsh.Len();
+	tensor::Shape &ssh = Send->Shape;
+
+	for (int ri = 0; ri < rn; ri++) {
+		int nc = RConN[ri];
+		int st = RConIndexSt[ri];
+		for (int ci = 0; ci < nc; ci++) {
+			int si = RConIndex[st+ci];
+			float wt = wtFun(si, ri, ssh, rsh);
+			int rsi = RSynIndex[st+ci];
+			Synapse *sy = Syns[rsi];
+			sy->Wt = wt * sy->Scale;
+			Learn.LWtFromWt(*sy);
+		}
+	}
+}
+
+// SetScalesFunc initializes synaptic Scale values using given function
+// based on receiving and sending unit indexes.
+void leabra::Path::SetScalesFunc(std::function<float(int si, int ri, tensor::Shape &send, tensor::Shape &recv)> scaleFun) {
+	tensor::Shape &rsh = Recv->Shape;
+	int rn = rsh.Len();
+	tensor::Shape &ssh = Send->Shape;
+
+	for (int ri = 0; ri < rn; ri++) {
+		int nc = RConN[ri];
+		int st = RConIndexSt[ri];
+		for (int ci = 0; ci < nc; ci++) {
+			int si = RConIndex[st+ci];
+			float sc = scaleFun(si, ri, ssh, rsh);
+			int rsi = RSynIndex[st+ci];
+			Synapse *sy = Syns[rsi];
+			sy->Scale = sc;
+		}
+	}
+}
+
+// InitWeightsSyn initializes weight values based on WtInit randomness parameters
+// for an individual synapse.
+// It also updates the linear weight value based on the sigmoidal weight value.
+void leabra::Path::InitWeightsSyn(Synapse &syn) {
+	if (syn.Scale == 0) {
+		syn.Scale = 1;
+	}
+	syn.Wt = WtInit.Gen();
+	// enforce normalized weight range -- required for most uses and if not
+	// then a new type of path should be used:
+	if (syn.Wt < 0) {
+		syn.Wt = 0;
+	}
+	if (syn.Wt > 1) {
+		syn.Wt = 1;
+	}
+	syn.LWt = Learn.WtSig.LinFromSigWt(syn.Wt);
+	syn.Wt *= syn.Scale; // note: scale comes after so LWt is always "pure" non-scaled value
+	syn.DWt = 0;
+	syn.Norm = 0;
+	syn.Moment = 0;
+}
+
+// InitWeights initializes weight values according to Learn.WtInit params
+void leabra::Path::InitWeights() {
+	for (Synapse *sy: Syns) {
+		InitWeightsSyn(*sy);
+	}
+	for (WtBalRecvPath &wb: WbRecv) {
+		wb.Init();
+	}
+	InitGInc();
+}
+
+// InitWtSym initializes weight symmetry -- is given the reciprocal pathway where
+// the Send and Recv layers are reversed.
+void leabra::Path::InitWtSym(Path &rpt) {
+	Layer &slay = *Send;
+	int ns = slay.Neurons.size();
+	for (int si = 0; si < ns; si++) {
+		int nc = SConN[si];
+		int st = SConIndexSt[si];
+		for (int ci = 0; ci < nc; ci++) {
+			Synapse &sy = *Syns[st+ci];
+			int ri = SConIndex[st+ci];
+			// now we need to find the reciprocal synapse on rpt!
+			// look in ri for sending connections
+			int rsi = ri;
+			if (rpt.SConN.size() == 0) {
+				continue;
+			}
+			int rsnc = rpt.SConN[rsi];
+			if (rsnc == 0) {
+				continue;
+			}
+			int rsst = rpt.SConIndexSt[rsi];
+			int rist = rpt.SConIndex[rsst]; // starting index in recv path
+			int ried = rpt.SConIndex[rsst+rsnc-1]; // ending index
+			if (si < rist || si > ried) {        // fast reject -- paths are always in order!
+				continue;
+			}
+			// start at index proportional to si relative to rist
+			int up = 0;
+			if (ried > rist) {
+				up = int(float(rsnc) * float(si-rist) / float(ried-rist));
+			}
+			int dn = up - 1;
+
+			for (;;) {
+				bool doing = false;
+				if (up < rsnc) {
+					doing = true;
+					int rrii = rsst + up;
+					int rri = rpt.SConIndex[rrii];
+					if (rri == si) {
+						Synapse &rsy = *Syns[rrii];
+						rsy.Wt = sy.Wt;
+						rsy.LWt = sy.LWt;
+						rsy.Scale = sy.Scale;
+						// note: if we support SymFromTop then can have option to go other way
+						break;
+					}
+					up++;
+				}
+				if (dn >= 0) {
+					doing = true;
+					int rrii = rsst + dn;
+					int rri = rpt.SConIndex[rrii];
+					if (rri == si) {
+						Synapse &rsy = *Syns[rrii];
+						rsy.Wt = sy.Wt;
+						rsy.LWt = sy.LWt;
+						rsy.Scale = sy.Scale;
+						// note: if we support SymFromTop then can have option to go other way
+						break;
+					}
+					dn--;
+				}
+				if (!doing) {
+					break;
+				}
+			}
+		}
+	}
+}
+
+// InitGInc initializes the per-pathway GInc threadsafe increment -- not
+// typically needed (called during InitWeights only) but can be called when needed
+void leabra::Path::InitGInc() {
+	for (float &ginc: GInc) {
+		ginc = 0;
+	}
+}
+
+
+void leabra::Path::SendGDelta(int si, float delta){
+	float scdel = delta * GScale;
+	int nc = SConN[si];
+	int st = SConIndexSt[si];
+
+	// slicing is ugly in c++...
+	auto start = Syns.begin() + st;
+	auto end = Syns.begin() + st + nc;
+	auto syns = std::vector<leabra::Synapse *>(start, end);
+
+	auto start = SConIndex.begin() + st;
+	auto end = SConIndex.begin() + st + nc;
+	auto scons = std::vector<int>(start, end);
+
+	for (int ci = 0; ci < syns.size();  ci++) {
+		int ri = scons[ci];
+		GInc[ri] += scdel * syns[ci]->Wt;
+	}
+}
+
+// RecvGInc increments the receiver's GeRaw or GiRaw from that of all the pathways.
+void leabra::Path::RecvGInc() {
+	Layer &rlay = *Recv;
+	if (Type == InhibPath) {
+		for (int ri = 0; ri < rlay.Neurons.size(); ri++) {
+			Neuron &rn = rlay.Neurons[ri];
+			rn.GiRaw += GInc[ri];
+			GInc[ri] = 0;
+		}
+	} else {
+		for (int ri = 0; ri < rlay.Neurons.size(); ri++) {
+			Neuron &rn = rlay.Neurons[ri];
+			rn.GeRaw += GInc[ri];
+			GInc[ri] = 0;
+		}
+	}
+}
+
+// DWt computes the weight change (learning) -- on sending pathways
+void leabra::Path::DWt() {
+	if (!Learn.Learn) {
+		return;
+	}
+	Layer &slay = *Send;
+	Layer &rlay = *Recv;
+	for (int si = 0; si < slay.Neurons.size(); si++) {
+		Neuron &sn = slay.Neurons[si];
+		if (sn.AvgS < Learn.XCal.LrnThr && sn.AvgM < Learn.XCal.LrnThr) {
+			continue;
+		}
+		int nc = int(SConN[si]);
+		int st = int(SConIndexSt[si]);
+
+		auto start = Syns.begin() + st;
+		auto end = Syns.begin() + st + nc;
+		auto syns = std::vector<leabra::Synapse *>(start, end);
+
+		auto start = SConIndex.begin() + st;
+		auto end = SConIndex.begin() + st + nc;
+		auto scons = std::vector<int>(start, end);
+
+		for (int ci = 0; ci < syns.size(); ci++) {
+			Synapse &sy = *syns[ci];
+			int ri = scons[ci];
+			Neuron &rn = rlay.Neurons[ri];
+			float err, bcm;
+			auto dwtTuple = Learn.CHLdWt(sn.AvgSLrn, sn.AvgM, rn.AvgSLrn, rn.AvgM, rn.AvgL);
+			err = std::get<0>(dwtTuple);
+			bcm = std::get<1>(dwtTuple);
+
+			bcm *= Learn.XCal.LongLrate(rn.AvgLLrn);
+			err *= Learn.XCal.MLrn;
+			float dwt = bcm + err;
+			float norm = 1;
+			if (Learn.Norm.On) {
+				norm = Learn.Norm.NormFromAbsDWt(sy.Norm, std::abs(dwt));
+			}
+			if (Learn.Momentum.On) {
+				dwt = norm * Learn.Momentum.MomentFromDWt(sy.Moment, dwt);
+			} else {
+				dwt *= norm;
+			}
+			sy.DWt += Learn.Lrate * dwt;
+		}
+		// aggregate max DWtNorm over sending synapses
+		if (Learn.Norm.On) {
+			float maxNorm = 0;
+			for (int ci = 0; ci < syns.size(); ci++) {
+				Synapse &sy = *syns[ci];
+				if (sy.Norm > maxNorm) {
+					maxNorm = sy.Norm;
+				}
+			}
+			for (int ci = 0; ci < syns.size(); ci++) {
+				Synapse &sy = *syns[ci];
+				sy.Norm = maxNorm;
+			}
+		}
+	}
+}
+
+// WtFromDWt updates the synaptic weight values from delta-weight changes -- on sending pathways
+void leabra::Path::WtFromDWt() {
+	if (!Learn.Learn) {
+		return;
+	}
+	if (Learn.WtBal.On) {
+		for (int si = 0; si < Syns.size(); si++) {
+			Synapse &sy = *Syns[si];
+			int ri = SConIndex[si];
+			WtBalRecvPath &wb = WbRecv[ri];
+			Learn.WtFromDWt(wb.Inc, wb.Dec, sy.DWt, sy.Wt, sy.LWt, sy.Scale);
+		}
+	} else {
+		for (int si = 0; si < Syns.size(); si++) {
+			Synapse &sy = *Syns[si];
+			Learn.WtFromDWt(1, 1, sy.DWt, sy.Wt, sy.LWt, sy.Scale);
+		}
+	}
+}
+
+// WtBalFromWt computes the Weight Balance factors based on average recv weights
+void leabra::Path::WtBalFromWt() {
+	if (!Learn.Learn || !Learn.WtBal.On) {
+		return;
+	}
+
+	Layer &rlay = *Recv;
+	if (!Learn.WtBal.Targs && rlay.IsTarget()) {
+		return;
+	}
+	for (int ri = 0; ri < rlay.Neurons.size(); ri++) {
+		int nc = RConN[ri];
+		if (nc < 1) {
+			continue;
+		}
+		WtBalRecvPath &wb = WbRecv[ri];
+		int st = RConIndexSt[ri];
+
+		auto start = RSynIndex.begin() + st;
+		auto end = RSynIndex.begin() + st + nc;
+		auto rsidxs = std::vector<int>(start, end);
+
+		float sumWt = 0;
+		int sumN = 0;
+		for (int ci = 0; ci < rsidxs.size(); ci++) {
+			int rsi = rsidxs[ci];
+			Synapse &sy = *Syns[rsi];
+			if (sy.Wt >= Learn.WtBal.AvgThr) {
+				sumWt += sy.Wt;
+				sumN++;
+			}
+		}
+		if (sumN > 0) {
+			sumWt /= float(sumN);
+		} else {
+			sumWt = 0;
+		}
+		wb.Avg = sumWt;
+		std::tuple<float, float, float> wtbalTuple = Learn.WtBal.WtBal(sumWt);
+		wb.Fact = std::get<0>(wtbalTuple);
+		wb.Inc = std::get<1>(wtbalTuple);
+		wb.Dec = std::get<2>(wtbalTuple);
+	}
+}
+
+// LrateMult sets the new Lrate parameter for Paths to LrateInit * mult.
+// Useful for implementing learning rate schedules.
+void leabra::Path::LrateMult(float mult) {
+	Learn.Lrate = Learn.LrateInit * mult;
+}

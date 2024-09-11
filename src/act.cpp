@@ -79,7 +79,7 @@ leabra::ActNoiseParams::ActNoiseParams(ActNoiseType Type, bool Fixed) {
 void leabra::WtInitParams::Defaults() {
     Mean = 0.5;
 	Var = 0.25;
-	Type = std::uniform_real_distribution<float>(Mean-Var, Mean+Var);
+	DistType = rands::Uniform;
 	Sym = true;
 }
 

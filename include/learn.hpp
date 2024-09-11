@@ -184,7 +184,7 @@ namespace leabra {
 
         void Update();
         void Defaults(){On = true; DecayTau = 1000; LrComp = 0.15; NormMin = 0.001; Stats = false; Update();};
-        float NormFromAbsDwt(float &norm, float absDwt);
+        float NormFromAbsDWt(float &norm, float absDwt);
     };
 
     // MomentumParams implements standard simple momentum -- accentuates consistent directions of weight change and
@@ -210,7 +210,7 @@ namespace leabra {
 
         void Update(){MDt = 1/MTau; MDtC = 1 - MDt;};
         void Defaults(){On = true, MTau = 10; LrComp = 0.1; Update();};
-        float MomentumFromDWt(float &moment, float dwt);
+        float MomentFromDWt(float &moment, float dwt);
     };
 
     // WtBalParams are weight balance soft renormalization params:

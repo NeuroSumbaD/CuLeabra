@@ -226,7 +226,7 @@ void leabra::DWtNormParams::Update() {
 // DWtNormParams updates the dwnorm running max_abs, slowly decaying value
 // jumps up to max(abs_dwt) and slowly decays
 // returns the effective normalization factor, as a multiplier, including lrate comp
-float leabra::DWtNormParams::NormFromAbsDwt(float &norm, float absDwt) {
+float leabra::DWtNormParams::NormFromAbsDWt(float &norm, float absDwt) {
 	norm = std::max(DecayDt*norm, absDwt);
 	if (norm == 0) {
 		return 1;
@@ -258,7 +258,7 @@ std::tuple<float, float, float> leabra::WtBalParams::WtBal(float wbAvg) {
 
 // MomentFromDWt updates synaptic moment variable based on dwt weight change value
 // and returns new momentum factor * LrComp
-float leabra::MomentumParams::MomentumFromDWt(float &moment, float dwt) {
+float leabra::MomentumParams::MomentFromDWt(float &moment, float dwt) {
 	moment = MDtC * moment + dwt;
 	return LrComp * moment;
 }

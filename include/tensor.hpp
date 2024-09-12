@@ -54,6 +54,8 @@ namespace tensor {
 
         int Offset(std::vector<int> index);
         std::vector<int> Index(int offset);
+
+        int DimSize(int i){return Sizes[i];};
     };
     Shape AddShapes(Shape shape1, Shape shape2);
 
@@ -105,7 +107,7 @@ namespace tensor {
         // DimName returns the name of the i-th dimension.
         std::string DimName(int index){return Shp.Names[index];};
 
-        
+        int DimSize(int i){return Shp.Sizes[i];};
 
         // SetShape sets the shape parameters of the tensor, and resizes backing storage appropriately.
         // existing RowMajor or ColMajor stride preference will be used if strides is nil, and
@@ -145,4 +147,7 @@ namespace tensor {
 
     std::vector<int> RowMajorStrides(std::vector<int> shape);
     std::vector<int> ColMajorStrides(std::vector<int> shape);
+
+    std::tuple<int, int, int, int> Projection2DShape(Shape &shp, bool oddRow);
+    int Projection2DIndex(Shape &shp, bool oddRow, int row, int col);
 } // namespace tensor

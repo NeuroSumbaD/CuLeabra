@@ -65,11 +65,13 @@ namespace relpos {
         math::Vector3 Pos;
 
         void Defaults();
-        bool ShouldDisplay();
+        bool ShouldDisplay(std::string field);
         void SetRightOf(std::string other, float space);
         void SetBehind(std::string other, float space);
         void SetAbove(std::string other);
         void SetPos(math::Vector3 op, math::Vector2 osz, math::Vector2 sz);
+        float AlignYPos(float yop, float yosz, float ysz);
+        float AlignXPos(float xop, float xosz, float xsz);
     };
     
 } // namespace relpos

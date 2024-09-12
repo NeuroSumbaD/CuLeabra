@@ -129,3 +129,99 @@ std::vector<int> tensor::ColMajorStrides(std::vector<int> shape) {
     }
     return strides;
 }
+
+// Projection2DShape returns the size of a 2D projection of the given tensor Shape,
+// collapsing higher dimensions down to 2D (and 1D up to 2D).
+// For any odd number of dimensions, the remaining outer-most dimension
+// can either be multipliexed across the row or column, given the oddRow arg.
+// Even multiples of inner-most dimensions are assumed to be row, then column.
+// rowEx returns the number of "extra" (higher dimensional) rows
+// and colEx returns the number of extra cols
+std::tuple<int, int, int, int> tensor::Projection2DShape(Shape &shp, bool oddRow) {
+    if (shp.Len() == 0) {
+		return std::tuple<int, int, int, int>(1, 1, 0, 0);
+	}
+	int nd = shp.NumDims();
+	switch (nd) {
+	case 1:
+		if (oddRow) {
+			return std::tuple<int, int, int, int>(shp.DimSize(0), 1, 0, 0);
+		} else {
+			return std::tuple<int, int, int, int>(1, shp.DimSize(0), 0, 0);
+		}
+        break;
+	case 2:
+		return std::tuple<int, int, int, int>(shp.DimSize(0), shp.DimSize(1), 0, 0);
+        break;
+	case 3:
+		if (oddRow) {
+			return std::tuple<int, int, int, int>(shp.DimSize(0) * shp.DimSize(1), shp.DimSize(2), shp.DimSize(0), 0);
+		} else {
+			return std::tuple<int, int, int, int>(shp.DimSize(1), shp.DimSize(0) * shp.DimSize(2), 0, shp.DimSize(0));
+		}
+        break;
+	case 4:
+		return std::tuple<int, int, int, int>(shp.DimSize(0) * shp.DimSize(2), shp.DimSize(1) * shp.DimSize(3), shp.DimSize(0), shp.DimSize(1));
+	case 5:
+		if (oddRow) {
+			return std::tuple<int, int, int, int>(shp.DimSize(0) * shp.DimSize(1) * shp.DimSize(3), shp.DimSize(2) * shp.DimSize(4), shp.DimSize(0) * shp.DimSize(1), 0);
+		} else {
+			return std::tuple<int, int, int, int>(shp.DimSize(1) * shp.DimSize(3), shp.DimSize(0) * shp.DimSize(2) * shp.DimSize(4), 0, shp.DimSize(0) * shp.DimSize(1));
+		}
+	}
+    return std::tuple<int, int, int, int>(1, 1, 0, 0);
+}
+
+// Projection2DIndex returns the flat 1D index for given row, col coords for a 2D projection
+// of the given tensor shape, collapsing higher dimensions down to 2D (and 1D up to 2D).
+// For any odd number of dimensions, the remaining outer-most dimension
+// can either be multipliexed across the row or column, given the oddRow arg.
+// Even multiples of inner-most dimensions are assumed to be row, then column.
+int tensor::Projection2DIndex(Shape &shp, bool oddRow, int row, int col) {
+    int nd = shp.NumDims();
+	switch (nd) {
+        case 1:
+            if (oddRow) {
+                return row;
+            } else {
+                return col;
+            }
+            break;
+        case 2:
+            return shp.Offset({row, col});
+            break;
+        case 3:
+            if (oddRow) {
+                int ny = shp.DimSize(1);
+                int yy = row / ny;
+                int y = row % ny;
+                return shp.Offset({yy, y, col});
+            } else {
+                int nx = shp.DimSize(2);
+                int xx = col / nx;
+                int x = col % nx;
+                return shp.Offset({xx, row, x});
+            }
+        case 4:
+            int ny = shp.DimSize(2);
+            int yy = row / ny;
+            int y = row % ny;
+            int nx = shp.DimSize(3);
+            int xx = col / nx;
+            int x = col % nx;
+            return shp.Offset({yy, xx, y, x});
+        case 5:
+            // todo: oddRows version!
+            int nyy = shp.DimSize(1);
+            int ny = shp.DimSize(3);
+            int yyy = row / (nyy * ny);
+            int yy = row % (nyy * ny);
+            int y = yy % ny;
+            int yy = yy / ny;
+            int nx = shp.DimSize(4);
+            int xx = col / nx;
+            int x = col % nx;
+            return shp.Offset({yyy, yy, xx, y, x});
+	}
+	return 0;
+}

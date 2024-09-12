@@ -20,6 +20,65 @@ void leabra::Layer::UpdateParams() {
     }
 }
 
+// BuildSubPools initializes neuron start / end indexes for sub-pools
+void leabra::Layer::BuildSubPools() {
+	if (!Is4D()) {
+		return;
+	}
+	std::vector<int> &sh = Shape.Sizes;
+	int spy = sh[0];
+	int spx = sh[1];
+	int pi = 1;
+	for (int py = 0; py < spy; py++) {
+		for (int px = 0; px < spx; px++) {
+			int soff = Shape.Offset({py, px, 0, 0});
+			int eoff = Shape.Offset({py, px, sh[2] - 1, sh[3] - 1}) + 1;
+			Pool &pl = Pools[pi];
+			pl.StIndex = soff;
+			pl.EdIndex = eoff;
+			for (int ni = pl.StIndex; ni < pl.EdIndex; ni++) {
+				Neuron &nrn = Neurons[ni];
+				nrn.SubPool = pi;
+			}
+			pi++;
+		}
+	}
+}
+
+// BuildPools builds the inhibitory pools structures -- nu = number of units in layer
+void leabra::Layer::BuildPools(int nu) {
+	int np = 1 + NumPools();
+	Pools.reserve(np);
+	Pool &lpl = Pools[0];
+	lpl.StIndex = 0;
+	lpl.EdIndex = nu;
+	if (np > 1) {
+		BuildSubPools();
+	}
+}
+
+// BuildPaths builds the pathways, recv-side
+void leabra::Layer::BuildPaths() {
+	for (Path &pt: RecvPaths) {
+		if (pt.Off) {
+			continue;
+		}
+		pt.Build();
+	}
+}
+
+// Build constructs the layer state, including calling Build on the pathways
+void leabra::Layer::Build() {
+	int nu = Shape.Len();
+	if (nu == 0) {
+		std::cerr << "Build Layer "<< Name <<": no units specified in Shape" << std::endl;
+	}
+	Neurons.reserve(nu);
+	BuildPools(nu);
+	
+	BuildPaths();
+}
+
 // InitWeights initializes the weight values in the network,
 // i.e., resetting learning Also calls InitActs.
 void leabra::Layer::InitWeights() {
@@ -730,6 +789,10 @@ void leabra::Layer::CosDiffFromActs() {
 		CosDiff.AvgLrn = 1 - CosDiff.Avg;
 		CosDiff.ModAvgLLrn = Learn.AvgL.ErrModFromLayErr(CosDiff.AvgLrn);
 	}
+}
+
+bool leabra::Layer::IsTarget() {
+	return Type==LayerTypes::TargetLayer;
 }
 
 // DWt computes the weight change (learning) -- calls DWt method on sending pathways

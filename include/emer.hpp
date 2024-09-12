@@ -10,6 +10,7 @@
 #include "tensor.hpp"
 #include "relpos.hpp"
 #include "path.hpp"
+#include "strings.hpp"
 
 // TODO CHECK IF ANY OF THESE TYPES NEED CONSTRUCTORS TO INTIIALIZE DATA
 
@@ -30,7 +31,7 @@ namespace emer {
         std::string WeightsFile;
 
         // map of name to layers, for EmerLayerByName methods
-        std::map<std::string, Layer> LayerNameMap;
+        std::map<std::string, Layer*> LayerNameMap;
 
         // map from class name to layer names.
         std::map<std::string, std::vector<std::string>> LayerClassMap;
@@ -60,12 +61,12 @@ namespace emer {
             Name(name), WeightsFile(weightsFile), LayerNameMap(), LayerClassMap(), MinPos(), MaxPos(), MetaData(), Rand(), RandSeed(randSeed){};
 
         void UpdateLayerMaps();
-        Layer& LayerByName(std::string name);
-        Path& PathByName(std::string name);
+        Layer* LayerByName(std::string name);
+        Path* PathByName(std::string name);
         std::vector<Layer&> LayersByClass(std::string className);
         std::vector<Layer&> LayersByClass(std::string classes, ...);
-        // void LayoutLayers();
-        // void LayoutBoundsUpdate();
+        void LayoutLayers();
+        void LayoutBoundsUpdate();
         // void VerticalLayerLayout();
         // VarRange(varNm string) (min, max float32, err error)
         
@@ -91,7 +92,7 @@ namespace emer {
 
         // EmerLayer returns layer as emer.Layer interface at given index.
         // Does not do extra bounds checking.
-        virtual Layer EmerLayer(int idx);
+        virtual Layer* EmerLayer(int idx);
 
         // MaxParallelData returns the maximum number of data inputs that can be
         // processed in parallel by the network.

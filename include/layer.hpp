@@ -119,10 +119,10 @@ namespace leabra {
         Pool* GetPool(int idx){return &(Pools[idx]);}; // Pool returns pointer to pool at given index
 
         //Build
-        // void BuildSubPools();
-        // void BuildPools();
-        // void BuildPaths();
-        // void Build();
+        void BuildSubPools();
+        void BuildPools(int nu);
+        void BuildPaths();
+        void Build();
         // void WriteWeightsJSON(std::ifstream jsonFile, int depth);
         // void SetWeights(weights::Layer lw);
         // std::tuple<int,int> VarRange(std::string varName); // VarRange returns the min / max values for given variable
@@ -170,7 +170,7 @@ namespace leabra {
         void MinusPhase(Context* ctx);
         void PlusPhase(Context* ctx);
         void CosDiffFromActs();
-        bool IsTarget(){return Type==LayerTypes::TargetLayer;};
+        bool IsTarget();
         // Learning
         void DWt();
         void WtFromDWt();

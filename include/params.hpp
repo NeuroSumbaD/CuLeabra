@@ -144,7 +144,7 @@ namespace params {
         void SetString(std::string sel, std::string param, std::string val);
         std::string ParamVal(std::string sel, std::string param);
 
-        void Apply(StylerObject *obj, bool setMsg);
+        bool Apply(StylerObject *obj, bool setMsg);
     };
     
     typedef std::map<std::string, Sheet> Sheets; // Sheets is a map of named sheets -- used in the Set
@@ -167,47 +167,47 @@ namespace params {
     // FlexVal is a specific flexible value for the Flex parameter map
     // that implements the StylerObj interface for CSS-style selection logic.
     // The field names are abbreviated because full names are used in StylerObj.
-    struct FlexVal{
-        std::string Nm, // name of this specific object, matches #Name selections
-            Type, // type name of this object, matches plain TypeName selections
-            Cls; // space-separated list of class name(s), match the .Class selections
-        std::any Obj; // actual object with data that is set by the parameters
-        // HistoryImpl History; // History of params applied
+    // struct FlexVal{
+    //     std::string Nm, // name of this specific object, matches #Name selections
+    //         Type, // type name of this object, matches plain TypeName selections
+    //         Cls; // space-separated list of class name(s), match the .Class selections
+    //     StylerObject *Obj; // actual object with data that is set by the parameters
+    //     // HistoryImpl History; // History of params applied
 
-        // FlexVal(std::string nm, std::string tp, std::string cls, std::any obj):Nm(nm),Type(tp),Cls(cls),Obj(obj){};
+    //     // FlexVal(std::string nm, std::string tp, std::string cls, std::any obj):Nm(nm),Type(tp),Cls(cls),Obj(obj){};
 
-        std::string TypeName(){return Type;};
-        std::string Class(){return Cls;};
-        std::string Name(){return Nm;};
-        std::any &Object(){return Obj;}; // TODO Check for a more meaningful class of objects with string representation
-        void CopyFrom(FlexVal cp);
-        // std::string JSONString();
-        // void ParamsHistoryReset();
-        // void ParamsApplied();
-    };
-    void to_json(json& j, const FlexVal& flx);
+    //     std::string TypeName(){return Type;};
+    //     std::string Class(){return Cls;};
+    //     std::string Name(){return Nm;};
+    //     StylerObject &Object(){return Obj;}; // TODO Check for a more meaningful class of objects with string representation
+    //     void CopyFrom(FlexVal cp);
+    //     // std::string JSONString();
+    //     // void ParamsHistoryReset();
+    //     // void ParamsApplied();
+    // };
+    // void to_json(json& j, const FlexVal& flx);
     // void from_json(json& j, const FlexVal& flx);
 
     // Flex supports arbitrary named parameter values that can be set
     // by a Set of parameters, as a map of any objects.
     // First initialize the map with set of names and a type to create
     // blank values, then apply the Set to it.
-    struct Flex{
-        std::map<std::string, FlexVal> map;
-        // Flex() //Initialize map?
-        std::string TypeName(){return "Flex";};
-        std::string Class(){return "";};
-        std::string Name(){return "";};
+    // struct Flex{
+    //     std::map<std::string, FlexVal> map;
+    //     // Flex() //Initialize map?
+    //     std::string TypeName(){return "Flex";};
+    //     std::string Class(){return "";};
+    //     std::string Name(){return "";};
 
-        void Init(std::vector<FlexVal> vals);
-        void ApplySheet(Sheet* sheet, bool setMsg);
-        void CopyFrom(Flex cp);
-        // void WriteJSON();
-        std::string JSONString();
-        // void SaveJSON(file);
-    };
+    //     void Init(std::vector<FlexVal> vals);
+    //     void ApplySheet(Sheet* sheet, bool setMsg);
+    //     void CopyFrom(Flex cp);
+    //     // void WriteJSON();
+    //     std::string JSONString();
+    //     // void SaveJSON(file);
+    // };
 
-    std::any FindParam(std::any &val, std::string path);
+    StylerObject* FindParam(StylerObject *val, std::string path);
     std::string SetParam(std::any &obj, std::string path, std::string val);
     float GetParam(std::any &obj, std::string path);
 };

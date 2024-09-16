@@ -63,15 +63,15 @@ namespace emer {
         void UpdateLayerMaps();
         Layer* LayerByName(std::string name);
         Path* PathByName(std::string name);
-        std::vector<Layer&> LayersByClass(std::string className);
-        std::vector<Layer&> LayersByClass(std::string classes, ...);
+        // std::vector<Layer&> LayersByClass(std::string className);
+        std::vector<std::string> LayersByClass(std::vector<std::string> classes);
         void LayoutLayers();
         void LayoutBoundsUpdate();
         // void VerticalLayerLayout();
         // VarRange(varNm string) (min, max float32, err error)
         
         //Params
-        void ApplyParams(params::Sheet& pars, bool setMsg);
+        // void ApplyParams(params::Sheet& pars, bool setMsg);
         // std::string NonDefaultParams();
         // void SaveAllParams(fstream file);
         // void SaveNonDefaultParams(fstream file);
@@ -268,10 +268,10 @@ namespace emer {
         // std::vector<int> CenterPoolIndexes(Layer &ly, int n);
         // std::vector<int> CenterPoolShape(Layer &ly, int n);
         std::tuple<std::vector<int>,std::vector<int>> Layer2DSampleIndexes(Layer &ly, int maxSize);
-        Path& RecvPathBySendName(std::string sender);
-        Path& SendPathByRecvName(std::string sender);
-        Path& RecvPathBySendNameType(std::string sender, std::string typeName);
-        Path& SendPathByRecvNameType(std::string sender, std::string typeName);
+        Path* RecvPathBySendName(std::string sender);
+        Path* SendPathByRecvName(std::string sender);
+        Path* RecvPathBySendNameType(std::string sender, std::string typeName);
+        Path* SendPathByRecvNameType(std::string sender, std::string typeName);
         //Params
         void SetParam(params::Sel &sel);
         bool ApplyParams(params::Sheet &pars, bool setMsg);

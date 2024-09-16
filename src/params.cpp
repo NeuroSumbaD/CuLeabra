@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <iostream>
+#include "strings.hpp"
 
 // Template for supporting any to string conversion
 template <typename T>
@@ -30,37 +31,13 @@ void params::Params::SetByName(std::string name, std::string value) {
     map[name] = value;
 }
 
-// No split operation in C++, so...
-std::vector<std::string> split(const std::string &str, const char delimiter) {
-    std::vector<std::string> tokens;
-    std::stringstream ss(str);
-    std::string token;
-
-    while (std::getline(ss, token, delimiter)) {
-        tokens.push_back(token);
-    }
-
-    return tokens;
-}
-
-std::string join(const std::vector<std::string>& tokens, const std::string& delimiter) {
-    std::string result;
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        result += tokens[i];
-        if (i != tokens.size() - 1) {
-            result += delimiter;
-        }
-    }
-    return result;
-}
-
 // Path returns the second part of the path after the target type,
 // indicating the path to the specific parameter being set.
 // e.g., Layer.Acts.Kir.Gbar -> Acts.Kir.Gbar
 std::string params::Params::Path(std::string path) {
-    std::vector<std::string> s = split(path, ',');
+    std::vector<std::string> s = strings::split(path, ',');
     s.erase(s.begin()); //drop first element
-    return join(s, ".");
+    return strings::join(s, ".");
 }
 
 // TargetType returns the first part of the path, indicating what type of
@@ -68,7 +45,7 @@ std::string params::Params::Path(std::string path) {
 // everything in the map must have the same target.
 std::string params::Params::TargetType() {
     for (const auto& [key, value] : map) {
-        return split(key, '.')[0];
+        return strings::split(key, '.')[0];
     }
 }
 
@@ -111,7 +88,7 @@ bool  params::Params::Apply(std::any & obj, bool setMsg) {
             }
         }
     }
-    // return join(errs, "");
+    // return strings::join(errs, "");
     return true; // TODO: REDO this function to correctly identify if it was set or not
 }
 
@@ -211,31 +188,31 @@ void params::to_json(json &j, const params::Hypers &flx) {
 //     return Params.ParamByNameTry(param);
 // }
 
-void params::FlexVal::CopyFrom(params::FlexVal cp) {
-    Nm = cp.Nm;
-    Type = cp.Type;
-    Cls = cp.Cls;
-    if (Obj.type() == typeid(params::Hypers) && cp.Obj.type() == typeid(params::Hypers)) { // TODO CHECK IF THIS WORKS
-        std::any_cast<params::Hypers>(Obj).CopyFrom(std::any_cast<params::Hypers&>(cp.Obj));
-    }
+// void params::FlexVal::CopyFrom(params::FlexVal cp) {
+//     Nm = cp.Nm;
+//     Type = cp.Type;
+//     Cls = cp.Cls;
+//     if (Obj.type() == typeid(params::Hypers) && cp.Obj.type() == typeid(params::Hypers)) { // TODO CHECK IF THIS WORKS
+//         std::any_cast<params::Hypers>(Obj).CopyFrom(std::any_cast<params::Hypers&>(cp.Obj));
+//     }
 
-}
+// }
 
-void params::to_json(json &j, const params::FlexVal &flx) {
-    j["Nm"]= flx.Nm; //does this turn it into json, or from json?
-    j["Type"]= flx.Type;
-    j["Cls"]= flx.Cls;
+// void params::to_json(json &j, const params::FlexVal &flx) {
+//     j["Nm"]= flx.Nm; //does this turn it into json, or from json?
+//     j["Type"]= flx.Type;
+//     j["Cls"]= flx.Cls;
 
-    if (flx.Obj.type() == typeid(params::Hypers)) {
-        params::Hypers hyp = std::any_cast<params::Hypers>(flx.Obj);
-        json substr = hyp;
-        j["Obj"]= substr;
-    }
-    else {
-        std::string objStr = "\"" + anyToString(flx.Obj)  + "\"";
-        j["Obj"]= objStr;
-    }
-}
+//     if (flx.Obj.type() == typeid(params::Hypers)) {
+//         params::Hypers hyp = std::any_cast<params::Hypers>(flx.Obj);
+//         json substr = hyp;
+//         j["Obj"]= substr;
+//     }
+//     else {
+//         std::string objStr = "\"" + anyToString(flx.Obj)  + "\"";
+//         j["Obj"]= objStr;
+//     }
+// }
 
 // TODO complete this for any types that might appear
 bool IsStruct(std::any &obj){
@@ -273,7 +250,7 @@ std::any params::FindParam(std::any &val, std::string path) {
     }
     else {
         std::map<std::string,std::string>& map = std::any_cast<std::map<std::string,std::string>&>(val);
-        std::vector<std::string> pathParts = split(path, '.');
+        std::vector<std::string> pathParts = strings::split(path, '.');
         std::string firstName = pathParts[0];
         pathParts.erase(pathParts.begin());
         if (map.count(firstName)==0) { // key does not exist
@@ -287,7 +264,7 @@ std::any params::FindParam(std::any &val, std::string path) {
                 return obj;
             }
             else{
-                return FindParam(obj, join(pathParts, "."));
+                return FindParam(obj, strings::join(pathParts, "."));
             }
         }
     }
@@ -312,42 +289,42 @@ float params::GetParam(std::any &obj, std::string path) {
     return 0.0;
 }
 
-// Init initializes the Flex map with given set of flex values.
-void params::Flex::Init(std::vector<params::FlexVal> vals) {
-    for (FlexVal& val: vals){
-        map[val.Nm] = val;
-    }
-}
+// // Init initializes the Flex map with given set of flex values.
+// void params::Flex::Init(std::vector<params::FlexVal> vals) {
+//     for (FlexVal& val: vals){
+//         map[val.Nm] = val;
+//     }
+// }
 
-// ApplySheet applies given sheet of parameters to each element in Flex
-void params::Flex::ApplySheet(params::Sheet *sheet, bool setMsg) {
-    for (const auto& [key, value]: this->map){
-        std::any obj = value;
-        sheet->Apply(obj, setMsg);
-    }
-}
+// // ApplySheet applies given sheet of parameters to each element in Flex
+// void params::Flex::ApplySheet(params::Sheet *sheet, bool setMsg) {
+//     for (const auto& [key, value]: this->map){
+//         std::any obj = value;
+//         sheet->Apply(obj, setMsg);
+//     }
+// }
 
-// CopyFrom copies hyper vals from source
-void params::Flex::CopyFrom(Flex cp) {
-    for (const auto& [key, value]: cp.map) {
-        if (map.count(key) == 0){
-            map[key] = params::FlexVal();
-        }
-        map[key].CopyFrom(cp.map[key]);
-    }
-}
+// // CopyFrom copies hyper vals from source
+// void params::Flex::CopyFrom(Flex cp) {
+//     for (const auto& [key, value]: cp.map) {
+//         if (map.count(key) == 0){
+//             map[key] = params::FlexVal();
+//         }
+//         map[key].CopyFrom(cp.map[key]);
+//     }
+// }
 
-// JSONString returns a string representation of Flex params
-std::string params::Flex::JSONString() {
-    // Create a new JSON object from the map
-    json reconstructedJson;
-    for (const auto& [key, value] : map) {
-        reconstructedJson[key] = json(value);
-    }
-    // Convert to a JSON string
-    std::string jsonStr = reconstructedJson.dump();
-    return jsonStr;
-}
+// // JSONString returns a string representation of Flex params
+// std::string params::Flex::JSONString() {
+//     // Create a new JSON object from the map
+//     json reconstructedJson;
+//     for (const auto& [key, value] : map) {
+//         reconstructedJson[key] = json(value);
+//     }
+//     // Convert to a JSON string
+//     std::string jsonStr = reconstructedJson.dump();
+//     return jsonStr;
+// }
 
 // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 std::string params::Sheet::ElemLabel(int idx){
@@ -482,7 +459,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
     } else if (ParamTypeMap[varName] == typeid(std::vector<int>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
-        std::vector<std::string> vectorString = split(value, ','); //TODO figure out how to handle optional spaces
+        std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
 
         std::vector<int> *vectorPtr = (std::vector<int> *) varPtr;
         vectorPtr->reserve(vectorString.size());
@@ -492,7 +469,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
     } else if (ParamTypeMap[varName] == typeid(std::vector<float>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
-        std::vector<std::string> vectorString = split(value, ','); //TODO figure out how to handle optional spaces
+        std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
 
         std::vector<float> *vectorPtr = (std::vector<float> *) varPtr;
         vectorPtr->reserve(vectorString.size());
@@ -502,7 +479,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
     } else if (ParamTypeMap[varName] == typeid(std::vector<bool>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
-        std::vector<std::string> vectorString = split(value, ','); //TODO figure out how to handle optional spaces
+        std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
 
         std::vector<bool> *vectorPtr = (std::vector<bool> *) varPtr;
         vectorPtr->reserve(vectorString.size());

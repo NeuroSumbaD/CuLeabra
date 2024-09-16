@@ -17,6 +17,82 @@ void emer::Network::UpdateLayerMaps() {
 	}
 }
 
+// EmerLayerByName returns a layer by looking it up by name.
+// returns nullptr if layer is not found.
+emer::Layer *emer::Network::LayerByName(std::string name) {
+	if (LayerNameMap.size() != NumLayers()) {
+		UpdateLayerMaps();
+	}
+	if (LayerNameMap.count(name)>0) {
+		Layer *ly= LayerNameMap[name];
+		return ly;
+	}
+    return nullptr;
+}
+
+// EmerPathByName returns a path by looking it up by name.
+// Paths are named SendToRecv = sending layer name "To" recv layer name.
+// returns error message if path is not found.
+emer::Path *emer::Network::PathByName(std::string name) {
+	int ti = name.find("To");
+	if (ti == std::string::npos) {
+		return nullptr;
+	}
+	std::string sendNm = name.substr(0,ti);
+	std::string recvNm = name.substr(ti+2);
+	Layer *send = LayerByName(sendNm);
+	if (send == nullptr) {
+		return nullptr;
+	}
+	Layer *recv = LayerByName(recvNm);
+	if (recv == nullptr) {
+		return nullptr;
+	}
+	Path *path = recv->RecvPathBySendName(sendNm);
+	return path;
+}
+
+// LayersByClass returns a list of layer names by given class(es).
+// Lists are compiled when network Build() function called,
+// or now if not yet present.
+// The layer Type is always included as a Class, along with any other
+// space-separated strings specified in Class for parameter styling, etc.
+// If no classes are passed, all layer names in order are returned.
+std::vector<std::string> emer::Network::LayersByClass(std::vector<std::string> classes) {
+	if (LayerClassMap.size() == 0) {
+		UpdateLayerMaps();
+	}
+	std::vector<std::string> nms = std::vector<std::string>();
+	int nl = NumLayers();
+	if (classes.size() == 0) {
+		for (int li = 0; li < nl; li++) {
+			Layer *ly = EmerLayer(li);
+			if (ly->Off) {
+				continue;
+			}
+			nms.push_back(ly->Name);
+		}
+		return nms;
+	}
+	for (std::string &lc: classes) {
+		nms.insert(nms.end(), LayerClassMap[lc].begin(), LayerClassMap[lc].end());
+	}
+	// only get unique layers
+	std::vector<std::string> layers = std::vector<std::string>();
+	std::map<std::string, bool> has = std::map<std::string, bool>();
+	for(std::string &nm: nms) {
+		if (has[nm]) {
+			continue;
+		}
+		layers.push_back(nm);
+		has[nm] = true;
+	}
+	if (layers.size() == 0) {
+		std::cerr << "No Layers found for query: " << strings::join(classes, " ") << std::endl;
+	}
+	return layers;
+}
+
 // LayoutLayers computes the 3D layout of layers based on their relative
 // position settings.
 void emer::Network::LayoutLayers() {

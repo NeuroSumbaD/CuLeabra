@@ -22,7 +22,7 @@ namespace knadapt {
         float Max; // Maximum potential conductance of fast K channels -- divide nA biological value by 10 for the normalized units here
         float Tau; // time constant in cycles for decay of adaptation, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life)
         float Dt; // 1/Tau rate constant
-        Chan(bool on=true, float rise = 0.01, float max=0.1, float tau=100): On(on), Rise(rise), Max(max), Tau(tau) {Update();};
+        Chan(bool on=true, float rise = 0.01, float max=0.1, float tau=100);
 
         void Update(){Dt = 1/Tau;};
         void Defaults();

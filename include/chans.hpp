@@ -15,7 +15,7 @@ namespace chans {
         float I; // inhibitory chloride (Cl-) channels activated by synaptic GABA
         float K; // gated / active potassium channels -- typically hyperpolarizing relative to leak / rest
 
-        Chans(float e, float l, float i, float k): E(e), L(l), I(i), K(k){};
+        Chans(float e, float l, float i, float k);
         void SetAll(float e, float l, float i, float k);
         void SetFromOtherMinus(Chans oth, float minus);
         void SetFromMinusOther(float minus, Chans oth);

@@ -1,6 +1,10 @@
 #include "synapse.hpp"
 #include <iostream>
 
+namespace leabra {
+    const std::vector<std::string> SynapseVars({"Wt", "LWt", "DWt", "Norm", "Moment", "Scale"});
+} // namespace leabra
+
 
 // SynapseVarByName returns a pointer to the variable in the Synapse, or error
 float* leabra::Synapse::SynapseVarByName(std::string varNm) {
@@ -19,4 +23,13 @@ float* leabra::Synapse::SynapseVarByName(std::string varNm) {
     } else {
         throw std::runtime_error("Synapse does not have variable named: " + varNm);
     }
+}
+
+float *leabra::Synapse::VarByName(std::string varNm) {
+    return SynapseVarByName(varNm);
+}
+
+void leabra::Synapse::SetVarByName(std::string varNm, float val) {
+    float *var = VarByName(varNm);
+    *var = val;
 }

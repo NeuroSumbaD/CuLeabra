@@ -7,7 +7,7 @@ This is included in leabra.Layer to drive the computation.
 */
 
 #pragma once
-#include <random>
+
 #include "nxx1.hpp"
 #include "chans.hpp"
 #include "minmax.hpp"
@@ -37,7 +37,7 @@ namespace leabra{
         ActInitParams(float Decay = 1, float Vm = 0.4, float Act = 0, float Ge = 0);
 
         void Defaults();
-        void Update(){};
+        void Update();
     };
 
     // DtParams are time and rate constants for temporal derivatives in Leabra (Vm, net input)
@@ -69,7 +69,7 @@ namespace leabra{
         float AvgGe(float ext, float ge);
 
         void Defaults();
-        void Update(){};
+        void Update();
     };
 
     struct WtInitParams: rands::Dist {
@@ -78,7 +78,7 @@ namespace leabra{
         // std::uniform_real_distribution<float> Type;
         bool Sym;
 
-        WtInitParams(float mean = 0.5, float var = 0.25, float par=1, rands::RandDists type=rands::Uniform): Dist(mean, var, par, type){};
+        WtInitParams(float mean = 0.5, float var = 0.25, float par=1, rands::RandDists type=rands::Uniform);
 
         void Defaults();
     };
@@ -87,10 +87,10 @@ namespace leabra{
         float Abs; // absolute scaling, which is not subject to normalization: directly multiplies weight values
         float Rel; // relative scaling that shifts balance between different pathways -- this is subject to normalization across all other pathways into unit
 
-        WtScaleParams(float abs = 1, float rel = 1): Abs(abs), Rel(rel){};
+        WtScaleParams(float abs = 1, float rel = 1);
 
-        void Defaults(){Abs = 1; Rel = 1;};
-        void Update(){};
+        void Defaults();
+        void Update();
 
         float SLayActScale(float savg, float snu, float ncon);
         float FullScale(float savg, float snu, float ncon);
@@ -111,11 +111,11 @@ namespace leabra{
         ActNoiseType Type; // where and how to add processing noise (should be an enum)
         bool Fixed; // keep the same noise value over the entire alpha cycle -- prevents noise from being washed out and produces a stable effect that can be better used for learning -- this is strongly recommended for most learning situations
         
-        ActNoiseParams(){Type = ActNoiseType::NoNoise; Defaults();};
+        ActNoiseParams();
         ActNoiseParams(ActNoiseType Type, bool Fixed=true);
 
-        void Defaults(){Fixed = true;};
-        void Update(){};
+        void Defaults();
+        void Update();
     };
 
 
@@ -137,8 +137,7 @@ namespace leabra{
         chans::Chans ErevSubThr; // Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
         chans::Chans ThrSubErev; // Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
 
-        ActParams():XX1(), OptThresh(), Init(), Dt(), Gbar(1.0, 0.1, 1.0, 1.0), Erev(1.0, 0.3, 0.25, 0.25), Clamp(), Noise(), VmRange(), KNa(false), ErevSubThr(0,0,0,0), ThrSubErev(0,0,0,0)
-            {VmRange.Max = 2.0;ErevSubThr.SetFromOtherMinus(Erev, XX1.Thr);ThrSubErev.SetFromMinusOther(XX1.Thr, Erev);};
+        ActParams();
         void Defaults();
         void Update();
 

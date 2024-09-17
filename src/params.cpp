@@ -47,6 +47,7 @@ std::string params::Params::TargetType() {
     for (const auto& [key, value] : map) {
         return strings::split(key, '.')[0];
     }
+    return "";
 }
 
 // Apply applies all parameter values to given object.
@@ -242,33 +243,33 @@ bool IsStruct(std::any &obj){
 // TODO MAYBE JSON OBJECTS CAN BE CONVERTED TO PARAMETER STRUCTS RATHER THAN REFLECTION
 // TODO TAKE A CLOSER LOOK AT THIS SYNTAX AND REWRITE IT
 // TODO Add code to each struct to map from string val/path to struct members
-std::any params::FindParam(std::any &val, std::string path) {
-    if (IsStruct(val)){
-        std::string err = "TODO FIX FINDPARAM... idk how\n\t";
-        err += "type of val was: " + std::string(val.type().name()) + "\n";
-        throw std::invalid_argument(err);
-    }
-    else {
-        std::map<std::string,std::string>& map = std::any_cast<std::map<std::string,std::string>&>(val);
-        std::vector<std::string> pathParts = strings::split(path, '.');
-        std::string firstName = pathParts[0];
-        pathParts.erase(pathParts.begin());
-        if (map.count(firstName)==0) { // key does not exist
-            std::string err = "params.FindParam: could not find Field named: " + firstName;
-                err += " in the 'any' container\n";  
-            throw std::invalid_argument(err);
-        }
-        else{
-            std::any obj =  &map[firstName];
-            if (pathParts.size() == 1){
-                return obj;
-            }
-            else{
-                return FindParam(obj, strings::join(pathParts, "."));
-            }
-        }
-    }
-}
+// std::any params::FindParam(std::any &val, std::string path) {
+//     if (IsStruct(val)){
+//         std::string err = "TODO FIX FINDPARAM... idk how\n\t";
+//         err += "type of val was: " + std::string(val.type().name()) + "\n";
+//         throw std::invalid_argument(err);
+//     }
+//     else {
+//         std::map<std::string,std::string>& map = std::any_cast<std::map<std::string,std::string>&>(val);
+//         std::vector<std::string> pathParts = strings::split(path, '.');
+//         std::string firstName = pathParts[0];
+//         pathParts.erase(pathParts.begin());
+//         if (map.count(firstName)==0) { // key does not exist
+//             std::string err = "params.FindParam: could not find Field named: " + firstName;
+//                 err += " in the 'any' container\n";  
+//             throw std::invalid_argument(err);
+//         }
+//         else{
+//             std::any obj =  &map[firstName];
+//             if (pathParts.size() == 1){
+//                 return obj;
+//             }
+//             else{
+//                 return FindParam(obj, strings::join(pathParts, "."));
+//             }
+//         }
+//     }
+// }
 
 // SetParam sets parameter at given path on given object to given value
 // converts the string param val as appropriate for target type.
@@ -440,23 +441,28 @@ std::string params::Set::ParamValue(std::string sheet, std::string sel, std::str
     return sp->ParamVal(sel, param);
 }
 
-void params::StylerObject::SetByName(std::string varName, std::string value) {
+params::StylerObject::StylerObject() {
+    InitParamMaps();
+}
+
+void params::StylerObject::SetByName(std::string varName, std::string value)
+{
     void *varPtr = ParamNameMap[varName];
     if (ParamNameMap.count(varName) == 0) throw std::runtime_error("Error: variable named " + varName + " not found.");
-    if (ParamTypeMap[varName] == typeid(int)) {
+    if (ParamTypeMap[varName] == &typeid(int)) {
         int val = std::stoi(value);
         int *ptr = (int *)varPtr;
         *ptr = val;
-    } else if (ParamTypeMap[varName] == typeid(float)) {
+    } else if (ParamTypeMap[varName] == &typeid(float)) {
         float val = std::stof(value);
         float *ptr = (float *)varPtr;
         *ptr = val;
-    } else if (ParamTypeMap[varName] == typeid(bool)) {
+    } else if (ParamTypeMap[varName] == &typeid(bool)) {
         bool val;
         std::istringstream(value) >> std::boolalpha >> val;
         bool *ptr = (bool *)varPtr;
         *ptr = val;
-    } else if (ParamTypeMap[varName] == typeid(std::vector<int>)) {
+    } else if (ParamTypeMap[varName] == &typeid(std::vector<int>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
         std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
@@ -466,7 +472,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
         for (std::string item: vectorString){
             vectorPtr->push_back(std::stoi(item)); // TODO figure out how to handle 
         }
-    } else if (ParamTypeMap[varName] == typeid(std::vector<float>)) {
+    } else if (ParamTypeMap[varName] == &typeid(std::vector<float>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
         std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
@@ -476,7 +482,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
         for (std::string item: vectorString){
             vectorPtr->push_back(std::stof(item)); // TODO figure out how to handle 
         }
-    } else if (ParamTypeMap[varName] == typeid(std::vector<bool>)) {
+    } else if (ParamTypeMap[varName] == &typeid(std::vector<bool>)) {
         value.pop_back(); // get rid of ']' character
         value.erase(value.begin()); // get rid of '[' character
         std::vector<std::string> vectorString = strings::split(value, ','); //TODO figure out how to handle optional spaces
@@ -488,7 +494,7 @@ void params::StylerObject::SetByName(std::string varName, std::string value) {
             std::istringstream(item) >> std::boolalpha >> val;
             vectorPtr->push_back(val); // TODO figure out how to handle 
         }
-    } else if (ParamTypeMap[varName] == typeid(params::StylerObject)) {
+    } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
         // TODO HANDLE THE CASE OF NESTED PARAMS?
         // ...maybe do nothing...
     } else {

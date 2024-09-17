@@ -1,13 +1,17 @@
 #include "knadapt.hpp"
 
-void knadapt::Chan::Defaults() {
+knadapt::Chan::Chan(bool on, float rise, float max, float tau): On(on), Rise(rise), Max(max), Tau(tau) {
+    Update();
+}
+
+void knadapt::Chan::Defaults()
+{
     On = true;
     Rise = 0.01;
     Max = 0.1;
     Tau = 100;
     Update();
 }
-
 
 void knadapt::Chan::GcFmSpike(float *gKNa, bool spike) {
     if (On) {

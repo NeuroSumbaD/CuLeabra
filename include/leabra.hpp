@@ -62,235 +62,238 @@ namespace leabra {
         void Defaults();
     };
 
-    // // LeabraNetwork defines the essential algorithmic API for Leabra, at the network level.
-    // // These are the methods that the user calls in their Sim code:
-    // // * AlphaCycInit
-    // // * Cycle
-    // // * QuarterFinal
-    // // * DWt
-    // // * WtFmDwt
-    // // Because we don't want to have to force the user to use the interface cast in calling
-    // // these methods, we provide Impl versions here that are the implementations
-    // // which the user-facing method calls.
-    // //
-    // // Typically most changes in algorithm can be accomplished directly in the Layer
-    // // or Prjn level, but sometimes (e.g., in deep) additional full-network passes
-    // // are required.
-    // //
-    // // All of the structural API is in emer.Network, which this interface also inherits for
-    // // convenience.
-    // struct LeabraNetwork: emer::Network {
-    //     // NewLayer creates a new concrete layer of appropriate type for this network
-    //     virtual emer::Layer NewLayer();
+    enum PathTypes {
+        // Forward is a feedforward, bottom-up pathway from sensory inputs to higher layers
+        ForwardPath,
 
-    //     // NewPrjn creates a new concrete projection of appropriate type for this network
-    //     virtual emer::Prjn NewPrjn();
+        // Back is a feedback, top-down pathway from higher layers back to lower layers
+        BackPath,
 
-    //     // AlphaCycInit handles all initialization at start of new input pattern.
-    //     // Should already have presented the external input to the network at this point.
-    //     // If updtActAvg is true, this includes updating the running-average
-    //     // activations for each layer / pool, and the AvgL running average used
-    //     // in BCM Hebbian learning.
-    //     // The input scaling is updated  based on the layer-level running average acts,
-    //     // and this can then change the behavior of the network,
-    //     // so if you want 100% repeatable testing results, set this to false to
-    //     // keep the existing scaling factors (e.g., can pass a train bool to
-    //     // only update during training).  This flag also affects the AvgL learning
-    //     // threshold
-    //     virtual void AlphaCycInitImpl(bool updtActAvg);
+        // Lateral is a lateral pathway within the same layer / area
+        LateralPath,
 
-    //     // CycleImpl runs one cycle of activation updating:
-    //     // * Sends Ge increments from sending to receiving layers
-    //     // * Average and Max Ge stats
-    //     // * Inhibition based on Ge stats and Act Stats (computed at end of Cycle)
-    //     // * Activation from Ge, Gi, and Gl
-    //     // * Average and Max Act stats
-    //     // This basic version doesn't use the time info, but more specialized types do, and we
-    //     // want to keep a consistent API for end-user code.
-    //     virtual void CycleImpl(time::Time& ltime);
+        // Inhib is an inhibitory pathway that drives inhibitory
+        // synaptic conductances instead of the default excitatory ones.
+        InhibPath,
 
-    //     // CyclePostImpl is called after the standard Cycle update, and calls CyclePost
-    //     // on Layers -- this is reserved for any kind of special ad-hoc types that
-    //     // need to do something special after Act is finally computed.
-    //     // For example, sending a neuromodulatory signal such as dopamine.
-    //     virtual void CyclePostImpl(time::Time& ltime);
-
-    //     // QuarterFinalImpl does updating after end of a quarter
-    //     virtual void QuarterFinalImpl(time::Time& ltime);
-
-    //     // DWtImpl computes the weight change (learning) based on current
-    //     // running-average activation values
-    //     virtual void DWtImpl();
-
-    //     // WtFmDWtImpl updates the weights from delta-weight changes.
-    //     // Also calls WtBalFmWt every WtBalInterval times
-    //     virtual void WtFmDWtImpl();
-    // };
-
+        // CTCtxt are pathways from Superficial layers to CT layers that
+        // send Burst activations drive updating of CtxtGe excitatory conductance,
+        // at end of plus (51B Bursting) phase.  Biologically, this pathway
+        // comes from the PT layer 5IB neurons, but it is simpler to use the
+        // Super neurons directly, and PT are optional for most network types.
+        // These pathways also use a special learning rule that
+        // takes into account the temporal delays in the activation states.
+        // Can also add self context from CT for deeper temporal context.
+        CTCtxtPath
+    };
     
-    // struct LeabraLayer: emer::Layer {
-    //     // SetThread sets the thread number for this layer to run on
-    //     virtual void SetThread(int thr);
+    // WtBalRecvPath are state variables used in computing the WtBal weight balance function
+    // There is one of these for each Recv Neuron participating in the pathway.
+    struct WtBalRecvPath {
+        // average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Path
+        float Avg;
 
-    //     // InitWts initializes the weight values in the network, i.e., resetting learning
-    //     // Also calls InitActs
-    //     virtual void InitWts();
+        // overall weight balance factor that drives changes in WbInc vs. WbDec via a sigmoidal function -- this is the net strength of weight balance changes
+        float Fact;
 
-    //     // InitActAvg initializes the running-average activation values that drive learning.
-    //     virtual void InitActAvg();
+        // weight balance increment factor -- extra multiplier to add to weight increases to maintain overall weight balance
+        float Inc;
 
-    //     // InitActs fully initializes activation state -- only called automatically during InitWts
-    //     virtual void InitActs();
+        // weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance
+        float Dec;
 
-    //     // InitWtsSym initializes the weight symmetry -- higher layers copy weights from lower layers
-    //     virtual void InitWtSym();
+        WtBalRecvPath(){Avg = 0; Fact = 0; Inc = 1; Dec = 1;};
 
-    //     // InitExt initializes external input state -- called prior to apply ext
-    //     virtual void InitExt();
+        void Init(){Avg = 0;Fact = 0;Inc = 1;Dec = 1;};
+    };
 
-    //     // ApplyExt applies external input in the form of an tensor.Tensor
-    //     // If the layer is a Target or Compare layer type, then it goes in Targ
-    //     // otherwise it goes in Ext.
-    //     virtual void ApplyExt(tensor::Tensor ext);
+    enum LayerTypes{
+        // Super is a superficial cortical layer (lamina 2-3-4)
+        // which does not receive direct input or targets.
+        // In more generic models, it should be used as a Hidden layer,
+        // and maps onto the Hidden type in LayerTypes.
+        SuperLayer, 
 
-    //     // ApplyExt1D applies external input in the form of a flat 1-dimensional slice of floats
-    //     // If the layer is a Target or Compare layer type, then it goes in Targ
-    //     // otherwise it goes in Ext
-    //     virtual void ApplyExt1D(std::vector<float> ext);
+        // Input is a layer that receives direct external input
+        // in its Ext inputs.  Biologically, it can be a primary
+        // sensory layer, or a thalamic layer.
+        InputLayer,
 
-    //     // UpdateExtFlags updates the neuron flags for external input based on current
-    //     // layer Type field -- call this if the Type has changed since the last
-    //     // ApplyExt* method call.
-    //     virtual void UpdateExtFlags();
+        // Target is a layer that receives direct external target inputs
+        // used for driving plus-phase learning.
+        // Simple target layers are generally not used in more biological
+        // models, which instead use predictive learning via Pulvinar
+        // or related mechanisms.
+        TargetLayer,
 
-    //     // // RecvPrjns returns the slice of receiving projections for this layer
-    //     // virtual LeabraPrjns* RecvPrjns();
+        // Compare is a layer that receives external comparison inputs,
+        // which drive statistics but do NOT drive activation
+        // or learning directly.  It is rarely used in axon.
+        CompareLayer,
 
-    //     // // SendPrjns returns the slice of sending projections for this layer
-    //     // virtual LeabraPrjns* SendPrjns();
 
-    //     // IsTarget returns true if this layer is a Target layer.
-    //     // By default, returns true for layers of Type == emer.Target
-    //     // Other Target layers include the TRCLayer in deep predictive learning.
-    //     // This is used for turning off BCM hebbian learning,
-    //     // in CosDiffFmActs to set the CosDiff.ModAvgLLrn value
-    //     // for error-modulated level of hebbian learning.
-    //     // It is also used in WtBal to not apply it to target layers.
-    //     // In both cases, Target layers are purely error-driven.
-    //     virtual bool IsTarget();
+        // Deep
 
-    //     // AlphaCycInit handles all initialization at start of new input pattern.
-    //     // Should already have presented the external input to the network at this point.
-    //     // If updtActAvg is true, this includes updating the running-average
-    //     // activations for each layer / pool, and the AvgL running average used
-    //     // in BCM Hebbian learning.
-    //     // The input scaling is updated  based on the layer-level running average acts,
-    //     // and this can then change the behavior of the network,
-    //     // so if you want 100% repeatable testing results, set this to false to
-    //     // keep the existing scaling factors (e.g., can pass a train bool to
-    //     // only update during training).  This flag also affects the AvgL learning
-    //     // threshold
-    //     virtual void AlphaCycInit(bool updtActAvg);
+        // CT are layer 6 corticothalamic projecting neurons,
+        // which drive "top down" predictions in Pulvinar layers.
+        // They maintain information over time via stronger NMDA
+        // channels and use maintained prior state information to
+        // generate predictions about current states forming on Super
+        // layers that then drive PT (5IB) bursting activity, which
+        // are the plus-phase drivers of Pulvinar activity.
+        CTLayer,
 
-    //     // AvgLFmAvgM updates AvgL long-term running average activation that
-    //     // drives BCM Hebbian learning
-    //     virtual void AvgLFmAvgM();
+        // Pulvinar are thalamic relay cell neurons in the higher-order
+        // Pulvinar nucleus of the thalamus, and functionally isomorphic
+        // neurons in the MD thalamus, and potentially other areas.
+        // These cells alternately reflect predictions driven by CT pathways,
+        // and actual outcomes driven by 5IB Burst activity from corresponding
+        // PT or Super layer neurons that provide strong driving inputs.
+        PulvinarLayer,
 
-    //     // GScaleFmAvgAct computes the scaling factor for synaptic conductance input
-    //     // based on sending layer average activation.
-    //     // This attempts to automatically adjust for overall differences in raw
-    //     // activity coming into the units to achieve a general target
-    //     // of around .5 to 1 for the integrated G values.
-    //     virtual void GScaleFmAvgAct();
+        // TRNLayer is thalamic reticular nucleus layer for inhibitory competition
+        // within the thalamus.
+        TRNLayer,
 
-    //     // GenNoise generates random noise for all neurons
-    //     virtual void GenNoise();
+        // PTMaintLayer implements the subset of pyramidal tract (PT)
+        // layer 5 intrinsic bursting (5IB) deep neurons that exhibit
+        // robust, stable maintenance of activity over the duration of a
+        // goal engaged window, modulated by basal ganglia (BG) disinhibitory
+        // gating, supported by strong MaintNMDA channels and recurrent excitation.
+        // The lateral PTSelfMaint pathway uses MaintG to drive GMaintRaw input
+        // that feeds into the stronger, longer MaintNMDA channels,
+        // and the ThalToPT ModulatoryG pathway from BGThalamus multiplicatively
+        // modulates the strength of other inputs, such that only at the time of
+        // BG gating are these strong enough to drive sustained active maintenance.
+        // Use Act.Dend.ModGain to parameterize.
+        PTMaintLayer,
 
-    //     // DecayState decays activation state by given proportion (default is on ly.Act.Init.Decay)
-    //     virtual void DecayState(float decay);
+        // PTPredLayer implements the subset of pyramidal tract (PT)
+        // layer 5 intrinsic bursting (5IB) deep neurons that combine
+        // modulatory input from PTMaintLayer sustained maintenance and
+        // CTLayer dynamic predictive learning that helps to predict
+        // state changes during the period of active goal maintenance.
+        // This layer provides the primary input to VSPatch US-timing
+        // prediction layers, and other layers that require predictive dynamic
+        PTPredLayer
+    };
 
-    //     // HardClamp hard-clamps the activations in the layer -- called during AlphaCycInit
-    //     // for hard-clamped Input layers
-    //     virtual void HardClamp();
+    struct Layer;
+    struct Path: emer::Path {
+        // sending layer for this pathway.
+        Layer* Send;
 
-    //     //////////////////////////////////////////////////////////////////////////////////////
-    //     //  Cycle Methods
+        // receiving layer for this pathway.
+        Layer* Recv;
 
-    //     // InitGInc initializes synaptic conductance increments -- optional
-    //     virtual void InitGInc();
+        // type of pathway.
+        PathTypes Type;
 
-    //     // SendGDelta sends change in activation since last sent, to increment recv
-    //     // synaptic conductances G, if above thresholds
-    //     virtual void SendGDelta(time::Time& ltime);
+        // initial random weight distribution
+        WtInitParams WtInit;
 
-    //     // GFmInc integrates new synaptic conductances from increments sent during last SendGDelta
-    //     virtual void GFmInc(time::Time& ltime);
+        // weight scaling parameters: modulates overall strength of pathway,
+        // using both absolute and relative factors.
+        WtScaleParams WtScale;
 
-    //     // AvgMaxGe computes the average and max Ge stats, used in inhibition
-    //     virtual void AvgMaxGe(time::Time& ltime);
+        // synaptic-level learning parameters
+        LearnSynParams Learn;
 
-    //     // InhibiFmGeAct computes inhibition Gi from Ge and Act averages within relevant Pools
-    //     virtual void InhibFmGeAct(time::Time& ltime);
+        // synaptic state values, ordered by the sending layer
+        // units which owns them -- one-to-one with SConIndex array.
+        std::vector<Synapse*> Syns;
 
-    //     // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
-    //     // and updates learning running-average activations from that Act
-    //     virtual void ActFmG(time::Time& ltime);
+        // scaling factor for integrating synaptic input conductances (G's).
+        // computed in AlphaCycInit, incorporates running-average activity levels.
+        float GScale;
 
-    //     // AvgMaxAct computes the average and max Act stats, used in inhibition
-    //     virtual void AvgMaxAct(time::Time& ltime);
+        // local per-recv unit increment accumulator for synaptic
+        // conductance from sending units. goes to either GeRaw or GiRaw
+        // on neuron depending on pathway type.
+        std::vector<float>  GInc;
 
-    //     // CyclePost is called after the standard Cycle update, as a separate
-    //     // network layer loop.
-    //     // This is reserved for any kind of special ad-hoc types that
-    //     // need to do something special after Act is finally computed.
-    //     // For example, sending a neuromodulatory signal such as dopamine.
-    //     virtual void CyclePost(time::Time& ltime);
+        // weight balance state variables for this pathway, one per recv neuron.
+        std::vector<WtBalRecvPath> WbRecv;
 
-    //     //////////////////////////////////////////////////////////////////////////////////////
-    //     //  Quarter Methods
+        // number of recv connections for each neuron in the receiving layer,
+        // as a flat list.
+        std::vector<int> RConN;
 
-    //     // QuarterFinal does updating after end of a quarter
-    //     virtual void QuarterFinal(time::Time& ltime);
+        // average and maximum number of recv connections in the receiving layer.
+        minmax::AvgMax32 RConNAvgMax;
 
-    //     // CosDiffFmActs computes the cosine difference in activation state
-    //     // between minus and plus phases.
-    //     // This is also used for modulating the amount of BCM hebbian learning
-    //     virtual void CosDiffFmActs();
+        // starting index into ConIndex list for each neuron in
+        // receiving layer; list incremented by ConN.
+        std::vector<int> RConIndexSt;
 
-    //     // DWt computes the weight change (learning) -- calls DWt method on sending projections
-    //     virtual void DWt();
+        // index of other neuron on sending side of pathway,
+        // ordered by the receiving layer's order of units as the
+        // outer loop (each start is in ConIndexSt),
+        // and then by the sending layer's units within that.
+        std::vector<int> RConIndex;
 
-    //     // WtFmDWt updates the weights from delta-weight changes -- on the sending projections
-    //     virtual void WtFmDWt();
+        // index of synaptic state values for each recv unit x connection,
+        // for the receiver pathway which does not own the synapses,
+        // and instead indexes into sender-ordered list.
+        std::vector<int> RSynIndex;
 
-    //     // WtBalFmWt computes the Weight Balance factors based on average recv weights
-    //     virtual void WtBalFmWt();
+        // number of sending connections for each neuron in the
+        // sending layer, as a flat list.
+        std::vector<int> SConN;
 
-    //     // LrateMult sets the new Lrate parameter for Prjns to LrateInit * mult.
-    //     // Useful for implementing learning rate schedules.
-    //     virtual void LrateMult(float mult);
-    // };
+        // average and maximum number of sending connections
+        // in the sending layer.
+        minmax::AvgMax32 SConNAvgMax;
 
-    // struct LeabraPrjn: emer::Prjn {
-    //     // InitWts initializes weight values according to Learn.WtInit params
-    //     virtual void InitWts();
+        // starting index into ConIndex list for each neuron in
+        // sending layer; list incremented by ConN.
+        std::vector<int> SConIndexSt;
+
+        // index of other neuron on receiving side of pathway,
+        // ordered by the sending layer's order of units as the
+        // outer loop (each start is in ConIndexSt), and then
+        // by the sending layer's units within that.
+        std::vector<int> SConIndex;
+
+        // TODO:: FINISH initializer
+        Path(std::string name = "", std::string cls="");
+
+        void UpdateParams();
+        void Defaults();
+        int NumSyns();
         
-    //     virtual void InitWtsSym();
-        
-    //     virtual void InitGInc();
-        
-    //     virtual void SendGDelta(int si, float delta);
-        
-    //     virtual void RecvGInc();
-        
-    //     virtual void DWt();
-        
-    //     virtual void WtFmDWt();
-        
-    //     virtual void WtBalFmWt();
-        
-    //     virtual void LrateMult(float mult);
-    // };
+        // maybe optional...
+        int SynIndex(int sidx, int ridx);
+        // float SynValue(std::string varNm, int sidx, int ridx);
+        // void SetSynValue(std::string varNm, int sidx, int ridx, float val);
 
-    // typedef std::vector<LeabraPrjn> LeabraPrjns;
+        // void WriteWeightsJSON(std::string fileName, int depth);
+        // void WriteWeightsJSON(std::ofstream file, int depth);
+
+        // void SetWeights(std::string fileName);
+        // void SetWeights(std::ifstream file);
+
+        void Connect(Layer* slay, Layer* rlay, paths::Pattern *pat, PathTypes typ);
+        // void Validate(bool logmsg);
+        void Build();
+        int SetNIndexSt(std::vector<int> &n, minmax::AvgMax32 &avgmax, std::vector<int> &idxst, tensor::Int32 &tn);
+        std::string String();
+
+        void SetScalesRPool(tensor::Tensor<float> scales);
+        void SetWtsFunc(std::function<float(int si, int ri, tensor::Shape& send, tensor::Shape& recv)> wtFun);
+        void SetScalesFunc(std::function<float(int si, int ri, tensor::Shape& send, tensor::Shape& recv)> scaleFun);
+        void InitWeightsSyn(Synapse& syn);
+        void InitWeights();
+        void InitWtSym(Path &rpt);
+        void InitGInc();
+        void SendGDelta(int si, float delta);
+        void RecvGInc();
+        // Learn
+        void DWt();
+        void WtFromDWt();
+        void WtBalFromWt();
+        void LrateMult(float mult);
+        
+    };
+
 } // namespace leabra

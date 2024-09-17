@@ -1,5 +1,8 @@
 #include "emer.hpp"
 
+emer::Network::Network(std::string name, std::string weightsFile, int randSeed):
+	Name(name), WeightsFile(weightsFile), LayerNameMap(), LayerClassMap(), MinPos(), MaxPos(), MetaData(), Rand(), RandSeed(randSeed){}
+
 // UpdateLayerMaps updates the LayerNameMap and LayerClassMap.
 void emer::Network::UpdateLayerMaps() {
     int nl = NumLayers();
@@ -147,6 +150,15 @@ void emer::Network::LayoutBoundsUpdate() {
 	MaxPos = mx;
 }
 
+void emer::Network::SetRandSeed(int seed){
+	RandSeed = seed;
+	ResetRandSeed();
+}
+
+void emer::Network::ResetRandSeed(){
+	Rand.NewSeed(RandSeed);
+}
+
 void emer::Path::AddClass(std::vector<std::string> classes){
     std::string newClasses= "";
     for (std::string cls: classes) {
@@ -178,3 +190,56 @@ bool emer::Path::ApplyParams(params::Sheet &pars, bool setMsg) {
 	}
 	return app;
 }
+
+emer::Layer::Layer(std::string name, int index, std::vector<int> shape):Name(name), Off(true), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){}
+
+std::string emer::Layer::StyleType() {
+	return "Layer";
+}
+
+std::string emer::Layer::StyleClass() {
+	return this->TypeName() + " " + this->Class;
+}
+
+std::string emer::Layer::StyleName() {
+	return this->Name;
+}
+
+std::string emer::Layer::Label() {
+	return Name;
+}
+
+bool emer::Layer::Is2D() {
+	return Shape.NumDims() == 2;
+}
+
+bool emer::Layer::Is4D() {
+	return Shape.NumDims() == 4;
+}
+
+int emer::Layer::NumUnits() {
+	return Shape.Len();
+}
+
+emer::Path::Path(std::string name, std::string cls):
+	Name(name), Class(cls), Info(), Notes() {
+	Pattern = nullptr;
+}
+
+std::string emer::Path::StyleType() {
+	return "Path";
+}
+
+std::string emer::Path::StyleClass() {
+	return TypeName() + " " + Class;
+}
+
+std::string emer::Path::StyleName() {
+	return Name;
+}
+
+std::string emer::Path::Label() {
+	return Name;
+}
+
+

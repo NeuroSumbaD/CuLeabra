@@ -1,7 +1,13 @@
 #include "learn.hpp"
 #include <cmath>
 
-void leabra::XCalParams::Update() {
+leabra::XCalParams::XCalParams(float mLrn, bool setLLrn, float lLrn, float dRev, float dThr, float lrnThr):
+	MLrn(mLrn), SetLLrn(setLLrn), LLrn(lLrn), DRev(dRev), DThr(dThr), LrnThr(lrnThr){ 
+	Update();
+}
+
+void leabra::XCalParams::Update()
+{
     if (DRev > 0) {
         DRevRatio = -(1 - DRev) / DRev;
     } else {
@@ -40,8 +46,11 @@ float leabra::XCalParams::LongLrate(float avgLLrn) {
     return avgLLrn;
 }
 
-void leabra::LearnNeurParams::Update() {
-	ActAvg.Update();
+leabra::LearnNeurParams::LearnNeurParams():ActAvg(), AvgL(), CosDiff(){}
+
+void leabra::LearnNeurParams::Update()
+{
+    ActAvg.Update();
 	AvgL.Update();
 	CosDiff.Update();
 }
@@ -73,6 +82,11 @@ void leabra::LearnNeurParams::InitActAvg(Neuron &nrn) {
 	nrn.AvgL = AvgL.Init;
 	nrn.AvgSLrn = 0;
 	nrn.ActAvg = ActAvg.Init;
+}
+
+leabra::AvgLParams::AvgLParams(float init, float gain, float min, float tau, float lrnMax, float lrnMin, bool errMod, float modMin):
+	Init(init),Gain(gain),Tau(tau),LrnMax(lrnMax),LrnMin(lrnMin),ErrMod(errMod),ModMin(modMin) {
+	Update();
 }
 
 // AvgLFromAvgM computes long-term average activation value, and learning factor, from given
@@ -108,12 +122,30 @@ void leabra::AvgLParams::Defaults()
 	Update();
 }
 
-void leabra::LrnActAvgParams::AvgsFromAct(float ruAct, float &avgSS, float &avgS, float &avgM, float &avgSLrn) {
-	avgSS += SSDt * (ruAct = avgSS);
+void leabra::AvgLParams::Update() {
+	Dt=1/Tau;
+	LrnFact=(LrnMax - LrnMin)/(Gain - Min);
+}
+
+leabra::LrnActAvgParams::LrnActAvgParams(float SSTau, float STau, float MTau, float LrnM, float Init):
+	SSTau(SSTau),STau(STau),MTau(MTau),LrnM(LrnM),Init(Init) {
+	Update();
+}
+
+void leabra::LrnActAvgParams::AvgsFromAct(float ruAct, float &avgSS, float &avgS, float &avgM, float &avgSLrn)
+{
+    avgSS += SSDt * (ruAct = avgSS);
 	avgS += SDt * (avgSS - avgS);
 	avgM += MDt * (avgS - avgM);
 
 	avgSLrn = LrnS * avgS + LrnM * avgM;
+}
+
+void leabra::LrnActAvgParams::Update(){
+	SSDt = 1/SSTau;
+	SDt=1/STau;
+	MDt = 1/MTau;
+	LrnS = 1 - LrnM;
 }
 
 void leabra::LrnActAvgParams::Defaults()
@@ -126,8 +158,13 @@ void leabra::LrnActAvgParams::Defaults()
 	Update();
 }
 
-void leabra::CosDiffParams::AvgVarFromCos(float &avg, float &vr, float cos) {
-	if (avg==0){
+leabra::CosDiffParams::CosDiffParams(float tau):Tau(tau) {
+	Update();
+}
+
+void leabra::CosDiffParams::AvgVarFromCos(float &avg, float &vr, float cos)
+{
+    if (avg==0){
 		avg = cos;
 		vr = 0;
 	} else {
@@ -142,12 +179,40 @@ void leabra::CosDiffParams::AvgVarFromCos(float &avg, float &vr, float cos) {
 	}
 }
 
-void leabra::CosDiffStats::Init() {
-	Cos = 0;
+void leabra::CosDiffParams::Update() {
+	Dt = 1/Tau;
+	DtC = 1 - Dt;
+}
+
+void leabra::CosDiffParams::Defaults(){
+	Tau = 100;
+	Update();
+}
+
+leabra::CosDiffStats::CosDiffStats() {
+	Init();
+}
+
+void leabra::CosDiffStats::Init()
+{
+    Cos = 0;
 	Avg = 0;
 	Var = 0;
 	AvgLrn = 0;
 	ModAvgLLrn = 0;
+}
+
+leabra::WtSigParams::WtSigParams(float gain, float off, bool softBound): Gain(gain), Off(off), SoftBound(softBound){
+	Update();
+}
+
+void leabra::WtSigParams::Update() {
+}
+
+void leabra::WtSigParams::Defaults()
+{
+    Gain = 6, Off = 1;
+	SoftBound = true;
 }
 
 // SigFromLinWt returns sigmoidal contrast-enhanced weight from linear weight
@@ -218,9 +283,23 @@ float leabra::SigInvFun61(float w) {
 	return rval;
 }
 
+leabra::DWtNormParams::DWtNormParams(bool on, float decayTau, float lrComp, float normMin, bool stats):
+    On(on), DecayTau(decayTau), NormMin(normMin), LrComp(lrComp), Stats(stats) {
+		Update();
+}
+
 void leabra::DWtNormParams::Update() {
-	DecayDt = 1 / DecayTau;
+    DecayDt = 1 / DecayTau;
 	DecayDtC = 1 - DecayDt;
+}
+
+void leabra::DWtNormParams::Defaults() {
+	On = true;
+	DecayTau = 1000;
+	LrComp = 0.15;
+	NormMin = 0.001;
+	Stats = false;
+	Update();
 }
 
 // DWtNormParams updates the dwnorm running max_abs, slowly decaying value
@@ -232,6 +311,22 @@ float leabra::DWtNormParams::NormFromAbsDWt(float &norm, float absDwt) {
 		return 1;
 	}
     return LrComp / std::pow(norm, NormMin);
+}
+
+leabra::WtBalParams::WtBalParams(float on, bool targs, float avgThr, float hiThr, float hiGain, float loThr, float loGain):
+	On(on), Targs(targs), AvgThr(avgThr), HiThr(hiThr), HiGain(hiGain), LoThr(loThr), LoGain(loGain) {
+}
+
+void leabra::WtBalParams::Update() {
+}
+
+void leabra::WtBalParams::Defaults() {
+	On = false;
+	AvgThr = 0.25;
+	HiThr = 0.4;
+	HiGain = 4;
+	LoThr = 0.4;
+	LoGain = 6;
 }
 
 // WtBal computes weight balance factors for increase and decrease based on extent
@@ -256,6 +351,17 @@ std::tuple<float, float, float> leabra::WtBalParams::WtBal(float wbAvg) {
     return std::tuple<float, float, float>(fact, inc, dec);
 }
 
+leabra::MomentumParams::MomentumParams(bool on, float mTau, float lrComp):
+	On(on), MTau(mTau), LrComp(lrComp){
+	Update();
+}
+
+void leabra::MomentumParams::Defaults(){
+	On = true, MTau = 10;
+	LrComp = 0.1;
+	Update();
+}
+
 // MomentFromDWt updates synaptic moment variable based on dwt weight change value
 // and returns new momentum factor * LrComp
 float leabra::MomentumParams::MomentFromDWt(float &moment, float dwt) {
@@ -263,8 +369,12 @@ float leabra::MomentumParams::MomentFromDWt(float &moment, float dwt) {
 	return LrComp * moment;
 }
 
-void leabra::LearnSynParams::Update() {
-	XCal.Update();
+leabra::LearnSynParams::LearnSynParams(bool learn, float lrate):
+	Learn(learn), Lrate(lrate), LrateInit(lrate), XCal(), WtSig(), Norm(), Momentum(), WtBal() {}
+
+void leabra::LearnSynParams::Update()
+{
+    XCal.Update();
 	WtSig.Update();
 	Norm.Update();
 	Momentum.Update();

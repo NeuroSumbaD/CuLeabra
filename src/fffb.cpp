@@ -47,6 +47,15 @@ void fffb::Params::Update() {
     this->FBDt = 1 / this->FBTau;
 }
 
+void fffb::Params::Defaults(){
+    Gi = 1.8;
+    FF = 1;
+    FB = 1;
+    FBTau = 1.4;
+    MaxVsAvg = 0;
+    FF0 = 0.1;Update();
+}
+
 // FFInhib returns the feedforward inhibition value based on average and max excitatory conductance within
 // relevant scope
 float fffb::Params::FFInhib(float avgGe, float maxGe) {

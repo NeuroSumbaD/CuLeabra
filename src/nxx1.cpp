@@ -1,9 +1,6 @@
 #include "nxx1.hpp"
 #include <cmath>
 
-/* 
-
-*/
 
 // C++ Constructor for params
 nxx1::Params::Params(float Thr, float Gain, float NVar, float VmActThr,

@@ -23,8 +23,8 @@ namespace leabra {
         minmax::AvgMax32 ActP; // plus phase average and max Act activation values, for ActAvg updt
         ActAvg ActAvgs; // running-average activation levels used for netinput scaling and adaptive inhibition
 
-        Pool():Inhib(), ActM(), ActP(), ActAvgs(){StIndex = 0; EdIndex = 0;};
-        void Init(){Inhib.Init();};
+        Pool();
+        void Init();
     };
     
 } // namespace leabra

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace time {
+namespace times {
     enum Quarters {
         Q1,
         Q2,

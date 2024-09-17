@@ -1,4 +1,6 @@
 #include "act.hpp"
+
+#include <vector>
 #include <cmath>
 
 leabra::OptThreshParams::OptThreshParams(float Send, float Delta) {
@@ -23,6 +25,9 @@ void leabra::ActInitParams::Defaults() {
     Vm = 0.4;
 	Act = 0;
 	Ge = 0;
+}
+
+void leabra::ActInitParams::Update() {
 }
 
 leabra::DtParams::DtParams(float Integ, float VmTau, float AvgTau) {
@@ -71,9 +76,24 @@ void leabra::ClampParams::Defaults() {
 	AvgGain = 0.2;
 }
 
+void leabra::ClampParams::Update() {
+}
+
+leabra::ActNoiseParams::ActNoiseParams(){Type = ActNoiseType::NoNoise; Defaults();}
+
 leabra::ActNoiseParams::ActNoiseParams(ActNoiseType Type, bool Fixed) {
     this->Type = Type;
     this->Fixed = Fixed;
+}
+
+void leabra::ActNoiseParams::Defaults(){Fixed = true;}
+
+void leabra::ActNoiseParams::Update() {
+}
+
+leabra::WtInitParams::WtInitParams(float mean, float var, float par, rands::RandDists type):
+	Dist(mean, var, par, type){
+
 }
 
 void leabra::WtInitParams::Defaults() {
@@ -81,6 +101,14 @@ void leabra::WtInitParams::Defaults() {
 	Var = 0.25;
 	DistType = rands::Uniform;
 	Sym = true;
+}
+
+leabra::WtScaleParams::WtScaleParams(float abs, float rel): Abs(abs), Rel(rel) {
+}
+
+void leabra::WtScaleParams::Defaults(){Abs = 1; Rel = 1;}
+
+void leabra::WtScaleParams::Update() {
 }
 
 float leabra::WtScaleParams::SLayActScale(float savg, float snu, float ncon) {
@@ -104,6 +132,13 @@ float leabra::WtScaleParams::SLayActScale(float savg, float snu, float ncon) {
 
 float leabra::WtScaleParams::FullScale(float savg, float snu, float ncon) {
     return Abs * Rel * SLayActScale(savg, snu, ncon);
+}
+
+leabra::ActParams::ActParams():
+	XX1(), OptThresh(), Init(), Dt(), Gbar(1.0, 0.1, 1.0, 1.0), Erev(1.0, 0.3, 0.25, 0.25), Clamp(), Noise(), VmRange(), KNa(false), ErevSubThr(0,0,0,0), ThrSubErev(0,0,0,0) {
+		VmRange.Max = 2.0;
+		ErevSubThr.SetFromOtherMinus(Erev, XX1.Thr);
+		ThrSubErev.SetFromMinusOther(XX1.Thr, Erev);
 }
 
 void leabra::ActParams::Defaults() {

@@ -15,7 +15,6 @@
 // TODO CHECK IF ANY OF THESE TYPES NEED CONSTRUCTORS TO INTIIALIZE DATA
 
 namespace emer {
-    struct Network;
     struct Layer;
     struct Path;
 
@@ -57,8 +56,7 @@ namespace emer {
         // Set this to get a different set of weights.
         int RandSeed;
 
-        Network(std::string name, std::string weightsFile = "", int randSeed = 0):
-            Name(name), WeightsFile(weightsFile), LayerNameMap(), LayerClassMap(), MinPos(), MaxPos(), MetaData(), Rand(), RandSeed(randSeed){};
+        Network(std::string name, std::string weightsFile = "", int randSeed = 0);
 
         void UpdateLayerMaps();
         Layer* LayerByName(std::string name);
@@ -75,8 +73,8 @@ namespace emer {
         // std::string NonDefaultParams();
         // void SaveAllParams(fstream file);
         // void SaveNonDefaultParams(fstream file);
-        void SetRandSeed(int seed){RandSeed = seed; ResetRandSeed();};
-        void ResetRandSeed(){Rand.NewSeed(RandSeed);};
+        void SetRandSeed(int seed);
+        void ResetRandSeed();
 
 
         // NETWORK INTERFACE
@@ -110,60 +108,6 @@ namespace emer {
         // UpdateParams() updates parameter values for all Network parameters,
         // based on any other params that might have changed.
         virtual void UpdateParams();
-
-        // TODO: Determine if these methods are useful to implement
-
-        // KeyLayerParams returns a listing for all layers in the network,
-        // of the most important layer-level params (specific to each algorithm).
-        // virtual std::string KeyLayerParams();
-
-        // KeyPathParams returns a listing for all Recv pathways in the network,
-        // of the most important pathway-level params (specific to each algorithm).
-        // virtual std::string KeyPathParams();
-
-        // UnitVarNames returns a list of variable names available on
-        // the units in this network.
-        // This list determines what is shown in the NetView
-        // (and the order of vars list).
-        // Not all layers need to support all variables,
-        // but must safely return math32.NaN() for unsupported ones.
-        // This is typically a global list so do not modify!
-        // virtual std::vector<std::string> UnitVarNames();
-
-        // UnitVarProps returns a map of unit variable properties,
-        // with the key being the name of the variable,
-        // and the value gives a space-separated list of
-        // go-tag-style properties for that variable.
-        // The NetView recognizes the following properties:
-        // range:"##" = +- range around 0 for default display scaling
-        // min:"##" max:"##" = min, max display range
-        // auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
-        // zeroctr:"+" or "-" = control whether zero-centering is used
-        // desc:"txt" tooltip description of the variable
-        // Note: this is typically a global list so do not modify!
-        // virtual std::map<std::string, std::string> UnitVarProps();
-
-        // SynVarNames returns the names of all the variables
-        // on the synapses in this network.
-        // This list determines what is shown in the NetView
-        // (and the order of vars list).
-        // Not all pathways need to support all variables,
-        // but must safely return math32.NaN() for
-        // unsupported ones.
-        // This is typically a global list so do not modify!
-        // virtual std::vector<std::string> SynVarNames();
-
-        // SynVarProps returns a map of synapse variable properties,
-        // with the key being the name of the variable,
-        // and the value gives a space-separated list of
-        // go-tag-style properties for that variable.
-        // The NetView recognizes the following properties:
-        // range:"##" = +- range around 0 for default display scaling
-        // min:"##" max:"##" = min, max display range
-        // auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
-        // zeroctr:"+" or "-" = control whether zero-centering is used
-        // Note: this is typically a global list so do not modify!
-        // virtual std::map<std::string, std::string> SynVarProps();
     };
 
     // LayerBase defines the basic shared data for neural network layers,
@@ -238,20 +182,17 @@ namespace emer {
         // or any other information about this network that would be useful to save.
         std::map<std::string,std::string> MetaData; // map[string]string
 
-        Layer(std::string name, int index = 0, std::vector<int> shape = {1,1}):Name(name), Off(true), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){};
+        Layer(std::string name, int index = 0, std::vector<int> shape = {1,1});
         // TODO check if initialization of shape is OK
 
-        std::string StyleType(){return "Layer";};
-        std::string StyleClass(){return this->TypeName() + " " + this->Class;};
-        std::string StyleName(){return this->Name;};
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
 
-        void AddClass(std::string cls);
-        void AddClass(std::string cls, ...);
-
-        std::string Label(){return Name;};
-        bool Is2D(){return Shape.NumDims() == 2;};
-        bool Is4D(){return Shape.NumDims() == 4;};
-        int NumUnits(){return Shape.Len();};
+        std::string Label();
+        bool Is2D();
+        bool Is4D();
+        int NumUnits();
         std::tuple<std::vector<int>, bool> Index4DFrom2D(int x, int y);
         void PlaceRightOf(Layer &other, float space);
         void PlaceBehind(Layer &other, float space);
@@ -398,15 +339,15 @@ namespace emer {
         // Off inactivates this pathway, allowing for easy experimentation.
         bool Off;
 
-        Path(std::string name = "", std::string cls=""):Name(name), Class(cls), Info(), Notes(){Pattern = nullptr;};
+        Path(std::string name = "", std::string cls="");
 
         // provides a history of parameters applied to the layer
         // ParamsHistory params.HistoryImpl `table:"-"
 
-        std::string StyleType(){return "Path";};
-        std::string StyleClass(){return TypeName() + " " + Class;};
-        std::string StyleName(){return Name;};
-        std::string Label(){return Name;};
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+        std::string Label();
 
         // std::string AddClass(std::string cls);
         // template <typename... Args>
@@ -483,10 +424,6 @@ namespace emer {
         // UpdateParams() updates parameter values for all Path parameters,
         // based on any other params that might have changed.
         virtual void UpdateParams();
-
-        // SetParam sets parameter at given path to given value.
-        // returns error if path not found or value cannot be set.
-        virtual void SetParam(std::string path, std::string val);
 
         // AllParams returns a listing of all parameters in the Pathway.
         virtual std::string AllParams();

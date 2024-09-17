@@ -32,7 +32,7 @@ namespace minmax {
         float Avg;
         float Max;
         float Sum; // sum for computing average
-        float MaxIndex; // index of max item
+        int MaxIndex; // index of max item
         int N; // number of items in sum
         int pad;
         int pad1;

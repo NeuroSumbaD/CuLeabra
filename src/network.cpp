@@ -1,4 +1,23 @@
 #include "network.hpp"
+#include "layer.hpp"
+
+leabra::Network::Network(std::string name, int wtBalInterval):
+	emer::Network(name), WtBalInterval(wtBalInterval) {
+	NThreads = 1;WtBalCtr = 0;
+}
+
+int leabra::Network::NumLayers() {
+	return Layers.size();
+}
+
+emer::Layer *leabra::Network::EmerLayer(int idx) {
+
+    return (emer::Layer *)Layers[idx];
+}
+
+int leabra::Network::MaxParallelData(){return 1;}
+
+int leabra::Network::NParallelData(){return 1;}
 
 void leabra::Network::Defaults() {
     WtBalInterval=20;
@@ -79,11 +98,11 @@ std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *> leabra::Network::Co
 // Does not yet actually connect the units within the layers -- that
 // requires Build.
 leabra::Path *leabra::Network::ConnectLayers(Layer *send, Layer *recv, paths::Pattern pat, PathTypes typ) {
-	leabra::Path pt = leabra::Path();
-	pt.Connect(send, recv, &pat, typ);
-	recv->RecvPaths.push_back(pt);
-	send->SendPaths.push_back(pt);
-	return &pt;
+	leabra::Path *pt = new leabra::Path();
+	pt->Connect(send, recv, &pat, typ);
+	recv->RecvPaths.push_back(*pt);
+	send->SendPaths.push_back(*pt);
+	return pt;
 }
 
 // BidirConnectLayerNames establishes bidirectional pathways between two layers,
@@ -145,7 +164,7 @@ leabra::Path *leabra::Network::LateralConnectLayerPath(Layer *lay, paths::Patter
 void leabra::Network::Build() {
 	UpdateLayerMaps();
 	std::vector<std::string> errs = std::vector<std::string>();
-	for (int li = 0; li < Layers.size(); li ++) {
+	for (uint li = 0; li < Layers.size(); li ++) {
 		Layer &ly = *Layers[li];
 		ly.Index = li;
 		if (ly.Off) {

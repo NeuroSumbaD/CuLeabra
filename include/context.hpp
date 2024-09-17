@@ -44,7 +44,7 @@ namespace leabra {
         // (100 msec / 10 Hz) trial being processed.
         // Due to 0-based indexing, the first quarter is 0, second is 1, etc.
         // The plus phase final quarter is 3.
-        time::Quarters Quarter;
+        times::Quarters Quarter;
 
         // true if this is the plus phase (final quarter = 3), else minus phase.
         bool PlusPhase;
@@ -58,13 +58,13 @@ namespace leabra {
         // current evaluation mode, e.g., Train, Test, etc
         Modes Mode;
 
-        Context(float timePerCyc = 0.001, int cycPerQtr = 25): TimePerCyc(timePerCyc), CycPerQtr(cycPerQtr){Reset();};
+        Context(float timePerCyc = 0.001, int cycPerQtr = 25);
 
-        void Reset(){Time=0; Cycle=0; CycleTot=0; Quarter=time::Quarters::Q1; PlusPhase=false;};
-        void AlphaCycStart(){Cycle=0; Quarter=time::Quarters::Q1; PlusPhase=false;};
-        void CycleInc(){Cycle++; CycleTot++; Time += TimePerCyc;};
-        void QuarterInc(){Quarter = time::NextQuarter(Quarter);};
-        int QuarterCycle(){return Cycle - ((int)Quarter * CycPerQtr);};
+        void Reset();
+        void AlphaCycStart();
+        void CycleInc();
+        void QuarterInc();
+        int QuarterCycle();
     };
     
     

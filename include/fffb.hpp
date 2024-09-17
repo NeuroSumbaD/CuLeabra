@@ -33,7 +33,7 @@ namespace fffb {
         Params(float Gi = 1.8, float FF = 1, float FB = 1, float FBTau = 1.4, float MaxVsAvg = 0, float FF0 = 0.1);
 
         void Update();
-        void Defaults(){Gi = 1.8; FF = 1; FB = 1; FBTau = 1.4; MaxVsAvg = 0; FF0 = 0.1;Update();};
+        void Defaults();
         float FFInhib(float avgGe, float maxGe);
         float FBInhib(float avgAct);
         void FBUpdt(float* fbi, float newFbi);

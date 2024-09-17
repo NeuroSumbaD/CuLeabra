@@ -18,13 +18,11 @@ namespace leabra {
         float MDt; // [view: -] rate = 1 / tau
         float LrnS; // [view: -] 1-LrnM
 
-        LrnActAvgParams(float SSTau=2.0, float STau=2.0, float MTau=10.0, float LrnM=0.1, float Init=0.15):
-            SSTau(SSTau),STau(STau),MTau(MTau),LrnM(LrnM),Init(Init)
-            {Update();};
+        LrnActAvgParams(float SSTau=2.0, float STau=2.0, float MTau=10.0, float LrnM=0.1, float Init=0.15);
 
         void AvgsFromAct(float ruAct, float &avgSS, float &avgS, float &avgM, float &avgSLrn);
 
-        void Update(){SSDt = 1/SSTau; SDt=1/STau; MDt = 1/MTau; LrnS = 1 - LrnM;};
+        void Update();
         void Defaults();
     };
 
@@ -46,14 +44,12 @@ namespace leabra {
         float Dt; // rate = 1 / tau
         float LrnFact; // (LrnMax - LrnMin) / (Gain - Min)
 
-        AvgLParams(float init=0.4, float gain=2.5, float min=0.2, float tau=10, float lrnMax=0.5, float lrnMin=0.0001, bool errMod=true, float modMin=0.01):
-            Init(init),Gain(gain),Tau(tau),LrnMax(lrnMax),LrnMin(lrnMin),ErrMod(errMod),ModMin(modMin)
-            {Update();};
+        AvgLParams(float init=0.4, float gain=2.5, float min=0.2, float tau=10, float lrnMax=0.5, float lrnMin=0.0001, bool errMod=true, float modMin=0.01);
 
         void AvgLFromAvgM(float avgM, float &avgL, float &lrn);
         float ErrModFromLayErr(float layCosDiffAvg);
         void Defaults();
-        void Update(){Dt=1/Tau; LrnFact=(LrnMax - LrnMin)/(Gain - Min);};
+        void Update();
     };
 
     // CosDiffParams specify how to integrate cosine of difference between plus and minus phase activations
@@ -63,12 +59,12 @@ namespace leabra {
         float Dt; // rate constant = 1 / Tau
         float DtC; // complement of rate constant = 1 - Dt
 
-        CosDiffParams(float tau=100):Tau(tau){Update();};
+        CosDiffParams(float tau=100);
 
         void AvgVarFromCos(float &avg, float &vr, float cos);
 
-        void Update(){Dt = 1/Tau; DtC = 1 - Dt;};
-        void Defaults(){Tau = 100; Update();};
+        void Update();
+        void Defaults();
     };
 
     // CosDiffStats holds cosine-difference statistics at the layer level
@@ -79,7 +75,7 @@ namespace leabra {
         float AvgLrn = 0; // 1 - Avg and 0 for non-Hidden layers
         float ModAvgLLrn = 0; // 1 - AvgLrn and 0 for non-Hidden layers -- this is the value of Avg used for AvgLParams ErrMod modulation of the AvgLLrn factor if enabled
 
-        CosDiffStats(){Init();};
+        CosDiffStats();
         void Init();
     };
     
@@ -90,7 +86,7 @@ namespace leabra {
         AvgLParams AvgL;
         CosDiffParams CosDiff;
 
-        LearnNeurParams():ActAvg(), AvgL(), CosDiff(){};
+        LearnNeurParams();
 
         void Update();
         void Defaults();
@@ -125,8 +121,7 @@ namespace leabra {
         // -(1-DRev)/DRev -- multiplication factor in learning rule -- builds in the minus sign!
         float DRevRatio;
 
-        XCalParams(float mLrn = 1, bool setLLrn = false, float lLrn = 1, float dRev = 0.1, float dThr = 0.0001, float lrnThr = 0.01):
-            MLrn(mLrn), SetLLrn(setLLrn), LLrn(lLrn), DRev(dRev), DThr(dThr), LrnThr(lrnThr){Update();};
+        XCalParams(float mLrn = 1, bool setLLrn = false, float lLrn = 1, float dRev = 0.1, float dThr = 0.0001, float lrnThr = 0.01);
 
         void Update();
         void Defaults();
@@ -145,10 +140,10 @@ namespace leabra {
         // apply exponential soft bounding to the weight changes
         bool SoftBound; // `default:"true"`
 
-        WtSigParams(float gain = 6, float off= 1, bool softBound = true): Gain(gain), Off(off), SoftBound(softBound){Update();};
+        WtSigParams(float gain = 6, float off= 1, bool softBound = true);
 
-        void Update(){};
-        void Defaults(){Gain = 6, Off = 1; SoftBound = true;};
+        void Update();
+        void Defaults();
         float SigFromLinWt(float lw);
         float LinFromSigWt(float sw);
     };
@@ -179,11 +174,10 @@ namespace leabra {
         // complement rate constant of decay = 1 - (1 / decay_tau)
         float DecayDtC;
 
-        DWtNormParams(bool on = true, float decayTau = 1000, float lrComp = 0.15, float normMin = 0.001, bool stats = false):
-            On(on), DecayTau(decayTau), LrComp(lrComp), NormMin(normMin), Stats(stats){Update();};
+        DWtNormParams(bool on = true, float decayTau = 1000, float lrComp = 0.15, float normMin = 0.001, bool stats = false);
 
         void Update();
-        void Defaults(){On = true; DecayTau = 1000; LrComp = 0.15; NormMin = 0.001; Stats = false; Update();};
+        void Defaults();
         float NormFromAbsDWt(float &norm, float absDwt);
     };
 
@@ -205,11 +199,10 @@ namespace leabra {
         // complement rate constant of momentum integration = 1 - (1 / m_tau)
         float MDtC;
 
-        MomentumParams(bool on = true, float mTau = 10, float lrComp = 0.1):
-            On(on), MTau(mTau), LrComp(lrComp){Update();};
+        MomentumParams(bool on = true, float mTau = 10, float lrComp = 0.1);
 
         void Update(){MDt = 1/MTau; MDtC = 1 - MDt;};
-        void Defaults(){On = true, MTau = 10; LrComp = 0.1; Update();};
+        void Defaults();
         float MomentFromDWt(float &moment, float dwt);
     };
 
@@ -239,11 +232,10 @@ namespace leabra {
         // gain multiplier applied to below-lo_thr thresholded weight averages -- higher values turn weight increases up more rapidly as the weights become more imbalanced -- generally beneficial but sometimes not -- worth experimenting with either 6 or 0
         float LoGain; // `default:"6,0"`
 
-        WtBalParams(float on = true, bool targs = false, float avgThr = 0.25, float hiThr = 0.4, float hiGain = 4, float loThr = 0.4, float loGain = 6):
-            On(on), Targs(targs), AvgThr(avgThr), HiThr(hiThr), HiGain(hiGain), LoThr(loThr), LoGain(loGain){};
+        WtBalParams(float on = true, bool targs = false, float avgThr = 0.25, float hiThr = 0.4, float hiGain = 4, float loThr = 0.4, float loGain = 6);
 
-        void Update(){};
-        void Defaults(){On = false; AvgThr = 0.25; HiThr = 0.4; HiGain = 4; LoThr = 0.4; LoGain = 6;};
+        void Update();
+        void Defaults();
         std::tuple<float, float, float> WtBal(float wbAvg);
     };
 
@@ -273,7 +265,7 @@ namespace leabra {
         // parameters for balancing strength of weight increases vs. decreases
         WtBalParams WtBal;
 
-        LearnSynParams(bool learn = true, float lrate = 0.04): Learn(learn), Lrate(lrate), LrateInit(lrate), XCal(), WtSig(), Norm(), Momentum(), WtBal() {};
+        LearnSynParams(bool learn = true, float lrate = 0.04);
 
         void Update();
         void Defaults();

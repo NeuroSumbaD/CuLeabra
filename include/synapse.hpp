@@ -5,7 +5,7 @@
 
 namespace leabra {
 
-    std::vector<std::string> SynapseVars({"Wt", "LWt", "DWt", "Norm", "Moment", "Scale"});
+    extern const std::vector<std::string> SynapseVars;//({"Wt", "LWt", "DWt", "Norm", "Moment", "Scale"});
 
     
     // leabra::Synapse holds state for the synaptic connection between neurons
@@ -18,8 +18,8 @@ namespace leabra {
         float Scale;
 
         float* SynapseVarByName(std::string varNm);
-        float* VarByName(std::string varNm){return SynapseVarByName(varNm);};
-        void SetVarByName(std::string varNm, float val){float *var = VarByName(varNm); *var = val;}
+        float* VarByName(std::string varNm);
+        void SetVarByName(std::string varNm, float val);
     };
     
 } // namespace leabra

@@ -3,15 +3,15 @@
 #include <cmath>
 
 namespace math {
-    float Infinity = std::numeric_limits<float>::infinity();
+    extern const float Infinity;// = std::numeric_limits<float>::infinity();
 
     // Vector3 is a 3D vector/point with X, Y and Z components.
     struct Vector3 {
         float X, Y, Z;
 
-        Vector3(){X=0; Y=0; Z=0;};
-        Vector3(int scalar):X(scalar),Y(scalar),Z(scalar){};
-        Vector3(int x, int y, int z):X(x),Y(y),Z(z){};
+        Vector3();
+        Vector3(int scalar);
+        Vector3(int x, int y, int z);
 
         Vector3 Min(Vector3 other);
         void SetMin(Vector3 other);
@@ -23,9 +23,9 @@ namespace math {
     struct Vector2 {
         float X, Y;
 
-        Vector2(){X=0; Y=0;};
-        Vector2(int scalar):X(scalar),Y(scalar){};
-        Vector2(int x, int y, int z):X(x),Y(y){};
+        Vector2();
+        Vector2(int scalar);
+        Vector2(int x, int y);
     };
 } // namespace math
 
@@ -35,8 +35,8 @@ namespace vecint {
     struct Vector2i {
         int X, Y;
 
-        void Set(int x, int y){X=x; Y=y;};
-        void SetScalar(int scalar){X=scalar; Y=scalar;};
+        void Set(int x, int y);
+        void SetScalar(int scalar);
     };
     
 } // namespace vecint

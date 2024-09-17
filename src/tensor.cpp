@@ -12,7 +12,18 @@ int tensor::Shape::Len() {
     return o;
 }
 
-tensor::Shape::Shape(std::vector<int>& shape){
+bool tensor::Shape::IsRowMajor(){
+    auto strides = RowMajorStrides(Sizes);
+    return (strides == Strides);
+}
+
+tensor::Shape::Shape(){
+    Sizes = std::vector<int>();
+    Strides = std::vector<int>();
+    Names = std::vector<std::string>();
+}
+
+tensor::Shape::Shape(std::vector<int> &shape) {
     Sizes = shape;
     Strides = RowMajorStrides(shape);
     Names = std::vector<std::string>();
@@ -46,6 +57,15 @@ tensor::Shape::Shape(std::vector<int>& shape, std::vector<int>& strides, std::ve
     }
 }
 
+bool tensor::Shape::IsColMajor(){
+    auto strides = ColMajorStrides(Sizes);
+    return (strides == Strides);
+}
+
+int tensor::Shape::NumDims() {
+    return Sizes.size();
+}
+
 // Offset returns the "flat" 1D array index into an element at the given n-dimensional index.
 // No checking is done on the length or size of the index values relative to the shape of the tensor.
 int tensor::Shape::Offset(std::vector<int> index) {
@@ -70,6 +90,10 @@ std::vector<int> tensor::Shape::Index(int offset) {
 		index[i] = iv;
 	}
 	return index;
+}
+
+int tensor::Shape::DimSize(int i) {
+    return Sizes[i];
 }
 
 tensor::Shape tensor::AddShapes(Shape shape1, Shape shape2) {
@@ -179,6 +203,16 @@ std::tuple<int, int, int, int> tensor::Projection2DShape(Shape &shp, bool oddRow
 // Even multiples of inner-most dimensions are assumed to be row, then column.
 int tensor::Projection2DIndex(Shape &shp, bool oddRow, int row, int col) {
     int nd = shp.NumDims();
+
+    int nyy;
+    int ny;
+    int yyy;
+    int yy;
+    int y;
+    int nx;
+    int xx;
+    int x;
+
 	switch (nd) {
         case 1:
             if (oddRow) {
@@ -192,36 +226,42 @@ int tensor::Projection2DIndex(Shape &shp, bool oddRow, int row, int col) {
             break;
         case 3:
             if (oddRow) {
-                int ny = shp.DimSize(1);
-                int yy = row / ny;
-                int y = row % ny;
+                ny = shp.DimSize(1);
+                yy = row / ny;
+                y = row % ny;
                 return shp.Offset({yy, y, col});
+                break;
             } else {
-                int nx = shp.DimSize(2);
-                int xx = col / nx;
-                int x = col % nx;
+                nx = shp.DimSize(2);
+                xx = col / nx;
+                x = col % nx;
                 return shp.Offset({xx, row, x});
+                break;
             }
         case 4:
-            int ny = shp.DimSize(2);
-            int yy = row / ny;
-            int y = row % ny;
-            int nx = shp.DimSize(3);
-            int xx = col / nx;
-            int x = col % nx;
+            ny = shp.DimSize(2);
+            yy = row / ny;
+            y = row % ny;
+            nx = shp.DimSize(3);
+            xx = col / nx;
+            x = col % nx;
             return shp.Offset({yy, xx, y, x});
+            break;
         case 5:
             // todo: oddRows version!
-            int nyy = shp.DimSize(1);
-            int ny = shp.DimSize(3);
-            int yyy = row / (nyy * ny);
-            int yy = row % (nyy * ny);
-            int y = yy % ny;
-            int yy = yy / ny;
-            int nx = shp.DimSize(4);
-            int xx = col / nx;
-            int x = col % nx;
+            nyy = shp.DimSize(1);
+            ny = shp.DimSize(3);
+            yyy = row / (nyy * ny);
+            yy = row % (nyy * ny);
+            y = yy % ny;
+            yy = yy / ny;
+            nx = shp.DimSize(4);
+            xx = col / nx;
+            x = col % nx;
             return shp.Offset({yyy, yy, xx, y, x});
+            break;
+        default:
+            return 0;
 	}
 	return 0;
 }

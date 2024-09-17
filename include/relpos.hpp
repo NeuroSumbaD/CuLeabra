@@ -9,8 +9,6 @@ namespace relpos {
         LeftOf,
         Behind,
         FrontOf,
-        Behind,
-        FrontOf,
         Above,
         Below
     };

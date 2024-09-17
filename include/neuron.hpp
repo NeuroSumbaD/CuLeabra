@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace leabra {
     enum NeurFlags{ // NeurFlags are bit-flags encoding relevant binary state for neurons
         NeurOff, // NeurOff flag indicates that this neuron has been turned off (i.e., lesioned)

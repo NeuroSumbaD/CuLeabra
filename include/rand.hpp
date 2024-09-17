@@ -41,9 +41,13 @@ namespace rands {
         int Int();
         float Float();
         void NewSeed(int seed);
+
+        int Intn(int n);
+        std::vector<int> Perm(int n);
     };
 
-    SysRand *NewGlobalRand(){return &SysRand();};
+    extern SysRand *globalRandGenerator;
+    SysRand *NewGlobalRand();
 
     // Provides parameterized random number generation according to different distributions
     // and variance, mean params
@@ -54,7 +58,7 @@ namespace rands {
         RandDists DistType;
 
         // TODO: Check if this default initialization works
-        Dist(float mean=0, float var=1, float par=1, RandDists type=RandDists::Mean): Mean(mean), Var(var), Par(par), DistType(type){};
+        Dist(float mean=0, float var=1, float par=1, RandDists type=RandDists::Mean);
 
         float Gen(SysRand &rnd = *NewGlobalRand());
     };
@@ -68,4 +72,6 @@ namespace rands {
     float GammaGen(float alpha, float beta, SysRand &rnd = *NewGlobalRand());
     float GaussianGen(float mean, float sigma, SysRand &rnd = *NewGlobalRand());
     float BetaGen(float alpha, float beta, SysRand &rnd = *NewGlobalRand());
+
+    std::vector<int> Perm(int n);
 } // namespace rand

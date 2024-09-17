@@ -3,9 +3,14 @@
 #include <vector>
 #include <tuple>
 #include "tensor.hpp"
-#include "layer.hpp"
+#include "emer.hpp"
+#include "leabra.hpp"
+#include "context.hpp"
 
 namespace leabra {
+    struct Layer; //enum LayerTypes; enum PathTypes;
+    struct Path;
+
     struct Network: emer::Network {
         std::vector<Layer*> Layers;
         std::map<std::string, Layer*> LayerMap;
@@ -13,12 +18,12 @@ namespace leabra {
         int WtBalInterval; // how frequently to update the weight balance average weight factor -- relatively expensive.
         int WtBalCtr; // counter for how long it has been since last WtBal.
 
-        Network(std::string name, int wtBalInterval = 10):emer::Network(name), WtBalInterval(wtBalInterval){NThreads = 1;WtBalCtr = 0;};
+        Network(std::string name, int wtBalInterval = 10);
 
-        int NumLayers(){return Layers.size();};
-        emer::Layer* EmerLayer(int idx) {return Layers[idx];};
-        int MaxParallelData(){return 1;};
-        int NParallelData(){return 1;};
+        int NumLayers();
+        emer::Layer* EmerLayer(int idx);
+        int MaxParallelData();
+        int NParallelData();
 
         void Defaults();
         void UpdateParams();

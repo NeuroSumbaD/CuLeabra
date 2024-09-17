@@ -3,7 +3,7 @@
 # Compiler settings
 CC := g++
 NVCC := nvcc
-CFLAGS := -Wall  -std=c++17 -I./include
+CFLAGS := -std=c++20 -I./include #-Wall
 PYBINDFLAGS := -shared -fPIC $$(python3 -m pybind11 --includes)
 #pybind11 module returns the include paths -I/usr/include/python3.12/ -I/usr/lib/python3/dist-packages/pybind11/include
 #can also add -O3 to include optimization step 

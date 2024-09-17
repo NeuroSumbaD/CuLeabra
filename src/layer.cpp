@@ -1,5 +1,10 @@
 #include "layer.hpp"
 
+leabra::Layer::Layer(std::string name, int index, Network *net): 
+	emer::Layer(name), Index(index), Net(net), RecvPaths(), SendPaths(), Act(), Inhib(), Learn(), Neurons(), Pools(), CosDiff() {
+	Inhib.Layer.On = true;
+}
+
 void leabra::Layer::Defaults() {
     Act.Defaults();
     Inhib.Defaults();
@@ -18,6 +23,10 @@ void leabra::Layer::UpdateParams() {
     for (Path &pt: RecvPaths) {
         pt.UpdateParams();
     }
+}
+
+leabra::Pool *leabra::Layer::GetPool(int idx) {
+	return &(Pools[idx]);
 }
 
 // BuildSubPools initializes neuron start / end indexes for sub-pools
@@ -89,7 +98,7 @@ void leabra::Layer::InitWeights() {
 		}
         pt.InitWeights();
 	}
-    for (int pi = 0; pi < Pools.size(); pi++) {
+    for (uint pi = 0; pi < Pools.size(); pi++) {
 		leabra::Pool &pl = Pools[pi];
 		pl.ActAvgs.ActMAvg = Inhib.ActAvg.Init;
 		pl.ActAvgs.ActPAvg = Inhib.ActAvg.Init;
@@ -411,7 +420,7 @@ void leabra::Layer::AlphaCycInit(bool updtActAvg) {
 		ActAvgFromAct();
 	}
 	GScaleFromAvgAct(); // need to do this always, in case hasn't been done at all yet
-	if (Act.Noise.DistType != NoNoise && Act.Noise.Fixed && Act.Noise.DistType != rands::Mean) {
+	if (Act.Noise.Fixed && Act.Noise.DistType != rands::Mean) {
 		GenNoise();
 	}
 	DecayState(Act.Init.Decay);
@@ -546,7 +555,7 @@ void leabra::Layer::InitGInc() {
 // SendGDelta sends change in activation since last sent, to increment recv
 // synaptic conductances G, if above thresholds
 void leabra::Layer::SendGDelta(Context *ctx) {
-	for (int ni = 0; ni < Neurons.size(); ni++) {
+	for (uint ni = 0; ni < Neurons.size(); ni++) {
 		Neuron &nrn = Neurons[ni];
 		if (nrn.IsOff()) {
 			continue;
@@ -596,7 +605,7 @@ void leabra::Layer::RecvGInc(Context *ctx) {
 // GFromIncNeur is the neuron-level code for GFromInc that integrates overall Ge, Gi values
 // from their G*Raw accumulators.
 void leabra::Layer::GFromIncNeur(Context *ctx) {
-	for (int ni = 0; ni < Neurons.size(); ni++) {
+	for (uint ni = 0; ni < Neurons.size(); ni++) {
 		Neuron &nrn = Neurons[ni];
 		if (nrn.IsOff()) {
 			continue;
@@ -693,17 +702,22 @@ void leabra::Layer::AvgMaxAct(Context *ctx) {
 	}
 }
 
+void leabra::Layer::CyclePost(Context *ctx) {
+}
+
 // QuarterFinal does updating after end of quarter.
 // Calls MinusPhase and PlusPhase for quarter = 2, 3.
 void leabra::Layer::QuarterFinal(Context *ctx) {
 	switch (ctx->Quarter) {
-		case 2:
+		case times::Q3:
 			MinusPhase(ctx);
 			return;
 			break;
-		case 3:
+		case times::Q4:
 			PlusPhase(ctx);
 			return;
+			break;
+		default:
 			break;
 	}
 	for (Neuron &nrn: Neurons) {
@@ -716,6 +730,8 @@ void leabra::Layer::QuarterFinal(Context *ctx) {
 				break;
 			case 1:
 				nrn.ActQ2 = nrn.Act;
+				break;
+			default:
 				break;
 		}
 	}
@@ -877,7 +893,7 @@ std::tuple<int, int> leabra::Layer::MSE(float tol) {
 		}
 		sse += d * d;
 	}
-	float mse = sse/nn;
+	mse = sse/nn;
 	return std::tuple<int,int>(sse, mse);
 }
 
@@ -897,3 +913,27 @@ void leabra::Layer::UnLesionNeurons() {
 		nrn.SetFlag(false, {NeurOff});
 	}
 }
+
+// LesionNeurons lesions (sets the Off flag) for given proportion (0-1) of neurons in layer
+// returns number of neurons lesioned.  Emits error if prop > 1 as indication that percent
+// might have been passed
+int leabra::Layer::LesionNeurons(float prop) {
+	UnLesionNeurons();
+	if (prop > 1) {
+		std::cerr << "LesionNeurons got a proportion > 1 -- must be 0-1 as *proportion* (not percent) of neurons to lesion: " << prop << std::endl;
+		return 0;
+	}
+	int nn = Neurons.size();
+	if (nn == 0) {
+		return 0;
+	}
+	std::vector<int> p = rands::Perm(nn);
+	int nl = int(prop * float(nn));
+	for (int i = 0; i < nl; i++) {
+		Neuron &nrn = Neurons[p[i]];
+		nrn.SetFlag(true, {NeurOff});
+	}
+	return nl;
+}
+
+leabra::LayerShape::LayerShape(int x, int y, int poolsX, int poolsY): X(x),Y(y),PoolsX(poolsX),PoolsY(poolsY){}

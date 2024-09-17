@@ -16,9 +16,9 @@ namespace params {
     // needed for this interface, so they are not included here.
     struct StylerObject{
         std::map<std::string, void*> ParamNameMap;
-        std::map<std::string, std::type_info> ParamTypeMap;
+        std::map<std::string, std::type_info*> ParamTypeMap;
 
-        StylerObject(){InitParamMaps();};
+        StylerObject();
 
         // StyleType returns the name of this type for CSS-style matching.
         // This is used for CSS Sel selector with no prefix.

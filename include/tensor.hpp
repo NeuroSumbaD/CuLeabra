@@ -53,6 +53,9 @@ namespace tensor {
         std::vector<int> Index(int offset);
 
         int DimSize(int i);
+
+        bool IndexIsValid(std::vector<int> idx);
+        void SetShape(std::vector<int> sizes, std::vector<std::string> names);
     };
     Shape AddShapes(Shape shape1, Shape shape2);
 

@@ -96,6 +96,32 @@ int tensor::Shape::DimSize(int i) {
     return Sizes[i];
 }
 
+// IndexIsValid() returns true if given index is valid (within ranges for all dimensions)
+bool tensor::Shape::IndexIsValid(std::vector<int> idx) {
+    if (idx.size() != NumDims()) {
+		return false;
+	}
+	for (uint i=0; i < Sizes.size(); i++) {
+        int &v = Sizes[i];
+		if (idx[i] < 0 || idx[i] >= v) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// SetShape sets the shape size and optional names
+// RowMajor ordering is used by default.
+void tensor::Shape::SetShape(std::vector<int> sizes, std::vector<std::string> names) {
+    Sizes.reserve(sizes.size());
+    Sizes = sizes; // TODO: Check that this copies the vector
+	Strides = RowMajorStrides(sizes);
+	Names.reserve(Sizes.size());
+	if (names.size() == sizes.size()) {
+		Names = names;
+	}
+}
+
 tensor::Shape tensor::AddShapes(Shape shape1, Shape shape2) {
     auto & sh1 = shape1.Sizes;
     auto & sh2 = shape2.Sizes;

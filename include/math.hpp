@@ -26,6 +26,8 @@ namespace math {
         Vector2();
         Vector2(int scalar);
         Vector2(int x, int y);
+
+        Vector2 MulScalar(float s);
     };
 } // namespace math
 

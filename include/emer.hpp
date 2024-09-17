@@ -110,6 +110,9 @@ namespace emer {
         virtual void UpdateParams();
     };
 
+    extern const std::vector<std::string> LayerDimNames2D;// = {"Y", "X"};
+    extern const std::vector<std::string> LayerDimNames4D;// = {"PoolY", "PoolX", "NeurY", "NeurX"};
+
     // LayerBase defines the basic shared data for neural network layers,
     // used for managing the structural elements of a network,
     // and for visualization, I/O, etc.
@@ -210,11 +213,11 @@ namespace emer {
         // std::vector<int> CenterPoolShape(Layer &ly, int n);
         std::tuple<std::vector<int>,std::vector<int>> Layer2DSampleIndexes(Layer &ly, int maxSize);
         Path* RecvPathBySendName(std::string sender);
-        Path* SendPathByRecvName(std::string sender);
+        Path* SendPathByRecvName(std::string recv);
         Path* RecvPathBySendNameType(std::string sender, std::string typeName);
-        Path* SendPathByRecvNameType(std::string sender, std::string typeName);
+        Path* SendPathByRecvNameType(std::string recv, std::string typeName);
         //Params
-        void SetParam(params::Sel &sel);
+        void SetParam(std::string path, std::string val);
         bool ApplyParams(params::Sheet &pars, bool setMsg);
 
         // LAYER INTERFACE
@@ -291,7 +294,7 @@ namespace emer {
 
         // SetParam sets parameter at given path to given value.
         // returns error if path not found or value cannot be set.
-        virtual void SetParam(std::string path, std::string val);
+        // virtual void SetParam(std::string path, std::string val);
 
         // NonDefaultParams returns a listing of all parameters in the Layer that
         // are not at their default values -- useful for setting param styles etc.
@@ -373,17 +376,17 @@ namespace emer {
 
         // TypeName is the type or category of path, defined
         // by the algorithm (and usually set by an enum).
-        std::string TypeName();
+        virtual std::string TypeName();
 
         // SendLayer returns the sending layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Send field with the actual Layer struct type.
-        // virtual Layer& SendLayer();
+        virtual Layer& SendLayer();
 
         // RecvLayer returns the receiving layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Recv field with the actual Layer struct type.
-        // virtual Layer& RecvLayer();
+        virtual Layer& RecvLayer();
 
         // NumSyns returns the number of synapses for this path.
         // This is the max idx for SynValue1D and the number

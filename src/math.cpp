@@ -22,6 +22,10 @@ math::Vector2::Vector2(int scalar):X(scalar),Y(scalar){}
 math::Vector2::Vector2(int x, int y): X(x),Y(y) {
 }
 
+math::Vector2 math::Vector2::MulScalar(float s) {
+    return Vector2(X*s, Y*s);
+}
+
 // Min returns min of this vector components vs. other vector.
 math::Vector3 math::Vector3::Min(Vector3 other) {
     return Vector3(std::min(X, other.X), std::min(Y, other.Y), std::min(Z, other.Z));

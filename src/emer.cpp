@@ -1,5 +1,8 @@
 #include "emer.hpp"
 
+const std::vector<std::string> LayerDimNames2D = {"Y", "X"};
+const std::vector<std::string> LayerDimNames4D = {"PoolY", "PoolX", "NeurY", "NeurX"};
+
 emer::Network::Network(std::string name, std::string weightsFile, int randSeed):
 	Name(name), WeightsFile(weightsFile), LayerNameMap(), LayerClassMap(), MinPos(), MaxPos(), MetaData(), Rand(), RandSeed(randSeed){}
 
@@ -219,6 +222,226 @@ bool emer::Layer::Is4D() {
 
 int emer::Layer::NumUnits() {
 	return Shape.Len();
+}
+
+std::tuple<std::vector<int>, bool> emer::Layer::Index4DFrom2D(int x, int y) {
+	tensor::Shape &lshp = Shape;
+	int nux = lshp.DimSize(3);
+	int nuy = lshp.DimSize(2);
+	int ux = x % nux;
+	int uy = y % nuy;
+	int px = x / nux;
+	int py = y / nuy;
+	std::vector<int> idx = {py, px, uy, ux};
+	if (!lshp.IndexIsValid(idx)) {
+		return std::tuple<std::vector<int>, bool>(NULL, false);
+	}
+    return std::tuple<std::vector<int>, bool>(idx, true);
+}
+
+// PlaceRightOf positions the layer to the right of the other layer,
+// with given spacing, using default YAlign = Front alignment.
+void emer::Layer::PlaceRightOf(Layer &other, float space) {
+	Pos.SetRightOf(other.Name, space);
+}
+
+// PlaceBehind positions the layer behind the other layer,
+// with given spacing, using default XAlign = Left alignment.
+void emer::Layer::PlaceBehind(Layer &other, float space) {
+	Pos.SetBehind(other.Name, space);
+}
+
+// PlaceAbove positions the layer above the other layer,
+// using default XAlign = Left, YAlign = Front alignment.
+void emer::Layer::PlaceAbove(Layer &other, float space) {
+	Pos.SetAbove(other.Name);
+}
+
+// DisplaySize returns the display size of this layer for the 3D view.
+// see Pos field for general info.
+// This is multiplied by the Pos.Scale factor to rescale
+// layer sizes, and takes into account 2D and 4D layer structures.
+math::Vector2 emer::Layer::DisplaySize() {
+	if (Pos.Scale == 0) {
+		Pos.Defaults();
+	}
+	
+	math::Vector2 sz;
+	if (Is2D()){
+		sz = math::Vector2(float(Shape.DimSize(1)), float(Shape.DimSize(0))); // Y, X
+	}
+	if (Is4D()){
+		// note: pool spacing is handled internally in display and does not affect overall size
+		sz = math::Vector2(float(Shape.DimSize(1)*Shape.DimSize(3)), float(Shape.DimSize(0)*Shape.DimSize(2))); // Y, X
+	} else {
+		sz = math::Vector2(float(Shape.Len()), 1);
+	}
+	
+	return sz.MulScalar(Pos.Scale);
+}
+
+// SetShape sets the layer shape and also uses default dim names.
+void emer::Layer::SetShape(std::vector<int> shape) {
+	std::vector<std::string> dnms;
+	if (shape.size() == 2) {
+		dnms = emer::LayerDimNames2D;
+	} else if (shape.size() == 4) {
+		dnms = emer::LayerDimNames4D;
+	}
+	Shape.SetShape(shape, dnms);
+}
+
+// SetSampleIndexesShape sets the SampleIndexes,
+// and SampleShape and as list of dimension sizes,
+// for a subset sample of units to represent the entire layer.
+// This is critical for large layers that are otherwise unwieldy
+// to visualize and for computationally-intensive statistics.
+void emer::Layer::SetSampleIndexesShape(std::vector<int> idxs, std::vector<int> shape) {
+	SampleIndexes = idxs;
+	std::vector<std::string> dnms;
+	if (shape.size() == 2) {
+		dnms = LayerDimNames2D;
+	} else if (shape.size() == 4) {
+		dnms = LayerDimNames4D;
+	}
+	SampleShape.SetShape(shape, dnms);
+}
+
+// GetSampleShape returns the shape to use for representative units.
+tensor::Shape emer::Layer::GetSampleShape() {
+    int sz = SampleIndexes.size();
+	if (sz == 0) {
+		return Shape;
+	}
+	if (SampleShape.Len() != sz) {
+		SampleShape.SetShape({sz}, {});
+	}
+	return SampleShape;
+}
+
+// NSubPools returns the number of sub-pools of neurons
+// according to the shape parameters.  2D shapes have 0 sub pools.
+// For a 4D shape, the pools are the first set of 2 Y,X dims
+// and then the neurons within the pools are the 2nd set of 2 Y,X dims.
+int emer::Layer::NumPools() {
+	if (Shape.NumDims() != 4) {
+		return 0;
+	}
+	return Shape.DimSize(0) * Shape.DimSize(1);
+}
+
+// Layer2DSampleIndexes returns neuron indexes and corresponding 2D shape
+// for the representative neurons within a large 2D layer, for passing to
+// [SetSampleIndexesShape].  These neurons are used for the raster plot
+// in the GUI and for computing PCA, among other cases where the full set
+// of neurons is problematic. The lower-left corner of neurons up to
+// given maxSize is selected.
+std::tuple<std::vector<int>, std::vector<int>> emer::Layer::Layer2DSampleIndexes(Layer &ly, int maxSize) {
+	// lb := ly.AsEmer()
+	tensor::Shape &sh = ly.Shape;
+	int my = std::min(maxSize, sh.DimSize(0));
+	int mx = std::min(maxSize, sh.DimSize(1));
+	std::vector<int> shape = {my, mx};
+	std::vector<int> idxs(my*mx);
+	int i = 0;
+	for (int y = 0; y < my; y++) {
+		for (int x = 0; x < mx; x++) {
+			idxs[i] = sh.Offset({y, x});
+			i++;
+		}
+	}
+    return std::tuple<std::vector<int>, std::vector<int>>(idxs, shape);
+}
+
+// RecvPathBySendName returns the receiving Path with given
+// sending layer name (the first one if multiple exist).
+emer::Path *emer::Layer::RecvPathBySendName(std::string sender) {
+	for (int pi = 0; pi << NumRecvPaths(); pi++) {
+		Path &pt = RecvPath(pi);
+		if (pt.SendLayer().StyleName() == sender) {
+			return &pt;
+		}
+	}
+	std::cerr << "Sending layer named: "<< sender << "not found in list of receiving pathways" << std::endl;
+	// return nil, fmt.Errorf("sending layer named: %s not found in list of receiving pathways", sender)
+    return nullptr;
+}
+
+// SendPathByRecvName returns the sending Path with given
+// recieving layer name (the first one if multiple exist).
+emer::Path *emer::Layer::SendPathByRecvName(std::string recv) {
+    for (int pi = 0; pi << NumRecvPaths(); pi++) {
+		Path &pt = SendPath(pi);
+		if (pt.RecvLayer().StyleName() == recv) {
+			return &pt;
+		}
+	}
+	std::cerr << "Receiving layer named: "<< recv << "not found in list of receiving pathways" << std::endl;
+    return nullptr;
+}
+
+// RecvPathBySendNameType returns the receiving Path with given
+// sending layer name, with the given type name
+// (the first one if multiple exist).
+emer::Path *emer::Layer::RecvPathBySendNameType(std::string sender, std::string typeName) {
+    for (int pi = 0; pi << NumRecvPaths(); pi++) {
+		Path &pt = RecvPath(pi);
+		if (pt.SendLayer().StyleName() == sender && pt.TypeName() == typeName) {
+			return &pt;
+		}
+	}
+	std::cerr << "Sending layer named: "<< sender << ", type " << typeName << "not found in list of receiving pathways" << std::endl;
+    return nullptr;
+}
+
+// SendPathByRecvNameType returns the sending Path with given
+// recieving layer name, with the given type name
+// (the first one if multiple exist).
+emer::Path *emer::Layer::SendPathByRecvNameType(std::string recv, std::string typeName) {
+	for (int pi = 0; pi << NumRecvPaths(); pi++) {
+		Path &pt = SendPath(pi);
+		if (pt.RecvLayer().StyleName() == recv && pt.TypeName() == typeName) {
+			return &pt;
+		}
+	}
+	std::cerr << "Receving layer named: "<< recv << ", type " << typeName << "not found in list of receiving pathways" << std::endl;
+    return nullptr;
+}
+
+// SetParam sets parameter at given path to given value.
+// returns error if path not found or value cannot be set.
+void emer::Layer::SetParam(std::string path, std::string val) {
+	params::SetParam(GetStylerObject(), path, val);
+}
+
+// ApplyParams applies given parameter style Sheet to this layer and its recv pathways.
+// Calls UpdateParams on anything set to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+// returns true if any params were set, and error if there were any errors.
+bool emer::Layer::ApplyParams(params::Sheet &pars, bool setMsg) {
+    bool applied = false;
+	// std::vector<std::string> errs;
+	bool app = pars.Apply(this, setMsg); // essential to go through AxonLay
+	if (app) {
+		UpdateParams();
+		applied = true;
+	}
+	// if err != nil {
+	// 	errs = append(errs, err)
+	// }
+	// el := EmerLayer
+	for (int pi = 0; pi < NumRecvPaths(); pi++) {
+		Path &pt = RecvPath(pi);
+		app = pt.ApplyParams(pars, setMsg);
+		if (app) {
+			applied = true;
+		}
+		// if err != nil {
+		// 	errs = append(errs, err)
+		// }
+	}
+	return applied; //, errors.Join(errs...)
 }
 
 emer::Path::Path(std::string name, std::string cls):

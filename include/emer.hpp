@@ -236,7 +236,7 @@ namespace emer {
         // the Neuron, according to *this layer's* UnitVarNames() list
         // (using a map to lookup index), or -1 and error message if
         // not found.
-        virtual int UnitVarIndex(std::string varNm);// (int, error)
+        // virtual int UnitVarIndex(std::string varNm);// (int, error)
 
         // UnitValue1D returns value of given variable index on given unit,
         // using 1-dimensional index, and a data parallel index di,
@@ -244,22 +244,22 @@ namespace emer {
         // in parallel. Returns NaN on invalid index.
         // This is the core unit var access method used by other methods,
         // so it is the only one that needs to be updated for derived layer types.
-        virtual float UnitValue1D(int varIndex, int idx, int di);
+        // virtual float UnitValue1D(int varIndex, int idx, int di);
 
         // VarRange returns the min / max values for given variable
-        virtual std::tuple<float,float> VarRange(std::string varNm);
+        // virtual std::tuple<float,float> VarRange(std::string varNm);
 
         // NumRecvPaths returns the number of receiving pathways.
         virtual int NumRecvPaths();
 
         // RecvPath returns a specific receiving pathway.
-        virtual Path& RecvPath(int idx);
+        virtual Path* RecvPath(int idx);
 
         // NumSendPaths returns the number of sending pathways.
         virtual int NumSendPaths();
 
         // SendPath returns a specific sending pathway.
-        virtual Path& SendPath(int idx);
+        virtual Path* SendPath(int idx);
 
         // RecvPathValues fills in values of given synapse variable name,
         // for pathway from given sending layer and neuron 1D index,
@@ -273,7 +273,7 @@ namespace emer {
         // layer or neuron then the value is set to math32.NaN().
         // Returns error on invalid var name or lack of recv path
         // (vals always set to nan on path err).
-        virtual void RecvPathValues(std::vector<float> &vals, std::string varNm, Layer &sendLay, int sendIndex1D, std::string pathType);
+        // virtual void RecvPathValues(std::vector<float> &vals, std::string varNm, Layer &sendLay, int sendIndex1D, std::string pathType);
 
         // SendPathValues fills in values of given synapse variable name,
         // for pathway into given receiving layer and neuron 1D index,
@@ -285,7 +285,7 @@ namespace emer {
         // If the sending neuron is not connected to the given receiving layer or neuron
         // then the value is set to math32.NaN().
         // Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
-        virtual void SendPathValues(std::vector<float> &vals, std::string varNm, Layer &recvLay, int recvIndex1D, std::string pathType);
+        // virtual void SendPathValues(std::vector<float> &vals, std::string varNm, Layer &recvLay, int recvIndex1D, std::string pathType);
 
         // UpdateParams() updates parameter values for all Layer
         // and recv pathway parameters,
@@ -298,10 +298,10 @@ namespace emer {
 
         // NonDefaultParams returns a listing of all parameters in the Layer that
         // are not at their default values -- useful for setting param styles etc.
-        virtual std::string NonDefaultParams();
+        // virtual std::string NonDefaultParams();
 
         // AllParams returns a listing of all parameters in the Layer
-        virtual std::string AllParams();
+        // virtual std::string AllParams();
 
         // WriteWeightsJSON writes the weights from this layer from the
         // receiver-side perspective in a JSON text format.
@@ -381,12 +381,12 @@ namespace emer {
         // SendLayer returns the sending layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Send field with the actual Layer struct type.
-        virtual Layer& SendLayer();
+        virtual Layer* SendLayer();
 
         // RecvLayer returns the receiving layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Recv field with the actual Layer struct type.
-        virtual Layer& RecvLayer();
+        virtual Layer* RecvLayer();
 
         // NumSyns returns the number of synapses for this path.
         // This is the max idx for SynValue1D and the number
@@ -400,36 +400,36 @@ namespace emer {
 
         // SynVarNames returns the names of all the variables on the synapse
         // This is typically a global list so do not modify!
-        virtual std::vector<std::string> SynVarNames();
+        // virtual std::vector<std::string> SynVarNames();
 
         // SynVarNum returns the number of synapse-level variables
         // for this paths.  This is needed for extending indexes in derived types.
-        virtual int SynVarNum();
+        // virtual int SynVarNum();
 
         // SynVarIndex returns the index of given variable within the synapse,
         // according to *this path's* SynVarNames() list (using a map to lookup index),
         // or -1 and error message if not found.
-        virtual int SynVarIndex(std::string varNm);
+        // virtual int SynVarIndex(std::string varNm);
 
         // SynValues sets values of given variable name for each synapse,
         // using the natural ordering of the synapses (sender based for Axon),
         // into given float32 slice (only resized if not big enough).
         // Returns error on invalid var name.
-        virtual void SynValues(std::vector<float> &vals, std::string varNm);
+        // virtual void SynValues(std::vector<float> &vals, std::string varNm);
 
         // SynValue1D returns value of given variable index
         // (from SynVarIndex) on given SynIndex.
         // Returns NaN on invalid index.
         // This is the core synapse var access method used by other methods,
         // so it is the only one that needs to be updated for derived types.
-        virtual float SynValue1D(int varIndex, int synIndex);
+        // virtual float SynValue1D(int varIndex, int synIndex);
 
         // UpdateParams() updates parameter values for all Path parameters,
         // based on any other params that might have changed.
         virtual void UpdateParams();
 
         // AllParams returns a listing of all parameters in the Pathway.
-        virtual std::string AllParams();
+        // virtual std::string AllParams();
 
         // WriteWeightsJSON writes the weights from this pathway
         // from the receiver-side perspective in a JSON text format.

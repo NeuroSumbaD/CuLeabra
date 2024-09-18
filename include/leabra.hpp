@@ -294,6 +294,9 @@ namespace leabra {
         void WtBalFromWt();
         void LrateMult(float mult);
         
+        std::string TypeName();
+        emer::Layer* SendLayer();
+        emer::Layer* RecvLayer();
     };
 
 } // namespace leabra

@@ -936,4 +936,60 @@ int leabra::Layer::LesionNeurons(float prop) {
 	return nl;
 }
 
+std::string StringType(leabra::LayerTypes type){
+	switch (type) {
+        case leabra::SuperLayer:
+			return "SuperLayer";
+			break;
+        case leabra::InputLayer:
+			return "InputLayer";
+			break;
+        case leabra::TargetLayer:
+			return "TargetLayer";
+			break;
+        case leabra::CompareLayer:
+			return "CompareLayer";
+			break;
+        case leabra::CTLayer:
+			return "CTLayer";
+			break;
+        case leabra::PulvinarLayer:
+			return "PulvinarLayer";
+			break;
+        case leabra::TRNLayer:
+			return "TRNLayer";
+			break;
+        case leabra::PTMaintLayer:
+			return "PTMaintLayer";
+			break;
+        case leabra::PTPredLayer:
+			return "PTPredLayer";
+			break;
+		default:
+			throw std::invalid_argument("Layer type not recognized.");
+	}
+}
+
+std::string LayerTypeArr[] = {"SuperLayer","InputLayer","TargetLayer","CompareLayer","CTLayer","PulvinarLayer","TRNLayer","PTMaintLayer","PTPredLayer"};
+
+std::string leabra::Layer::TypeName() {
+    return LayerTypeArr[Type];
+}
+
+int leabra::Layer::NumRecvPaths() {
+    return RecvPaths.size();
+}
+
+emer::Path *leabra::Layer::RecvPath(int idx) {
+    return &RecvPaths[idx];
+}
+
+int leabra::Layer::NumSendPaths() {
+    return SendPaths.size();
+}
+
+emer::Path *leabra::Layer::SendPath(int idx) {
+    return &SendPaths[idx];
+}
+
 leabra::LayerShape::LayerShape(int x, int y, int poolsX, int poolsY): X(x),Y(y),PoolsX(poolsX),PoolsY(poolsY){}

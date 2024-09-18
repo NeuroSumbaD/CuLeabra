@@ -357,8 +357,8 @@ std::tuple<std::vector<int>, std::vector<int>> emer::Layer::Layer2DSampleIndexes
 // sending layer name (the first one if multiple exist).
 emer::Path *emer::Layer::RecvPathBySendName(std::string sender) {
 	for (int pi = 0; pi << NumRecvPaths(); pi++) {
-		Path &pt = RecvPath(pi);
-		if (pt.SendLayer().StyleName() == sender) {
+		Path &pt = *RecvPath(pi);
+		if (pt.SendLayer()->StyleName() == sender) {
 			return &pt;
 		}
 	}
@@ -371,8 +371,8 @@ emer::Path *emer::Layer::RecvPathBySendName(std::string sender) {
 // recieving layer name (the first one if multiple exist).
 emer::Path *emer::Layer::SendPathByRecvName(std::string recv) {
     for (int pi = 0; pi << NumRecvPaths(); pi++) {
-		Path &pt = SendPath(pi);
-		if (pt.RecvLayer().StyleName() == recv) {
+		Path &pt = *SendPath(pi);
+		if (pt.RecvLayer()->StyleName() == recv) {
 			return &pt;
 		}
 	}
@@ -385,8 +385,8 @@ emer::Path *emer::Layer::SendPathByRecvName(std::string recv) {
 // (the first one if multiple exist).
 emer::Path *emer::Layer::RecvPathBySendNameType(std::string sender, std::string typeName) {
     for (int pi = 0; pi << NumRecvPaths(); pi++) {
-		Path &pt = RecvPath(pi);
-		if (pt.SendLayer().StyleName() == sender && pt.TypeName() == typeName) {
+		Path &pt = *RecvPath(pi);
+		if (pt.SendLayer()->StyleName() == sender && pt.TypeName() == typeName) {
 			return &pt;
 		}
 	}
@@ -399,8 +399,8 @@ emer::Path *emer::Layer::RecvPathBySendNameType(std::string sender, std::string 
 // (the first one if multiple exist).
 emer::Path *emer::Layer::SendPathByRecvNameType(std::string recv, std::string typeName) {
 	for (int pi = 0; pi << NumRecvPaths(); pi++) {
-		Path &pt = SendPath(pi);
-		if (pt.RecvLayer().StyleName() == recv && pt.TypeName() == typeName) {
+		Path &pt = *SendPath(pi);
+		if (pt.RecvLayer()->StyleName() == recv && pt.TypeName() == typeName) {
 			return &pt;
 		}
 	}
@@ -411,7 +411,7 @@ emer::Path *emer::Layer::SendPathByRecvNameType(std::string recv, std::string ty
 // SetParam sets parameter at given path to given value.
 // returns error if path not found or value cannot be set.
 void emer::Layer::SetParam(std::string path, std::string val) {
-	params::SetParam(GetStylerObject(), path, val);
+	params::SetParam(GetStyleObject(), path, val);
 }
 
 // ApplyParams applies given parameter style Sheet to this layer and its recv pathways.
@@ -432,7 +432,7 @@ bool emer::Layer::ApplyParams(params::Sheet &pars, bool setMsg) {
 	// }
 	// el := EmerLayer
 	for (int pi = 0; pi < NumRecvPaths(); pi++) {
-		Path &pt = RecvPath(pi);
+		Path &pt = *RecvPath(pi);
 		app = pt.ApplyParams(pars, setMsg);
 		if (app) {
 			applied = true;

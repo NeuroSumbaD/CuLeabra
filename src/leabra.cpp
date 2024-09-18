@@ -576,3 +576,17 @@ void leabra::Path::WtBalFromWt() {
 void leabra::Path::LrateMult(float mult) {
 	Learn.Lrate = Learn.LrateInit * mult;
 }
+
+std::string PathTypeArr[] = {"ForwardPath","BackPath","LateralPath","InhibPath","CTCtxtPath"};
+
+std::string leabra::Path::TypeName(){
+	return PathTypeArr[Type];
+}
+
+emer::Layer *leabra::Path::SendLayer() {
+	return Send;
+}
+
+emer::Layer *leabra::Path::RecvLayer() {
+	return Recv;
+}

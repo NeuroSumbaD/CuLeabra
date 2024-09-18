@@ -112,6 +112,15 @@ namespace leabra {
         // Lesion
         void UnLesionNeurons();
         int LesionNeurons(float prop);
+
+        // emer::Layer virtual methods
+        // void *StyleObject();
+        std::string TypeName();
+        // int TypeNumber();
+        int NumRecvPaths();
+        emer::Path* RecvPath(int idx);
+        int NumSendPaths();
+        emer::Path* SendPath(int idx);
     };
 
 };

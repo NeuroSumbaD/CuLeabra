@@ -9,6 +9,8 @@ using json = nlohmann::json;
 
 namespace params {
 
+    std::string PathAfterType(std::string path);
+
     // The params.Styler interface exposes TypeName, Class, and Name methods
     // that allow the params.Sel CSS-style selection specifier to determine
     // whether a given parameter applies.
@@ -44,9 +46,17 @@ namespace params {
         virtual void InitParamMaps();
 
         // Finds the appropriate parameter to set from the string given
-        void SetByName(std::string varName, std::string value);
-    };
+        std::string SetByName(std::string varName, std::string value);
 
+        float GetByName(std::string varName);
+
+        // Finds the appropriate parameter to set from the string given
+        std::string SetByPath(std::string path, std::string value);
+
+        float GetByPath(std::string path);
+
+        void *GetStyleObject();
+    };
 
     // Params is a name-value map for parameter values that can be applied
     // to any numeric type in any object.
@@ -61,12 +71,12 @@ namespace params {
     // parameters to.
     struct Params {
         std::map<std::string, std::string> map;
-        std::string ParamByNameTry(std::string name);
+        // std::string ParamByNameTry(std::string name);
         std::string ParamByName(std::string name);
         void SetByName(std::string name, std::string value);
         std::string Path(std::string path);
         std::string TargetType();
-        bool Apply(std::any &obj, bool setMsg);
+        std::string Apply(std::any obj, bool setMsg);
     };
 
     // HyperValues is a string-value map for storing hyperparameter values
@@ -85,20 +95,20 @@ namespace params {
     struct Hypers {
         std::map<std::string, HyperValues> map;
 
-        HyperValues ParamByNameTry(std::string name);
+        // HyperValues ParamByNameTry(std::string name);
         HyperValues ParamByName(std::string name);
         void SetByName(std::string name, HyperValues& value);
         void CopyFrom(Hypers& cp);
         void DeleteValOnly();
         // std::string JSONString();
 
-        void Apply(std::any &obj, bool setMsg);
+        std::string TargetType();
+        std::string Path(std::string path);
+
+        std::string Apply(std::any obj, bool setMsg);
     };
     void to_json(json& j, const Hypers& flx);
-    // void from_json(json& j, const Hypers& flx);
-    
-    // typedef std::map<std::string, HyperValues> Hypers;
-    
+    // void from_json(json& j, const Hypers& flx);    
     
     // params.Sel specifies a selector for the scope of application of a set of
     // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
@@ -116,10 +126,10 @@ namespace params {
         void SetString(std::string param, std::string val);
         std::string ParamValue(std::string param);
 
-        void Apply(std::any &obj, bool setMsg);
+        bool Apply(std::any obj, bool setMsg);
+        bool TargetTypeMatch(std::any obj);
+        bool SelMatch(std::any obj);
     };
-    
-    
 
     // Sheet is a CSS-like style-sheet of params.Sel values, each of which represents
     // a different set of specific parameter values applied according to the Sel selector:
@@ -134,80 +144,39 @@ namespace params {
     // application must be done under explicit program control.
     // typedef Sel** Sheet; // Array of Sel*
     struct Sheet {
-        std::vector<Sel> sel;
-        Sheet(){sel = std::vector<Sel>();};
+        std::vector<Sel*> sel;
+        // Sheet(){sel = std::vector<Sel>();};
 
         std::string ElemLabel(int idx);
-        Sel* SelByNameTry(std::string sel);
+        // Sel* SelByNameTry(std::string sel);
         Sel* SelByName(std::string sel);
         void SetFloat(std::string sel, std::string param, float val);
         void SetString(std::string sel, std::string param, std::string val);
-        std::string ParamVal(std::string sel, std::string param);
+        std::string ParamValue(std::string sel, std::string param);
 
-        bool Apply(StylerObject *obj, bool setMsg);
+        bool Apply(std::any obj, bool setMsg);
+        void SelMatchReset(std::string setName);
+        void SelNoMatchWarn(std::string setName, std::string objName);
     };
     
     typedef std::map<std::string, Sheet> Sheets; // Sheets is a map of named sheets -- used in the Set
-    
 
-    struct Set {
-        std::string Desc; // description of this param set -- when should it be used?  how is it different from the other sets?
-        Sheets SheetSet; // Sheet's grouped according to their target and / or function. For example, "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate.
+    struct Sets {
+        std::map<std::string, Sheet*> map;
+        // std::string Desc; // description of this param set -- when should it be used?  how is it different from the other sets?
+        // Sheets SheetSet; // Sheet's grouped according to their target and / or function. For example, "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate.
 
-        Sheet* SheetByNameTry(std::string name);
+        // Sheet* SheetByNameTry(std::string name);
         Sheet* SheetByName(std::string name);
-        void ValidateSheets(std::vector<std::string> valids);
         void SetFloat(std::string sheet, std::string sel, std::string param, float val);
         void SetString(std::string sheet, std::string sel, std::string param, std::string val);
         std::string ParamValue(std::string sheet, std::string sel, std::string param);
+        // void ValidateSheets(std::vector<std::string> valids);
     };
-    
-    typedef std::map<std::string, Set> Sets;
 
-    // FlexVal is a specific flexible value for the Flex parameter map
-    // that implements the StylerObj interface for CSS-style selection logic.
-    // The field names are abbreviated because full names are used in StylerObj.
-    // struct FlexVal{
-    //     std::string Nm, // name of this specific object, matches #Name selections
-    //         Type, // type name of this object, matches plain TypeName selections
-    //         Cls; // space-separated list of class name(s), match the .Class selections
-    //     StylerObject *Obj; // actual object with data that is set by the parameters
-    //     // HistoryImpl History; // History of params applied
-
-    //     // FlexVal(std::string nm, std::string tp, std::string cls, std::any obj):Nm(nm),Type(tp),Cls(cls),Obj(obj){};
-
-    //     std::string TypeName(){return Type;};
-    //     std::string Class(){return Cls;};
-    //     std::string Name(){return Nm;};
-    //     StylerObject &Object(){return Obj;}; // TODO Check for a more meaningful class of objects with string representation
-    //     void CopyFrom(FlexVal cp);
-    //     // std::string JSONString();
-    //     // void ParamsHistoryReset();
-    //     // void ParamsApplied();
-    // };
-    // void to_json(json& j, const FlexVal& flx);
-    // void from_json(json& j, const FlexVal& flx);
-
-    // Flex supports arbitrary named parameter values that can be set
-    // by a Set of parameters, as a map of any objects.
-    // First initialize the map with set of names and a type to create
-    // blank values, then apply the Set to it.
-    // struct Flex{
-    //     std::map<std::string, FlexVal> map;
-    //     // Flex() //Initialize map?
-    //     std::string TypeName(){return "Flex";};
-    //     std::string Class(){return "";};
-    //     std::string Name(){return "";};
-
-    //     void Init(std::vector<FlexVal> vals);
-    //     void ApplySheet(Sheet* sheet, bool setMsg);
-    //     void CopyFrom(Flex cp);
-    //     // void WriteJSON();
-    //     std::string JSONString();
-    //     // void SaveJSON(file);
-    // };
-
-    StylerObject* FindParam(StylerObject *val, std::string path);
-    std::string SetParam(std::any &obj, std::string path, std::string val);
-    float GetParam(std::any &obj, std::string path);
+    std::any FindParam(std::any val, std::string path);
+    std::string SetParam(std::any obj, std::string path, std::string val);
+    float GetParam(std::any obj, std::string path);
+    bool SelMatch(std::string sel, std::string name, std::string cls, std::string styp);//, std::string gotyp);
+    bool ClassMatch(std::string sel, std::string cls);
 };

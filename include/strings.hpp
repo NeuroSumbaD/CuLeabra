@@ -10,5 +10,7 @@ namespace strings {
     std::vector<std::string> split(const std::string &str, const char delimiter);
 
     std::string join(const std::vector<std::string>& tokens, const std::string& delimiter);
+
+    std::string TrimSpace(std::string str);
     
 } // namespace strings

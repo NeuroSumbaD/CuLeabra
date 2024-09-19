@@ -4,6 +4,14 @@
 #include <iostream>
 #include "strings.hpp"
 
+// PathAfterType returns the portion of a path string after the initial
+// type, e.g., Layer.Acts.Kir.Gbar -> Acts.Kir.Gbar
+std::string params::PathAfterType(std::string path) {
+    std::vector<std::string> s = strings::split(path, ','); //copy
+    s.erase(s.begin()); //drop first element
+    return strings::join(s, ".");
+}
+
 // Template for supporting any to string conversion
 template <typename T>
 std::string anyToString(const T& value) {
@@ -13,7 +21,7 @@ std::string anyToString(const T& value) {
 }
 
 
-std::string params::Params::ParamByNameTry(std::string name) {
+std::string params::Params::ParamByName(std::string name) {
     if (map.find(name) == map.end()){
         std::string err = "params::Params: parameter named " + name + " not found";
         throw std::invalid_argument(err);
@@ -21,10 +29,6 @@ std::string params::Params::ParamByNameTry(std::string name) {
     else {
         return map[name];
     }
-}
-
-std::string params::Params::ParamByName(std::string name) {
-    return map[name];
 }
 
 void params::Params::SetByName(std::string name, std::string value) {
@@ -35,9 +39,7 @@ void params::Params::SetByName(std::string name, std::string value) {
 // indicating the path to the specific parameter being set.
 // e.g., Layer.Acts.Kir.Gbar -> Acts.Kir.Gbar
 std::string params::Params::Path(std::string path) {
-    std::vector<std::string> s = strings::split(path, ',');
-    s.erase(s.begin()); //drop first element
-    return strings::join(s, ".");
+    return params::PathAfterType(path);
 }
 
 // TargetType returns the first part of the path, indicating what type of
@@ -56,22 +58,26 @@ std::string params::Params::TargetType() {
 // If setMsg is true, then it will log a confirmation that the parameter
 // was set (it always prints an error message if it fails to set the
 // parameter at given path, and returns error if so).
-bool  params::Params::Apply(std::any & obj, bool setMsg) {
-    params::StylerObject& sty = std::any_cast<params::StylerObject&>(obj);
-    std::string objNm = sty.StyleName();
+std::string params::Params::Apply(std::any obj, bool setMsg) {
+    std::string objNm = "";
+    try {
+        params::StylerObject* sty = std::any_cast<params::StylerObject*>(obj);
+        std::string objNm = sty->StyleName();
+    } catch (const std::bad_any_cast& e) {
+    }
 
     std::vector<std::string> errs;
 
-    for (const auto& [key, value] : map) {
+    for (auto& [key, value] : map) {
         std::string path = Path(key);
 
         try {
-            params::Hypers& hv = std::any_cast<params::Hypers&>(obj);
-            if (hv.map.count(path)){
-                hv.map[path].map["Val"] = value;
+            params::Hypers* hv = std::any_cast<params::Hypers*>(obj);
+            if (hv->map.count(path)){
+                hv->map[path].map["Val"] = value;
             }
             else {
-                hv.map[path] = params::HyperValues{map: {{"Val", value}}};
+                hv->map[path] = params::HyperValues{map: {{"Val", value}}};
             }
             continue;
         }
@@ -89,8 +95,7 @@ bool  params::Params::Apply(std::any & obj, bool setMsg) {
             }
         }
     }
-    // return strings::join(errs, "");
-    return true; // TODO: REDO this function to correctly identify if it was set or not
+    return strings::join(errs, "");
 }
 
 // JSONString returns hyper values as a JSON formatted string
@@ -123,9 +128,9 @@ void params::HyperValues::CopyFrom(HyperValues &cp) {
     }
 }
 
-// ParamByNameTry returns given parameter, by name.
-// Returns error if not found.
-params::HyperValues params::Hypers::ParamByNameTry(std::string name) {
+// ParamByName returns given parameter by name (just does the map access)
+// Returns "" if not found -- use Try version for error
+params::HyperValues params::Hypers::ParamByName(std::string name) {
     if (map.find(name) == map.end()){
         std::string err = "params::Params: parameter named " + name + " not found";
         throw std::invalid_argument(err);
@@ -133,12 +138,6 @@ params::HyperValues params::Hypers::ParamByNameTry(std::string name) {
     else {
         return map[name];
     }
-}
-
-// ParamByName returns given parameter by name (just does the map access)
-// Returns "" if not found -- use Try version for error
-params::HyperValues params::Hypers::ParamByName(std::string name) {
-    return map[name];
 }
 
 // SetByName sets given parameter by name to given value.
@@ -171,23 +170,145 @@ void params::Hypers::DeleteValOnly(){
     }
 }
 
+// TargetType returns the first part of the path, indicating what type of
+// object the params apply to.  Uses the first item in the map (which is random)
+// everything in the map must have the same target.
+std::string params::Hypers::TargetType() {
+    for (auto &[pt, value]: map) {
+        return strings::split(pt, '.')[0];
+    }
+    return "";
+}
+
+// Path returns the second part of the path after the target type,
+// indicating the path to the specific parameter being set.
+std::string params::Hypers::Path(std::string path) {
+    std::vector<std::string> s = strings::split(path, ','); //copy
+    s.erase(s.begin()); //drop first element
+    return strings::join(s, ".");
+}
+
+std::string params::Hypers::Apply(std::any obj, bool setMsg) {
+    std::string objNm = "";
+    try {
+        params::StylerObject* sty = std::any_cast<params::StylerObject*>(obj);
+        std::string objNm = sty->StyleName();
+    } catch (const std::bad_any_cast& e) {
+    }
+
+    try {
+        params::Hypers* hv = std::any_cast<params::Hypers*>(obj);
+
+        hv->CopyFrom(*this);
+        return "";
+        
+    }
+    catch (const std::bad_any_cast& e) {
+        std::vector<std::string> errs;
+
+        for (auto& [pt, v] : map) {
+            std::string path = Path(pt);
+            std::string val;
+            if (v.map.count("Val") == 0) {
+                continue;
+            } else {
+                val = v.map["Val"];
+            }
+            std::string err = SetParam(obj, path, val);
+            if (err == "") {
+                if (setMsg) {
+                    std::string errStr = objNm + " Set param path: " + pt +
+                        " to value: " + val;
+                    std::cout << errStr << std::endl;
+                }
+            } else {
+                errs.push_back(err);
+            }
+        }
+        return strings::join(errs, "");
+    }
+}
+
 void params::to_json(json &j, const params::Hypers &flx) {
     for (const auto& [key, value] : flx.map) {
         j[key] = json(value.JSONString());
     }
 }
 
-// void params::Sel::SetFloat(std::string param, float val) {
-//     this->Params.SetByName(param, std::to_string(val));
-// }
+void params::Sel::SetFloat(std::string param, float val) {
+    this->ParamsSet.SetByName(param, std::to_string(val));
+}
 
-// void params::Sel::SetString(std::string param, std::string val) {
-//     this->Params.SetByName(param, val);
-// }
+void params::Sel::SetString(std::string param, std::string val) {
+    this->ParamsSet.SetByName(param, val);
+}
 
-// std::string params::Sel::ParamValue(std::string param) {
-//     return Params.ParamByNameTry(param);
-// }
+std::string params::Sel::ParamValue(std::string param) {
+    return ParamsSet.ParamByName(param);
+}
+
+// Apply checks if Sel selector applies to this object according to (.Class, #Name, Type)
+// using the params.Styler interface, and returns false if it does not.
+// The TargetType of the Params is always tested against the obj's type name first.
+// If it does apply, or is not a Styler, then the Params values are set.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// It always prints a message if a parameter fails to be set, and returns an error.
+bool params::Sel::Apply(std::any obj, bool setMsg) {
+    if (!TargetTypeMatch(obj) || !SelMatch(obj)) {
+		return false;//, nil
+	}
+
+	std::string errp = ParamsSet.Apply(obj, setMsg);
+	std::string errh = HyperSet.Apply(obj, setMsg);
+	if (errp != "" && errh != "") {
+		return false;//, errp
+	} else {
+        return true;
+    }
+	// return true;//, errp
+}
+
+// TargetTypeMatch return true if target type applies to object
+bool params::Sel::TargetTypeMatch(std::any obj) {
+    std::string trg = ParamsSet.TargetType();
+    std::string trgh = HyperSet.TargetType();
+    try {
+        StylerObject *styler = std::any_cast<params::StylerObject*>(obj);
+        std::string tnm = styler->StyleType();
+        if (tnm == trg) {
+            return true;
+        } else if (tnm == trgh){
+            return true;
+        }
+    } catch (const std::bad_any_cast& e) {
+
+    }
+    return false;
+
+	// TODO: Figure out what the lines below should be doing...
+	// tnm := reflectx.NonPointerType(reflect.TypeOf(obj)).Name()
+	// return tnm == trg || tnm == trgh
+}
+
+// SelMatch returns true if Sel selector matches the target object properties
+bool params::Sel::SelMatch(std::any obj) {
+    try {
+        StylerObject *styler = std::any_cast<params::StylerObject*>(obj);
+        // std::string gotyp = styler->Name();
+        return params::SelMatch(Sel, styler->StyleName(), styler->StyleClass(), styler->StyleType());//, gotyp);
+    } catch (const std::bad_any_cast& e) {
+        return true;
+    }
+    // styler, has := obj.(Styler)
+	// if !has {
+	// 	return true // default match if no styler..
+	// }
+	// if styob, has := obj.(StylerObject); has {
+	// 	obj = styob.StyleObject()
+	// }
+	// gotyp := reflectx.NonPointerType(reflect.TypeOf(obj)).Name()
+	// return SelMatch(ps.Sel, styler.StyleName(), styler.StyleClass(), styler.StyleType(), gotyp)
+}
 
 // void params::FlexVal::CopyFrom(params::FlexVal cp) {
 //     Nm = cp.Nm;
@@ -216,14 +337,14 @@ void params::to_json(json &j, const params::Hypers &flx) {
 // }
 
 // TODO complete this for any types that might appear
-bool IsStruct(std::any &obj){
-    std::string typ = obj.type().name();
-    if (typ == typeid(std::map<std::string,std::string>).name()){
-        return false;
-    }
-    else {
-        return true;
-    }
+// bool IsStruct(std::any &obj){
+//     std::string typ = obj.type().name();
+//     if (typ == typeid(std::map<std::string,std::string>).name()){
+//         return false;
+//     }
+//     else {
+//         return true;
+//     }
     // if (typ == typeid(params::Flex).name()){ // check for all acceptable types
     //     return true;
     // }
@@ -233,7 +354,7 @@ bool IsStruct(std::any &obj){
     // else {
     //     return false;
     // }
-}
+// }
 
 // FindParam parses the path and recursively tries to find the parameter pointed to
 // by the path (dot-delimited field names).
@@ -243,52 +364,78 @@ bool IsStruct(std::any &obj){
 // TODO MAYBE JSON OBJECTS CAN BE CONVERTED TO PARAMETER STRUCTS RATHER THAN REFLECTION
 // TODO TAKE A CLOSER LOOK AT THIS SYNTAX AND REWRITE IT
 // TODO Add code to each struct to map from string val/path to struct members
-// std::any params::FindParam(std::any &val, std::string path) {
-//     if (IsStruct(val)){
-//         std::string err = "TODO FIX FINDPARAM... idk how\n\t";
-//         err += "type of val was: " + std::string(val.type().name()) + "\n";
-//         throw std::invalid_argument(err);
-//     }
-//     else {
-//         std::map<std::string,std::string>& map = std::any_cast<std::map<std::string,std::string>&>(val);
-//         std::vector<std::string> pathParts = strings::split(path, '.');
-//         std::string firstName = pathParts[0];
-//         pathParts.erase(pathParts.begin());
-//         if (map.count(firstName)==0) { // key does not exist
-//             std::string err = "params.FindParam: could not find Field named: " + firstName;
-//                 err += " in the 'any' container\n";  
-//             throw std::invalid_argument(err);
-//         }
-//         else{
-//             std::any obj =  &map[firstName];
-//             if (pathParts.size() == 1){
-//                 return obj;
-//             }
-//             else{
-//                 return FindParam(obj, strings::join(pathParts, "."));
-//             }
-//         }
-//     }
-// }
+std::any params::FindParam(std::any val, std::string path) {
+    StylerObject* valptr = std::any_cast<StylerObject*>(val);
+    StylerObject &npv = *valptr;
+    if (valptr == nullptr) {
+        throw std::invalid_argument("params.FindParam: val given is nullptr! path: " + path + "\n");
+        return val;
+    }
+	std::vector<std::string> paths = strings::split(path, '.');
+	std::string fnm = paths[0];
+	if (npv.ParamNameMap.count(fnm)==0) {
+		std::string err = "params.FindParam: could not find Field named: "+ fnm +" in struct: "+ npv.StyleName() +" path: "+ path +"\n";
+        std::cerr << err;
+		return val;
+	}
+
+    std::any newVal = npv.ParamNameMap[fnm];
+	if (paths.size() == 1) {
+		return newVal;
+	}
+    std::vector<std::string> newPaths = paths;
+    newPaths.erase(newPaths.begin());
+	return FindParam(newVal, strings::join(newPaths, "."));
+}
 
 // SetParam sets parameter at given path on given object to given value
 // converts the string param val as appropriate for target type.
 // returns error if path not found or cannot set (always logged).
-std::string params::SetParam(std::any &obj, std::string path, std::string val) {
-    if (obj.type() == typeid(std::map<std::string,std::string>)) {
-        auto& map = std::any_cast<std::map<std::string,std::string>&>(obj);
-        map[path] = val;
-        return ""; // No error
-    }
-    else { // The obj is probably a struct, but how to support each struct?
-
-        return "SetParam ERROR: Type of obj is: " + std::string(obj.type().name()) + "\n";
-    }
+std::string params::SetParam(std::any obj, std::string path, std::string val) {
+    // npv := reflectx.NonPointerValue(reflect.ValueOf(obj))
+	// if npv.Kind() == reflect.Map { // only for string maps
+	// 	npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
+	// 	return nil
+	// }
+    StylerObject &parentObj = *std::any_cast<StylerObject*>(obj);
+    return parentObj.SetByPath(path, val);
 }
 
-float params::GetParam(std::any &obj, std::string path) {
-    return 0.0;
+// GetParam gets parameter value at given path on given object.
+// converts target type to float64.
+// returns error if path not found or target is not a numeric type (always logged).
+float params::GetParam(std::any obj, std::string path) {
+    StylerObject &styler = *std::any_cast<StylerObject*>(obj);
+    return styler.GetByPath(path);
 }
+
+// SelMatch returns true if Sel selector matches the target object properties
+bool params::SelMatch(std::string sel, std::string name, std::string cls, std::string styp) {
+    if (sel == "") {
+		return false;
+	}
+	if (sel[0] == '.') { // class
+		return params::ClassMatch(sel.substr(1), cls);
+	}
+	if (sel[0] == '#') { // name
+		return name == sel.substr(1);
+	}
+	return styp == sel; // type
+}
+
+// ClassMatch returns true if given class names.
+// handles space-separated multiple class names
+bool params::ClassMatch(std::string sel, std::string cls) {
+    std::vector<std::string> clss = strings::split(cls, ' ');
+	for (std::string &cl: clss) {
+		if (strings::TrimSpace(cl) == sel) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
 
 // // Init initializes the Flex map with given set of flex values.
 // void params::Flex::Init(std::vector<params::FlexVal> vals) {
@@ -329,28 +476,28 @@ float params::GetParam(std::any &obj, std::string path) {
 
 // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 std::string params::Sheet::ElemLabel(int idx){
-    return sel[idx].Sel;
+    return sel[idx]->Sel;
 }
 
 // SelByNameTry returns given selector within the Sheet, by Name.
 // Returns nil and error if not found.
-params::Sel* params::Sheet::SelByNameTry(std::string sel) {
-    params::Sel* sl = SelByName(sel);
-    if (sl == nullptr){
-        std::string err = "params::Sheet Sel named " + sel + " not found";
-        throw std::invalid_argument(err);
-    }
-    else {
-        return sl;
-    }
-}
+// params::Sel* params::Sheet::SelByNameTry(std::string sel) {
+//     params::Sel* sl = SelByName(sel);
+//     if (sl == nullptr){
+//         std::string err = "params::Sheet Sel named " + sel + " not found";
+//         throw std::invalid_argument(err);
+//     }
+//     else {
+//         return sl;
+//     }
+// }
 
 // SelByName returns given selector within the Sheet, by Name.
 // Returns nil if not found -- use Try version for error
 params::Sel* params::Sheet::SelByName(std::string sel) {
-    for (params::Sel &sl: this->sel){
-        if (sl.Sel== sel){
-            return &sl;
+    for (params::Sel *sl: this->sel){
+        if (sl->Sel== sel){
+            return sl;
         }
     }
     return nullptr;
@@ -358,97 +505,150 @@ params::Sel* params::Sheet::SelByName(std::string sel) {
 
 // SetFloat sets the value of given parameter, in selection sel
 void params::Sheet::SetFloat(std::string sel, std::string param, float val) {
-    params::Sel* sl = SelByNameTry(sel);
+    params::Sel* sl = SelByName(sel);
     sl->SetFloat(param, val);
 }
 
 // SetString sets the value of given parameter, in selection sel
 void params::Sheet::SetString(std::string sel, std::string param, std::string val) {
-    params::Sel* sl = SelByNameTry(sel);
+    params::Sel* sl = SelByName(sel);
     sl->SetString(param, val);
 }
 
 // ParamVal returns the value of given parameter, in selection sel
-std::string params::Sheet::ParamVal(std::string sel, std::string param) {
-    params::Sel* sl = SelByNameTry(sel);
+std::string params::Sheet::ParamValue(std::string sel, std::string param) {
+    params::Sel* sl = SelByName(sel);
     return sl->ParamValue(param);
+}
+
+// Apply applies entire sheet to given object, using param.Sel's in order
+// see param.Sel.Apply() for details.
+// returns true if any Sel's applied, and error if any errors.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// It always prints a message if a parameter fails to be set, and returns an error.
+bool params::Sheet::Apply(std::any obj, bool setMsg) {
+    bool applied = false;
+	std::vector<std::string> errs;
+	for (Sel *sl: sel) {
+		bool app = sl->Apply(obj, setMsg);
+		if (app) {
+			applied = true;
+			sl->NMatch++;
+			// if hist, ok := obj.(History); ok {
+			// 	hist.ParamsApplied(sl)
+			// }
+		}
+	}
+	return applied;
+}
+
+// SelMatchReset resets the Sel.NMatch counter used to find cases where no Sel
+// matched any target objects.  Call at start of application process, which
+// may be at an outer-loop of Apply calls (e.g., for a Network, Apply is called
+// for each Layer and Path), so this must be called separately.
+// See SelNoMatchWarn for warning call at end.
+void params::Sheet::SelMatchReset(std::string setName) {
+    for (Sel *sl: sel) {
+		sl->NMatch = 0;
+		sl->SetName = setName;
+	}
+}
+
+// SelNoMatchWarn issues warning messages for any Sel selectors that had no
+// matches during the last Apply process -- see SelMatchReset.
+// The setName and objName provide info about the Set and obj being applied.
+// Returns an error message with the non-matching sets if any, else nil.
+void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
+    std::string msg = "";
+	for (Sel *sl: sel) {
+		if (sl->NMatch == 0) {
+			msg += "\tSel: " + sl->Sel + "\n";
+		}
+	}
+	if (msg != "") {
+		msg = "param.Sheet from Set: "+ setName +" for object: " + objName + " had the following non-matching Selectors:\n" + msg;
+		std::cerr << msg;
+	}
 }
 
 // SheetByNameTry tries to find given sheet by name, and returns error
 // if not found (also logs the error)
-params::Sheet *params::Set::SheetByNameTry(std::string name) {
-    for (const auto& [key, value]: SheetSet){
-        if (key == name){
-            return &SheetSet[name];;
-        }
-    }
-    std::string err = "params::Sheets sheet named " + name + " not found";
-    throw std::invalid_argument(err);
-}
+// params::Sheet *params::Set::SheetByNameTry(std::string name) {
+//     for (const auto& [key, value]: SheetSet){
+//         if (key == name){
+//             return &SheetSet[name];;
+//         }
+//     }
+//     std::string err = "params::Sheets sheet named " + name + " not found";
+//     throw std::invalid_argument(err);
+// }
 
 // SheetByName finds given sheet by name -- returns nil if not found.
 // Use this when sure the sheet exists -- otherwise use Try version.
-params::Sheet *params::Set::SheetByName(std::string name) {
-    return &SheetSet[name];
+params::Sheet *params::Sets::SheetByName(std::string name) {
+    return map[name];
 }
 
 // ValidateSheets ensures that the sheet names are among those listed -- returns
 // error message for any that are not. Helps catch typos and makes sure params are
 // applied properly. Automatically logs errors.
-void params::Set::ValidateSheets(std::vector<std::string> valids) {
-    std::vector<std::string> invalids;
+// void params::Sets::ValidateSheets(std::vector<std::string> valids) {
+//     std::vector<std::string> invalids;
     
-    for (const auto& [key, value]: SheetSet){
-        bool got = false;
-        for (const std::string &vl: valids){
-            if (key == vl) {
-                got = true;
-            }
-        }
-        if (!got){
-            invalids.push_back(key);
-        }
-    }
-    if (invalids.size() > 0){
-        std::ostringstream oss;
-        oss << "params.Set: Invalid sheet names: \n";
-        for (const auto& name : invalids) {
-            oss << "\t" << name << ",\n";
-        }
-        std::string err = oss.str();
-        throw std::invalid_argument(err);
-    }
-}
+//     for (const auto& [key, value]: map){
+//         bool got = false;
+//         for (const std::string &vl: valids){
+//             if (key == vl) {
+//                 got = true;
+//             }
+//         }
+//         if (!got){
+//             invalids.push_back(key);
+//         }
+//     }
+//     if (invalids.size() > 0){
+//         std::ostringstream oss;
+//         oss << "params.Set: Invalid sheet names: \n";
+//         for (const auto& name : invalids) {
+//             oss << "\t" << name << ",\n";
+//         }
+//         std::string err = oss.str();
+//         throw std::invalid_argument(err);
+//     }
+// }
 
 // SetFloat sets the value of given parameter, in selection sel,
 // in sheet
-void params::Set::SetFloat(std::string sheet, std::string sel, std::string param, float val) {
-    params::Sheet *sp= SheetByNameTry(sheet);
+void params::Sets::SetFloat(std::string sheet, std::string sel, std::string param, float val) {
+    params::Sheet *sp= SheetByName(sheet);
     sp->SetFloat(sel, param, val);
 }
 
 // SetString sets the value of given parameter, in selection sel,
 // in sheet
-void params::Set::SetString(std::string sheet, std::string sel, std::string param, std::string val) {
-    params::Sheet *sp= SheetByNameTry(sheet);
+void params::Sets::SetString(std::string sheet, std::string sel, std::string param, std::string val) {
+    params::Sheet *sp= SheetByName(sheet);
     sp->SetString(sel, param, val);
 }
 
 // ParamVal returns the value of given parameter, in selection sel,
 // in sheet
-std::string params::Set::ParamValue(std::string sheet, std::string sel, std::string param) {
-    params::Sheet *sp= SheetByNameTry(sheet);
-    return sp->ParamVal(sel, param);
+std::string params::Sets::ParamValue(std::string sheet, std::string sel, std::string param) {
+    params::Sheet *sp= SheetByName(sheet);
+    return sp->ParamValue(sel, param);
 }
 
 params::StylerObject::StylerObject() {
     InitParamMaps();
 }
 
-void params::StylerObject::SetByName(std::string varName, std::string value)
-{
+std::string params::StylerObject::SetByName(std::string varName, std::string value) {
+    std::string err = "";
     void *varPtr = ParamNameMap[varName];
-    if (ParamNameMap.count(varName) == 0) throw std::runtime_error("Error: variable named " + varName + " not found.");
+    if (ParamNameMap.count(varName) == 0) {
+        err = "Error: variable named " + varName + " not found.";
+        return err;
+    }
     if (ParamTypeMap[varName] == &typeid(int)) {
         int val = std::stoi(value);
         int *ptr = (int *)varPtr;
@@ -498,6 +698,65 @@ void params::StylerObject::SetByName(std::string varName, std::string value)
         // TODO HANDLE THE CASE OF NESTED PARAMS?
         // ...maybe do nothing...
     } else {
-        throw std::runtime_error("Error: type of variable named " + varName + " not handled.");
+        err = "Error: type of variable named " + varName + " not handled.";
     }
+    return err;
+}
+
+float params::StylerObject::GetByName(std::string varName) {
+    float var;
+    void *varPtr = ParamNameMap[varName];
+    if (ParamNameMap.count(varName) == 0) {
+        throw std::invalid_argument("Error: variable named " + varName + " not found.");
+    }
+    if (ParamTypeMap[varName] == &typeid(int)) {
+        // int val = std::stoi(value);
+        int *ptr = (int *)varPtr;
+        var = *ptr;
+    } else if (ParamTypeMap[varName] == &typeid(float)) {
+        // float val = std::stof(value);
+        float *ptr = (float *)varPtr;
+        // *ptr = val;
+        var = *ptr;
+    } else if (ParamTypeMap[varName] == &typeid(bool)) {
+        // bool val;
+        // std::istringstream(value) >> std::boolalpha >> val;
+        bool *ptr = (bool *)varPtr;
+        // *ptr = val;
+        var = *ptr;
+    } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
+        // TODO HANDLE THE CASE OF NESTED PARAMS?
+        // ...maybe do nothing...
+    } else {
+        throw std::invalid_argument("Error: type of variable named " + varName + " not handled.");
+    }
+    return var;
+}
+
+std::string params::StylerObject::SetByPath(std::string path, std::string value) {
+    std::vector<std::string> paths = strings::split(path, '.');
+    std::string &name = paths[0];
+    if (paths.size() == 1) {
+        return SetByName(name, value);
+    } else {
+        StylerObject *child = (StylerObject*)ParamNameMap[paths[0]];
+        paths.erase(paths.begin());
+        return child->SetByPath(strings::join(paths,"."), value);
+    }
+}
+
+float params::StylerObject::GetByPath(std::string path) {
+    std::vector<std::string> paths = strings::split(path, '.');
+    std::string &name = paths[0];
+    if (paths.size() == 1) {
+        return GetByName(name);
+    } else {
+        StylerObject *child = (StylerObject*)ParamNameMap[paths[0]];
+        paths.erase(paths.begin());
+        return child->GetByPath(strings::join(paths,"."));
+    }
+}
+
+void *params::StylerObject::GetStyleObject() {
+    return (void *)this;
 }

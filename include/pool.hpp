@@ -15,7 +15,7 @@ namespace leabra {
     // and pools (unit groups) that can be subject to inhibition, including:
     // * average / max stats on Ge and Act that drive inhibition
     // * average activity overall that is used for normalizing netin (at layer level)
-    struct Pool {
+    struct Pool: params::StylerObject {
         int StIndex,
             EdIndex; // starting and ending (exlusive) indexes for the list of neurons in this pool
         fffb::Inhib Inhib; // FFFB inhibition computed values, including Ge and Act AvgMax which drive inhibition
@@ -25,6 +25,12 @@ namespace leabra {
 
         Pool();
         void Init();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 } // namespace leabra

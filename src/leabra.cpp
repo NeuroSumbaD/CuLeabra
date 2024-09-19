@@ -9,6 +9,30 @@ void leabra::SelfInhibParams::Inhib(float &self, float act) {
     }
 }
 
+std::string leabra::SelfInhibParams::StyleType() {
+    return "SelfInhibParams";
+}
+
+std::string leabra::SelfInhibParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::SelfInhibParams::StyleName() {
+    return "";
+}
+
+void leabra::SelfInhibParams::InitParamMaps(){
+    ParamNameMap["On"] = (void*) &On;
+	ParamNameMap["Gi"] = (void *) &Gi;
+	ParamNameMap["Tau"] = (void *) &Tau;
+	ParamNameMap["Dt"] = (void *) &Dt;
+
+    ParamTypeMap["On"] = &typeid(bool);
+	ParamTypeMap["Gi"] = &typeid(float);
+	ParamTypeMap["Tau"] = &typeid(float);
+	ParamTypeMap["Dt"] = &typeid(float);
+}
+
 float leabra::ActAvgParams::EffInit() {
     if (Fixed){
         return Init;
@@ -37,6 +61,36 @@ void leabra::ActAvgParams::EffFromAvg(float &eff, float avg) {
     }
 }
 
+std::string leabra::ActAvgParams::StyleType() {
+    return "ActAvgParams";
+}
+
+std::string leabra::ActAvgParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::ActAvgParams::StyleName() {
+    return "";
+}
+
+void leabra::ActAvgParams::InitParamMaps(){
+	ParamNameMap["Init"] = (void*) &Init;
+	ParamNameMap["Fixed"] = (void*) &Fixed;
+	ParamNameMap["UseExtAct"] = (void*) &UseExtAct;
+	ParamNameMap["UseFirst"] = (void*) &UseFirst;
+	ParamNameMap["Tau"] = (void*) &Tau;
+	ParamNameMap["Adjust"] = (void*) &Adjust;
+	ParamNameMap["Dt"] = (void*) &Dt;
+
+	ParamTypeMap["Init"] = &typeid(float);
+	ParamTypeMap["Fixed"] = &typeid(bool);
+	ParamTypeMap["UseExtAct"] = &typeid(bool);
+	ParamTypeMap["UseFirst"] = &typeid(bool);
+	ParamTypeMap["Tau"] = &typeid(float);
+	ParamTypeMap["Adjust"] = &typeid(float);
+	ParamTypeMap["Dt"] = &typeid(float);
+}
+
 void leabra::InhibParams::Update() {
     Layer.Update();
     Pool.Update();
@@ -50,6 +104,30 @@ void leabra::InhibParams::Defaults() {
     Self.Defaults();
     ActAvg.Defaults();
     // Note, each defaults function calls its own update (not needed here)
+}
+
+std::string leabra::InhibParams::StyleType() {
+    return "InhibParams";
+}
+
+std::string leabra::InhibParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::InhibParams::StyleName() {
+    return "";
+}
+
+void leabra::InhibParams::InitParamMaps(){
+	ParamNameMap["Layer"] = (void*) &Layer;
+	ParamNameMap["Pool"] = (void*) &Pool;
+	ParamNameMap["Self"] = (void*) &Self;
+	ParamNameMap["ActAvg"] = (void*) &ActAvg;
+
+	ParamTypeMap["Layer"] = &typeid(params::StylerObject);
+	ParamTypeMap["Pool"] = &typeid(params::StylerObject);
+	ParamTypeMap["Self"] = &typeid(params::StylerObject);
+	ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
 }
 
 leabra::Path::Path(std::string name, std::string cls):emer::Path(name, cls){Send=nullptr; Recv=nullptr;}
@@ -589,4 +667,40 @@ emer::Layer *leabra::Path::SendLayer() {
 
 emer::Layer *leabra::Path::RecvLayer() {
 	return Recv;
+}
+
+void leabra::Path::InitParamMaps() {
+	ParamNameMap["WtInit"] = (void*) &WtInit;
+	ParamNameMap["WtScale"] = (void*) &WtScale;
+	ParamNameMap["Learn"] = (void*) &Learn;
+	ParamNameMap["GScale"] = (void*) &GScale;
+
+	ParamTypeMap["WtInit"] = &typeid(params::StylerObject);
+	ParamTypeMap["WtScale"] = &typeid(params::StylerObject);
+	ParamTypeMap["Learn"] = &typeid(params::StylerObject);
+	ParamTypeMap["GScale"] = &typeid(float);
+}
+
+std::string leabra::WtBalRecvPath::StyleType() {
+    return "WtBalRecvPath";
+}
+
+std::string leabra::WtBalRecvPath::StyleClass() {
+    return "";
+}
+
+std::string leabra::WtBalRecvPath::StyleName() {
+    return "";
+}
+
+void leabra::WtBalRecvPath::InitParamMaps() {
+	ParamNameMap["Avg"] = (void*) &Avg;
+	ParamNameMap["Fact"] = (void*) &Fact;
+	ParamNameMap["Inc"] = (void*) &Inc;
+	ParamNameMap["Dec"] = (void*) &Dec;
+
+	ParamTypeMap["Avg"] = &typeid(float);
+	ParamTypeMap["Fact"] = &typeid(float);
+	ParamTypeMap["Inc"] = &typeid(float);
+	ParamTypeMap["Dec"] = &typeid(float);
 }

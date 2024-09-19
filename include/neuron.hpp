@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "params.hpp"
 
 namespace leabra {
     enum NeurFlags{ // NeurFlags are bit-flags encoding relevant binary state for neurons
@@ -14,7 +15,7 @@ namespace leabra {
     // leabra.Neuron holds all of the neuron (unit) level variables -- this is the most basic version with
     // rate-code only and no optional features at all.
     // All variables accessible via Unit interface must be float32 and start at the top, in contiguous order
-    struct Neuron{
+    struct Neuron: params::StylerObject {
         NeurFlags Flags;
         int SubPool;
         float Act;
@@ -59,5 +60,11 @@ namespace leabra {
         // void SetMask(int mask);
         // void ClearMask(int mask);
         bool IsOff();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 }

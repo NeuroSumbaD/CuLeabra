@@ -14,22 +14,29 @@ This is included in leabra.Layer to drive the computation.
 #include "knadapt.hpp"
 #include "neuron.hpp"
 #include "rand.hpp"
+#include "params.hpp"
 
 namespace leabra{
 
     // OptThreshParams provides optimization thresholds for faster processing
-    struct OptThreshParams {
+    struct OptThreshParams: params::StylerObject {
         float Send; // don't send activation when act <= send -- greatly speeds processing
         float Delta; // don't send activation changes until they exceed this threshold: only for when LeabraNetwork::send_delta is on!
         OptThreshParams(float Send = 0.1, float Delta = 0.005);
 
         void Defaults();
-        void Update(){};
+        void Update();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // ActInitParams are initial values for key network state variables.
     // Initialized at start of trial with Init_Acts or DecayState.
-    struct ActInitParams {
+    struct ActInitParams: params::StylerObject {
         float Decay; // proportion to decay activation state toward initial values at start of every trial
         float Vm; // initial membrane potential -- see e_rev.l for the resting potential (typically .3) -- often works better to have a somewhat elevated initial membrane potential relative to that
         float Act; // initial activation value -- typically 0
@@ -38,10 +45,16 @@ namespace leabra{
 
         void Defaults();
         void Update();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // DtParams are time and rate constants for temporal derivatives in Leabra (Vm, net input)
-    struct DtParams {
+    struct DtParams: params::StylerObject {
         float Integ;
         float VmTau;
         float GTau;
@@ -55,10 +68,16 @@ namespace leabra{
         void GFromRaw(float geRaw, float &ge);
 
         void Defaults();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // ClampParams are for specifying how external inputs are clamped onto network activation values
-    struct ClampParams {
+    struct ClampParams: params::StylerObject {
         bool Hard; // whether to hard clamp inputs where activation is directly set to external input value (Act = Ext) or do soft clamping where Ext is added into Ge excitatory current (Ge += Gain * Ext)
         minmax::F32 Range; // range of external input activation values allowed -- Max is .95 by default due to saturating nature of rate code activation function
         float Gain; // soft clamp gain factor (Ge += Gain * Ext)
@@ -70,6 +89,12 @@ namespace leabra{
 
         void Defaults();
         void Update();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     struct WtInitParams: rands::Dist {
@@ -83,7 +108,7 @@ namespace leabra{
         void Defaults();
     };
 
-    struct WtScaleParams{
+    struct WtScaleParams: params::StylerObject{
         float Abs; // absolute scaling, which is not subject to normalization: directly multiplies weight values
         float Rel; // relative scaling that shifts balance between different pathways -- this is subject to normalization across all other pathways into unit
 
@@ -94,6 +119,12 @@ namespace leabra{
 
         float SLayActScale(float savg, float snu, float ncon);
         float FullScale(float savg, float snu, float ncon);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     enum ActNoiseType {
@@ -106,7 +137,7 @@ namespace leabra{
     };
 
     // ActNoiseParams contains parameters for activation-level noise
-    struct ActNoiseParams: rands::Dist {
+    struct ActNoiseParams: rands::Dist, params::StylerObject {
 
         ActNoiseType Type; // where and how to add processing noise (should be an enum)
         bool Fixed; // keep the same noise value over the entire alpha cycle -- prevents noise from being washed out and produces a stable effect that can be better used for learning -- this is strongly recommended for most learning situations
@@ -116,6 +147,12 @@ namespace leabra{
 
         void Defaults();
         void Update();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
 
@@ -123,7 +160,7 @@ namespace leabra{
     // leabra.ActParams contains all the activation computation params and functions
     // for basic Leabra, at the neuron level .
     // This is included in leabra.Layer to drive the computation.
-    struct ActParams{
+    struct ActParams: params::StylerObject {
         nxx1::Params XX1; //Noisy X/X+1 rate code activation function parameters
         OptThreshParams OptThresh; // optimization thresholds for faster processing
         ActInitParams Init; // initial values for key network state variables -- initialized at start of trial with InitActs or DecayActs
@@ -157,6 +194,11 @@ namespace leabra{
         bool HasHardClamp(Neuron &nrn);
         void HardClamp(Neuron &nrn);
         
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 }

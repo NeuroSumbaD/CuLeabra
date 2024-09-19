@@ -1,8 +1,8 @@
 #pragma once
+#include "params.hpp"
 
 namespace nxx1{
-    struct Params
-    {
+    struct Params: params::StylerObject {
         float Thr; // threshold value Theta (Q) for firing output activation (.5 is more accurate value based on AdEx biological parameters and normalization
         float Gain; // gain (gamma) of the rate-coded activation functions -- 100 is default, 80 works better for larger models, and 20 is closer to the actual spiking behavior of the AdEx model -- use lower values for more graded signals, generally in lower input/sensory layers of the network
         float NVar; // variance of the Gaussian noise kernel for convolving with XX1 in NOISY_XX1 and NOISY_LINEAR -- determines the level of curvature of the activation function near the threshold -- increase for more graded responding there -- note that this is not actual stochastic noise, just constant convolved gaussian smoothness to the activation function
@@ -36,6 +36,12 @@ namespace nxx1{
         float NoisyXX1(float x);
         float XX1GainCorGain(float x, float gain);
         float NoisyXX1Gain(float x, float gain);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
 

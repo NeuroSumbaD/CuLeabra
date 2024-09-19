@@ -5,7 +5,7 @@
 namespace inhib{
     // SelfInhibParams defines parameters for Neuron self-inhibition -- activation of the neuron directly feeds back
     // to produce a proportional additional contribution to Gi
-    struct SelfInhibParams{
+    struct SelfInhibParams: params::StylerObject{
         bool On; // enable neuron self-inhibition
         float Gi; // strength of individual neuron self feedback inhibition -- can produce proportional activation behavior in individual units for specialized cases (e.g., scalar val or BG units), but not so good for typical hidden layers
         float Tau; // time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) for integrating unit self feedback inhibitory values -- prevents oscillations that otherwise occur -- relatively rapid 1.4 typically works, but may need to go longer if oscillations are a problem
@@ -13,13 +13,19 @@ namespace inhib{
         SelfInhibParams(bool On = false, float Gi = 0.4, float Tau = 1.4);
         void Update();
         void Inhib(float* self, float act);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
     // ActAvgParams represents expected average activity levels in the layer.
     // Used for computing running-average computation that is then used for netinput scaling.
     // Also specifies time constant for updating average
     // and for the target value for adapting inhibition in inhib_adapt.
-    struct ActAvgParams {
+    struct ActAvgParams: params::StylerObject {
         float Init; // [min: 0] [typically 0.1 - 0.2] initial estimated average activity level in the layer (see also UseFirst option -- if that is off then it is used as a starting point for running average actual activity level, ActMAvg and ActPAvg) -- ActPAvg is used primarily for automatic netinput scaling, to balance out layers that have different activity levels -- thus it is important that init be relatively accurate -- good idea to update from recorded ActPAvg levels
         bool Fixed; // [def: false] if true, then the Init value is used as a constant for ActPAvgEff (the effective value used for netinput rescaling), instead of using the actual running average activation
         bool UseExtAct; // [def: false] if true, then use the activation level computed from the external inputs to this layer (avg of targ or ext unit vars) -- this will only be applied to layers with Input or Target / Compare layer types, and falls back on the targ_init value if external inputs are not available or have a zero average -- implies fixed behavior
@@ -32,17 +38,29 @@ namespace inhib{
         float EffInit();
         void AvgFmAct(float* avg, float act);
         void EffFmAvg(float* eff, float avg);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
     // InhibParams contains all the inhibition computation params and functions for basic Leabra
     // This is included in leabra.Layer to support computation.
     // This also includes other misc layer-level params such as running-average activation in the layer
     // which is used for netinput rescaling and potentially for adapting inhibition over time
-    struct InhibParams {
+    struct InhibParams: params::StylerObject {
         fffb::Params Layer; // inhibition across the entire layer
         fffb::Params Pool;
         SelfInhibParams Self;
         ActAvgParams ActAvg;
         InhibParams();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 };

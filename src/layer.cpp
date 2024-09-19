@@ -992,4 +992,16 @@ emer::Path *leabra::Layer::SendPath(int idx) {
     return &SendPaths[idx];
 }
 
+void leabra::Layer::InitParamMaps() {
+	ParamNameMap["Act"] = (void*) &Act;
+	ParamNameMap["Inhib"] = (void*) &Inhib;
+	ParamNameMap["Learn"] = (void*) &Learn;
+	ParamNameMap["CosDiff"] = (void*) &CosDiff;
+
+	ParamTypeMap["Act"] = &typeid(params::StylerObject);
+	ParamTypeMap["Inhib"] = &typeid(params::StylerObject);
+	ParamTypeMap["Learn"] = &typeid(params::StylerObject);
+	ParamTypeMap["CosDiff"] = &typeid(params::StylerObject);
+}
+
 leabra::LayerShape::LayerShape(int x, int y, int poolsX, int poolsY): X(x),Y(y),PoolsX(poolsX),PoolsY(poolsY){}

@@ -1,9 +1,10 @@
 #pragma once
 #include "minmax.hpp"
+#include "params.hpp"
 
 namespace fffb {
     // Inhib contains state values for computed FFFB inhibition
-    struct Inhib {
+    struct Inhib: params::StylerObject {
         float FFi;
         float FBi;
         float Gi;
@@ -16,11 +17,17 @@ namespace fffb {
         void Decay(float decay);
 
         void Init();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
     // Params parameterizes feedforward (FF) and feedback (FB) inhibition (FFFB)
     // based on average (or maximum) netinput (FF) and activation (FB)
-    struct Params {
+    struct Params: params::StylerObject {
         bool On; // enable this level of inhibition
         float Gi; // [def: 1.8] [min: 0] [1.5-2.3 typical, can go lower or higher as needed] overall inhibition gain -- this is main parameter to adjust to change overall activation levels -- it scales both the the ff and fb factors uniformly
         float FF; // [def: 1] [min: 0] overall inhibitory contribution from feedforward inhibition -- multiplies average netinput (i.e., synaptic drive into layer) -- this anticipates upcoming changes in excitation, but if set too high, it can make activity slow to emerge -- see also ff0 for a zero-point for this value
@@ -39,6 +46,11 @@ namespace fffb {
         void FBUpdt(float* fbi, float newFbi);
         void Inhib(Inhib* inh);
 
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 };

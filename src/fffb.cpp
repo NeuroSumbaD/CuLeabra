@@ -32,6 +32,32 @@ void fffb::Inhib::Init() {
 	Act.Init();
 }
 
+std::string fffb::Inhib::StyleType() {
+    return "Inhib";
+}
+
+std::string fffb::Inhib::StyleClass() {
+    return "";
+}
+
+std::string fffb::Inhib::StyleName() {
+    return "";
+}
+
+void fffb::Inhib::InitParamMaps() {
+    ParamNameMap["FFi"] = (void*) &FFi;
+    ParamNameMap["FBi"] = (void*) &FBi;
+    ParamNameMap["Gi"] = (void*) &Gi;
+    ParamNameMap["GiOrig"] = (void*) &GiOrig;
+    ParamNameMap["LayGi"] = (void*) &LayGi;
+
+    ParamTypeMap["FFi"] = &typeid(float);
+    ParamTypeMap["FBi"] = &typeid(float);
+    ParamTypeMap["Gi"] = &typeid(float);
+    ParamTypeMap["GiOrig"] = &typeid(float);
+    ParamTypeMap["LayGi"] = &typeid(float);
+}
+
 fffb::Params::Params(float Gi, float FF, float FB, float FBTau, float MaxVsAvg, float FF0) {
     //TODO Check if On needs to be intitialized to zero or one
     this->Gi = Gi;
@@ -95,4 +121,36 @@ void fffb::Params::Inhib(fffb::Inhib *inh) {
 
 	inh->Gi = Gi * (ffi + inh->FBi);
 	inh->GiOrig = inh->Gi;
+}
+
+std::string fffb::Params::StyleType() {
+    return "Params";
+}
+
+std::string fffb::Params::StyleClass() {
+    return "";
+}
+
+std::string fffb::Params::StyleName() {
+    return "";
+}
+
+void fffb::Params::InitParamMaps() {
+    ParamNameMap["On"] = (void*) &On;
+    ParamNameMap["Gi"] = (void*) &Gi;
+    ParamNameMap["FF"] = (void*) &FF;
+    ParamNameMap["FB"] = (void*) &FB;
+    ParamNameMap["FBTau"] = (void*) &FBTau;
+    ParamNameMap["MaxVsAvg"] = (void*) &MaxVsAvg;
+    ParamNameMap["FF0"] = (void*) &FF0;
+    ParamNameMap["FBDt"] = (void*) &FBDt;
+
+    ParamTypeMap["On"] = &typeid(bool);
+    ParamTypeMap["Gi"] = &typeid(float);
+    ParamTypeMap["FF"] = &typeid(float);
+    ParamTypeMap["FB"] = &typeid(float);
+    ParamTypeMap["FBTau"] = &typeid(float);
+    ParamTypeMap["MaxVsAvg"] = &typeid(float);
+    ParamTypeMap["FF0"] = &typeid(float);
+    ParamTypeMap["FBDt"] = &typeid(float);
 }

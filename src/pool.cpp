@@ -8,3 +8,21 @@ leabra::Pool::Pool():Inhib(), ActM(), ActP(), ActAvgs() {
 void leabra::Pool::Init(){
     Inhib.Init();
 }
+
+std::string leabra::Pool::StyleType() {
+    return "Pool";
+}
+
+std::string leabra::Pool::StyleClass() {
+    return "";
+}
+
+std::string leabra::Pool::StyleName() {
+    return "";
+}
+
+void leabra::Pool::InitParamMaps() {
+    ParamNameMap["Inhib"] = (void*) &Inhib;
+
+    ParamTypeMap["Inhib"] = &typeid(params::StylerObject);
+}

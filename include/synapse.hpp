@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "params.hpp"
 
 namespace leabra {
 
@@ -9,7 +10,7 @@ namespace leabra {
 
     
     // leabra::Synapse holds state for the synaptic connection between neurons
-    struct Synapse {
+    struct Synapse: params::StylerObject {
         float Wt;
         float LWt;
         float DWt;
@@ -20,6 +21,12 @@ namespace leabra {
         float* SynapseVarByName(std::string varNm);
         float* VarByName(std::string varNm);
         void SetVarByName(std::string varNm, float val);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 } // namespace leabra

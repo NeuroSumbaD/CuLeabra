@@ -46,6 +46,36 @@ float leabra::XCalParams::LongLrate(float avgLLrn) {
     return avgLLrn;
 }
 
+std::string leabra::XCalParams::StyleType() {
+    return "XCalParams";
+}
+
+std::string leabra::XCalParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::XCalParams::StyleName() {
+    return "";
+}
+
+void leabra::XCalParams::InitParamMaps() {
+	ParamNameMap["MLrn"] = (void*) &MLrn;
+	ParamNameMap["SetLLrn"] = (void*) &SetLLrn;
+	ParamNameMap["LLrn"] = (void*) &LLrn;
+	ParamNameMap["DRev"] = (void*) &DRev;
+	ParamNameMap["DThr"] = (void*) &DThr;
+	ParamNameMap["LrnThr"] = (void*) &LrnThr;
+	ParamNameMap["DRevRatio"] = (void*) &DRevRatio;
+
+	ParamTypeMap["MLrn"] = &typeid(float);
+	ParamTypeMap["SetLLrn"] = &typeid(bool);
+	ParamTypeMap["LLrn"] = &typeid(float);
+	ParamTypeMap["DRev"] = &typeid(float);
+	ParamTypeMap["DThr"] = &typeid(float);
+	ParamTypeMap["LrnThr"] = &typeid(float);
+	ParamTypeMap["DRevRatio"] = &typeid(float);
+}
+
 leabra::LearnNeurParams::LearnNeurParams():ActAvg(), AvgL(), CosDiff(){}
 
 void leabra::LearnNeurParams::Update()
@@ -82,6 +112,28 @@ void leabra::LearnNeurParams::InitActAvg(Neuron &nrn) {
 	nrn.AvgL = AvgL.Init;
 	nrn.AvgSLrn = 0;
 	nrn.ActAvg = ActAvg.Init;
+}
+
+std::string leabra::LearnNeurParams::StyleType() {
+    return "LearnNeurParams";
+}
+
+std::string leabra::LearnNeurParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::LearnNeurParams::StyleName() {
+    return "";
+}
+
+void leabra::LearnNeurParams::InitParamMaps() {
+	ParamNameMap["ActAvg"] = (void*) &ActAvg;
+	ParamNameMap["AvgL"] = (void*) &AvgL;
+	ParamNameMap["CosDiff"] = (void*) &CosDiff;
+
+	ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
+	ParamTypeMap["AvgL"] = &typeid(params::StylerObject);
+	ParamTypeMap["CosDiff"] = &typeid(params::StylerObject);
 }
 
 leabra::AvgLParams::AvgLParams(float init, float gain, float min, float tau, float lrnMax, float lrnMin, bool errMod, float modMin):
@@ -127,6 +179,42 @@ void leabra::AvgLParams::Update() {
 	LrnFact=(LrnMax - LrnMin)/(Gain - Min);
 }
 
+std::string leabra::AvgLParams::StyleType() {
+    return "AvgLParams";
+}
+
+std::string leabra::AvgLParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::AvgLParams::StyleName() {
+    return "";
+}
+
+void leabra::AvgLParams::InitParamMaps() {
+	ParamNameMap["Init"] = (void*) &Init;
+	ParamNameMap["Gain"] = (void*) &Gain;
+	ParamNameMap["Min"] = (void*) &Min;
+	ParamNameMap["Tau"] = (void*) &Tau;
+	ParamNameMap["LrnMax"] = (void*) &LrnMax;
+	ParamNameMap["LrnMin"] = (void*) &LrnMin;
+	ParamNameMap["ErrMod"] = (void*) &ErrMod;
+	ParamNameMap["ModMin"] = (void*) &ModMin;
+	ParamNameMap["Dt"] = (void*) &Dt;
+	ParamNameMap["LrnFact"] = (void*) &LrnFact;
+
+	ParamTypeMap["Init"] = &typeid(float);
+	ParamTypeMap["Gain"] = &typeid(float);
+	ParamTypeMap["Min"] = &typeid(float);
+	ParamTypeMap["Tau"] = &typeid(float);
+	ParamTypeMap["LrnMax"] = &typeid(float);
+	ParamTypeMap["LrnMin"] = &typeid(float);
+	ParamTypeMap["ErrMod"] = &typeid(bool);
+	ParamTypeMap["ModMin"] = &typeid(float);
+	ParamTypeMap["Dt"] = &typeid(float);
+	ParamTypeMap["LrnFact"] = &typeid(float);
+}
+
 leabra::LrnActAvgParams::LrnActAvgParams(float SSTau, float STau, float MTau, float LrnM, float Init):
 	SSTau(SSTau),STau(STau),MTau(MTau),LrnM(LrnM),Init(Init) {
 	Update();
@@ -156,6 +244,40 @@ void leabra::LrnActAvgParams::Defaults()
 	LrnM=0.1;
 	Init=0.15;
 	Update();
+}
+
+std::string leabra::LrnActAvgParams::StyleType() {
+    return "LrnActAvgParams";
+}
+
+std::string leabra::LrnActAvgParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::LrnActAvgParams::StyleName() {
+    return "";
+}
+
+void leabra::LrnActAvgParams::InitParamMaps() {
+	ParamNameMap["SSTau"] = (void*) &SSTau;
+	ParamNameMap["STau"] = (void*) &STau;
+	ParamNameMap["MTau"] = (void*) &MTau;
+	ParamNameMap["LrnM"] = (void*) &LrnM;
+	ParamNameMap["Init"] = (void*) &Init;
+	ParamNameMap["SSDt"] = (void*) &SSDt;
+	ParamNameMap["SDt"] = (void*) &SDt;
+	ParamNameMap["MDt"] = (void*) &MDt;
+	ParamNameMap["LrnS"] = (void*) &LrnS;
+
+	ParamTypeMap["SSTau"] = &typeid(float);
+	ParamTypeMap["STau"] = &typeid(float);
+	ParamTypeMap["MTau"] = &typeid(float);
+	ParamTypeMap["LrnM"] = &typeid(float);
+	ParamTypeMap["Init"] = &typeid(float);
+	ParamTypeMap["SSDt"] = &typeid(float);
+	ParamTypeMap["SDt"] = &typeid(float);
+	ParamTypeMap["MDt"] = &typeid(float);
+	ParamTypeMap["LrnS"] = &typeid(float);
 }
 
 leabra::CosDiffParams::CosDiffParams(float tau):Tau(tau) {
@@ -189,6 +311,28 @@ void leabra::CosDiffParams::Defaults(){
 	Update();
 }
 
+std::string leabra::CosDiffParams::StyleType() {
+    return "CosDiffParams";
+}
+
+std::string leabra::CosDiffParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::CosDiffParams::StyleName() {
+    return "";
+}
+
+void leabra::CosDiffParams::InitParamMaps() {
+	ParamNameMap["Tau"] = (void*) &Tau;
+	ParamNameMap["Dt"] = (void*) &Dt;
+	ParamNameMap["DtC"] = (void*) &DtC;
+
+	ParamTypeMap["Tau"] = &typeid(float);
+	ParamTypeMap["Dt"] = &typeid(float);
+	ParamTypeMap["DtC"] = &typeid(float);
+}
+
 leabra::CosDiffStats::CosDiffStats() {
 	Init();
 }
@@ -200,6 +344,32 @@ void leabra::CosDiffStats::Init()
 	Var = 0;
 	AvgLrn = 0;
 	ModAvgLLrn = 0;
+}
+
+std::string leabra::CosDiffStats::StyleType() {
+    return "CosDiffStats";
+}
+
+std::string leabra::CosDiffStats::StyleClass() {
+    return "";
+}
+
+std::string leabra::CosDiffStats::StyleName() {
+    return "";
+}
+
+void leabra::CosDiffStats::InitParamMaps() {
+	ParamNameMap["Cos"] = (void*) &Cos;
+	ParamNameMap["Avg"] = (void*) &Avg;
+	ParamNameMap["Var"] = (void*) &Var;
+	ParamNameMap["AvgLrn"] = (void*) &AvgLrn;
+	ParamNameMap["ModAvgLLrn"] = (void*) &ModAvgLLrn;
+
+	ParamTypeMap["Cos"] = &typeid(float);
+	ParamTypeMap["Avg"] = &typeid(float);
+	ParamTypeMap["Var"] = &typeid(float);
+	ParamTypeMap["AvgLrn"] = &typeid(float);
+	ParamTypeMap["ModAvgLLrn"] = &typeid(float);
 }
 
 leabra::WtSigParams::WtSigParams(float gain, float off, bool softBound): Gain(gain), Off(off), SoftBound(softBound){
@@ -235,6 +405,28 @@ float leabra::WtSigParams::LinFromSigWt(float sw) {
 		return SigInvFun61(sw);
 	}
     return SigInvFun(sw, Gain, Off);
+}
+
+std::string leabra::WtSigParams::StyleType() {
+    return "WtSigParams";
+}
+
+std::string leabra::WtSigParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::WtSigParams::StyleName() {
+    return "";
+}
+
+void leabra::WtSigParams::InitParamMaps() {
+	ParamNameMap["Gain"] = (void*) &Gain;
+	ParamNameMap["Off"] = (void*) &Off;
+	ParamNameMap["SoftBound"] = (void*) &SoftBound;
+
+	ParamTypeMap["Gain"] = &typeid(float);
+	ParamTypeMap["Off"] = &typeid(float);
+	ParamTypeMap["SoftBound"] = &typeid(bool);
 }
 
 // SigFun is the sigmoid function for value w in 0-1 range, with gain and offset params
@@ -313,6 +505,36 @@ float leabra::DWtNormParams::NormFromAbsDWt(float &norm, float absDwt) {
     return LrComp / std::pow(norm, NormMin);
 }
 
+std::string leabra::DWtNormParams::StyleType() {
+    return "DWtNormParams";
+}
+
+std::string leabra::DWtNormParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::DWtNormParams::StyleName() {
+    return "";
+}
+
+void leabra::DWtNormParams::InitParamMaps() {
+	ParamNameMap["On"] = (void*) &On;
+	ParamNameMap["DecayTau"] = (void*) &DecayTau;
+	ParamNameMap["NormMin"] = (void*) &NormMin;
+	ParamNameMap["LrComp"] = (void*) &LrComp;
+	ParamNameMap["Stats"] = (void*) &Stats;
+	ParamNameMap["DecayDt"] = (void*) &DecayDt;
+	ParamNameMap["DecayDtC"] = (void*) &DecayDtC;
+
+	ParamTypeMap["On"] = &typeid(bool);
+	ParamTypeMap["DecayTau"] = &typeid(float);
+	ParamTypeMap["NormMin"] = &typeid(float);
+	ParamTypeMap["LrComp"] = &typeid(float);
+	ParamTypeMap["Stats"] = &typeid(bool);
+	ParamTypeMap["DecayDt"] = &typeid(float);
+	ParamTypeMap["DecayDtC"] = &typeid(float);
+}
+
 leabra::WtBalParams::WtBalParams(float on, bool targs, float avgThr, float hiThr, float hiGain, float loThr, float loGain):
 	On(on), Targs(targs), AvgThr(avgThr), HiThr(hiThr), HiGain(hiGain), LoThr(loThr), LoGain(loGain) {
 }
@@ -351,6 +573,36 @@ std::tuple<float, float, float> leabra::WtBalParams::WtBal(float wbAvg) {
     return std::tuple<float, float, float>(fact, inc, dec);
 }
 
+std::string leabra::WtBalParams::StyleType() {
+    return "WtBalParams";
+}
+
+std::string leabra::WtBalParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::WtBalParams::StyleName() {
+    return "";
+}
+
+void leabra::WtBalParams::InitParamMaps() {
+	ParamNameMap["On"] = (void*) &On;
+	ParamNameMap["Targs"] = (void*) &Targs;
+	ParamNameMap["AvgThr"] = (void*) &AvgThr;
+	ParamNameMap["HiThr"] = (void*) &HiThr;
+	ParamNameMap["HiGain"] = (void*) &HiGain;
+	ParamNameMap["LoThr"] = (void*) &LoThr;
+	ParamNameMap["LoGain"] = (void*) &LoGain;
+
+	ParamTypeMap["On"] = &typeid(bool);
+	ParamTypeMap["Targs"] = &typeid(bool);
+	ParamTypeMap["AvgThr"] = &typeid(float);
+	ParamTypeMap["HiThr"] = &typeid(float);
+	ParamTypeMap["HiGain"] = &typeid(float);
+	ParamTypeMap["LoThr"] = &typeid(float);
+	ParamTypeMap["LoGain"] = &typeid(float);
+}
+
 leabra::MomentumParams::MomentumParams(bool on, float mTau, float lrComp):
 	On(on), MTau(mTau), LrComp(lrComp){
 	Update();
@@ -367,6 +619,32 @@ void leabra::MomentumParams::Defaults(){
 float leabra::MomentumParams::MomentFromDWt(float &moment, float dwt) {
 	moment = MDtC * moment + dwt;
 	return LrComp * moment;
+}
+
+std::string leabra::MomentumParams::StyleType() {
+    return "MomentumParams";
+}
+
+std::string leabra::MomentumParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::MomentumParams::StyleName() {
+    return "";
+}
+
+void leabra::MomentumParams::InitParamMaps() {
+	ParamNameMap["On"] = (void*) &On;
+	ParamNameMap["MTau"] = (void*) &MTau;
+	ParamNameMap["LrComp"] = (void*) &LrComp;
+	ParamNameMap["MDt"] = (void*) &MDt;
+	ParamNameMap["MDtC"] = (void*) &MDtC;
+
+	ParamTypeMap["On"] = &typeid(bool);
+	ParamTypeMap["MTau"] = &typeid(float);
+	ParamTypeMap["LrComp"] = &typeid(float);
+	ParamTypeMap["MDt"] = &typeid(float);
+	ParamTypeMap["MDtC"] = &typeid(float);
 }
 
 leabra::LearnSynParams::LearnSynParams(bool learn, float lrate):
@@ -451,4 +729,36 @@ void leabra::LearnSynParams::WtFromDWt(float wbInc, float wbDec, float &dwt, flo
 		}
 		wt = scale * WtSig.SigFromLinWt(lwt);
 		dwt = 0;
+}
+
+std::string leabra::LearnSynParams::StyleType() {
+    return "LearnSynParams";
+}
+
+std::string leabra::LearnSynParams::StyleClass() {
+    return "";
+}
+
+std::string leabra::LearnSynParams::StyleName() {
+    return "";
+}
+
+void leabra::LearnSynParams::InitParamMaps() {
+	ParamNameMap["Learn"] = (void*) &Learn;
+	ParamNameMap["Lrate"] = (void*) &Lrate;
+	ParamNameMap["LrateInit"] = (void*) &LrateInit;
+	ParamNameMap["XCal"] = (void*) &XCal;
+	ParamNameMap["WtSig"] = (void*) &WtSig;
+	ParamNameMap["Norm"] = (void*) &Norm;
+	ParamNameMap["Momentum"] = (void*) &Momentum;
+	ParamNameMap["WtBal"] = (void*) &WtBal;
+
+	ParamTypeMap["Learn"] = &typeid(bool);
+	ParamTypeMap["Lrate"] = &typeid(float);
+	ParamTypeMap["LrateInit"] = &typeid(float);
+	ParamTypeMap["XCal"] = &typeid(params::StylerObject);
+	ParamTypeMap["WtSig"] = &typeid(params::StylerObject);
+	ParamTypeMap["Norm"] = &typeid(params::StylerObject);
+	ParamTypeMap["Momentum"] = &typeid(params::StylerObject);
+	ParamTypeMap["WtBal"] = &typeid(params::StylerObject);
 }

@@ -113,3 +113,47 @@ float nxx1::Params::NoisyXX1Gain(float x, float gain) {
         return XX1GainCorGain(x, gain);
     }
 }
+
+std::string nxx1::Params::StyleType() {
+    return "Params";
+}
+
+std::string nxx1::Params::StyleClass() {
+    return "";
+}
+
+std::string nxx1::Params::StyleName() {
+    return "";
+}
+
+void nxx1::Params::InitParamMaps() {
+    ParamNameMap["Thr"] = (void*) &Thr;
+    ParamNameMap["Gain"] = (void*) &Gain;
+    ParamNameMap["NVar"] = (void*) &NVar;
+    ParamNameMap["VmActThr"] = (void*) &VmActThr;
+    ParamNameMap["SigMult"] = (void*) &SigMult;
+    ParamNameMap["SigMultPow"] = (void*) &SigMultPow;
+    ParamNameMap["SigGain"] = (void*) &SigGain;
+    ParamNameMap["InterpRange"] = (void*) &InterpRange;
+    ParamNameMap["GainCorRange"] = (void*) &GainCorRange;
+    ParamNameMap["GainCor"] = (void*) &GainCor;
+    ParamNameMap["SigGainNVar"] = (void*) &SigGainNVar;
+    ParamNameMap["SigMultEff"] = (void*) &SigMultEff;
+    ParamNameMap["SigValAt0"] = (void*) &SigValAt0;
+    ParamNameMap["InterpVal"] = (void*) &InterpVal;
+
+    ParamTypeMap["Thr"] = &typeid(float);
+    ParamTypeMap["Gain"] = &typeid(float);
+    ParamTypeMap["NVar"] = &typeid(float);
+    ParamTypeMap["VmActThr"] = &typeid(float);
+    ParamTypeMap["SigMult"] = &typeid(float);
+    ParamTypeMap["SigMultPow"] = &typeid(float);
+    ParamTypeMap["SigGain"] = &typeid(float);
+    ParamTypeMap["InterpRange"] = &typeid(float);
+    ParamTypeMap["GainCorRange"] = &typeid(float);
+    ParamTypeMap["GainCor"] = &typeid(float);
+    ParamTypeMap["SigGainNVar"] = &typeid(float);
+    ParamTypeMap["SigMultEff"] = &typeid(float);
+    ParamTypeMap["SigValAt0"] = &typeid(float);
+    ParamTypeMap["InterpVal"] = &typeid(float);
+}

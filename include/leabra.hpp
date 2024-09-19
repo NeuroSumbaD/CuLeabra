@@ -5,12 +5,13 @@
 #include "tensor.hpp"
 #include "time.hpp"
 #include "fffb.hpp"
+#include "params.hpp"
 
 namespace leabra {
 
     // SelfInhibParams defines parameters for Neuron self-inhibition -- activation of the neuron directly feeds back
     // to produce a proportional additional contribution to Gi
-    struct SelfInhibParams {
+    struct SelfInhibParams: params::StylerObject {
         bool On; // enable neuron self-inhibition
         float Gi; // [def: 0.4] strength of individual neuron self feedback inhibition -- can produce proportional activation behavior in individual units for specialized cases (e.g., scalar val or BG units), but not so good for typical hidden layers
         float Tau; // [def: 1.4] time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) for integrating unit self feedback inhibitory values -- prevents oscillations that otherwise occur -- relatively rapid 1.4 typically works, but may need to go longer if oscillations are a problem
@@ -21,13 +22,19 @@ namespace leabra {
         void Inhib(float &self, float act);
         void Update(){Dt = 1/Tau;};
         void Defaults(){On=false; Gi=0.4; Tau=1.4; Update();};
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // ActAvgParams represents expected average activity levels in the layer.
     // Used for computing running-average computation that is then used for netinput scaling.
     // Also specifies time constant for updating average
     // and for the target value for adapting inhibition in inhib_adapt.
-    struct ActAvgParams{
+    struct ActAvgParams: params::StylerObject {
         float Init;
         bool Fixed;
         bool UseExtAct;
@@ -44,13 +51,19 @@ namespace leabra {
 
         void Update(){Dt = 1/Tau;};
         void Defaults(){Init=0.15, Fixed=false; UseExtAct=false; UseFirst=true; Tau=100; Adjust=1; Update();};
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // leabra.InhibParams contains all the inhibition computation params and functions for basic Leabra
     // This is included in leabra.Layer to support computation.
     // This also includes other misc layer-level params such as running-average activation in the layer
     // which is used for netinput rescaling and potentially for adapting inhibition over time
-    struct InhibParams{
+    struct InhibParams: params::StylerObject {
         fffb::Params Layer; // inhibition across the entire layer
         fffb::Params Pool; // inhibition across sub-pools of units, for layers with 4D shape
         SelfInhibParams Self; // neuron self-inhibition parameters -- can be beneficial for producing more graded, linear response -- not typically used in cortical networks
@@ -60,6 +73,12 @@ namespace leabra {
 
         void Update();
         void Defaults();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     enum PathTypes {
@@ -89,7 +108,7 @@ namespace leabra {
     
     // WtBalRecvPath are state variables used in computing the WtBal weight balance function
     // There is one of these for each Recv Neuron participating in the pathway.
-    struct WtBalRecvPath {
+    struct WtBalRecvPath: params::StylerObject {
         // average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Path
         float Avg;
 
@@ -105,6 +124,12 @@ namespace leabra {
         WtBalRecvPath(){Avg = 0; Fact = 0; Inc = 1; Dec = 1;};
 
         void Init(){Avg = 0;Fact = 0;Inc = 1;Dec = 1;};
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     enum LayerTypes{
@@ -297,6 +322,8 @@ namespace leabra {
         std::string TypeName();
         emer::Layer* SendLayer();
         emer::Layer* RecvLayer();
+
+        void InitParamMaps();
     };
 
 } // namespace leabra

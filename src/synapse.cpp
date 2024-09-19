@@ -33,3 +33,21 @@ void leabra::Synapse::SetVarByName(std::string varNm, float val) {
     float *var = VarByName(varNm);
     *var = val;
 }
+
+std::string leabra::Synapse::StyleType() {
+    return "Synapse";
+}
+
+std::string leabra::Synapse::StyleClass() {
+    return "";
+}
+
+std::string leabra::Synapse::StyleName() {
+    return "";
+}
+
+void leabra::Synapse::InitParamMaps() {
+    ParamNameMap["Scale"] = (void*) &Scale;
+
+    ParamTypeMap["Scale"] = &typeid(float);
+}

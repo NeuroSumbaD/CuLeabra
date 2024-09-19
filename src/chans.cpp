@@ -25,3 +25,22 @@ void chans::Chans::SetFromMinusOther(float minus, Chans oth) {
     I = minus - oth.I;
     K = minus - oth.K;
 }
+
+std::string chans::Chans::StyleType() {
+    return "Chans";
+}
+
+std::string chans::Chans::StyleClass() {
+    return "";
+}
+
+std::string chans::Chans::StyleName() {
+    return "";
+}
+
+void chans::Chans::InitParamMaps() {
+    ParamNameMap["E"] = (void*) &E;
+    ParamNameMap["L"] = (void*) &L;
+    ParamNameMap["I"] = (void*) &I;
+    ParamNameMap["K"] = (void*) &K;
+}

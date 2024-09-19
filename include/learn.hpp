@@ -2,12 +2,13 @@
 #include <tuple>
 #include "neuron.hpp"
 #include "synapse.hpp"
+#include "params.hpp"
 
 namespace leabra {
 
     // LrnActAvgParams has rate constants for averaging over activations at different time scales,
     // to produce the running average activation values that then drive learning in the XCAL learning rules
-    struct LrnActAvgParams{
+    struct LrnActAvgParams: params::StylerObject {
         float SSTau; // [def: 2,4,7] [min: 1] time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the super-short time-scale avg_ss value -- this is provides a pre-integration step before integrating into the avg_s short time scale -- it is particularly important for spiking -- in general 4 is the largest value without starting to impair learning, but a value of 7 can be combined with m_in_s = 0 with somewhat worse results
         float STau; // [def: 2] [min: 1] time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the short time-scale avg_s value from the super-short avg_ss value (cascade mode) -- avg_s represents the plus phase learning signal that reflects the most recent past information
         float MTau; // [def: 10] [min: 1] time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the medium time-scale avg_m value from the short avg_s value (cascade mode) -- avg_m represents the minus phase learning signal that reflects the expectation representation prior to experiencing the outcome (in addition to the outcome) -- the default value of 10 generally cannot be exceeded without impairing learning
@@ -24,6 +25,12 @@ namespace leabra {
 
         void Update();
         void Defaults();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // AvgLParams are parameters for computing the long-term floating average value, AvgL
@@ -32,7 +39,7 @@ namespace leabra {
     // to prevent "hog" units -- it is computed as a running average of the (gain multiplied)
     // medium-time-scale average activation at the end of the alpha-cycle.
     // Also computes an adaptive amount of BCM learning, AvgLLrn, based on AvgL.
-    struct AvgLParams {
+    struct AvgLParams: params::StylerObject {
         float Init; // [def: 0.4] [min: 0] [max: 1] initial AvgL value at start of training
         float Gain; // [def: 1.5,2,2.5,3,4,5] [min: 0] gain multiplier on activation used in computing the running average AvgL value that is the key floating threshold in the BCM Hebbian learning rule -- when using the DELTA_FF_FB learning rule, it should generally be 2x what it was before with the old XCAL_CHL rule, i.e., default of 5 instead of 2.5 -- it is a good idea to experiment with this parameter a bit -- the default is on the high-side, so typically reducing a bit from initial default is a good direction
         float Min; // [def: 0.2] [min: 0] miniumum AvgL value -- running average cannot go lower than this value even when it otherwise would due to inactivity -- default value is generally good and typically does not need to be changed
@@ -50,11 +57,17 @@ namespace leabra {
         float ErrModFromLayErr(float layCosDiffAvg);
         void Defaults();
         void Update();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // CosDiffParams specify how to integrate cosine of difference between plus and minus phase activations
     // Used to modulate amount of hebbian learning, and overall learning rate.
-    struct CosDiffParams{
+    struct CosDiffParams: params::StylerObject {
         float Tau; // [def: 100] [min: 1] time constant in alpha-cycles (roughly how long significant change takes, 1.4 x half-life) for computing running average CosDiff value for the layer, CosDiffAvg = cosine difference between ActM and ActP -- this is an important statistic for how much phase-based difference there is between phases in this layer -- it is used in standard X_COS_DIFF modulation of l_mix in LeabraConSpec, and for modulating learning rate as a function of predictability in the DeepLeabra predictive auto-encoder learning -- running average variance also computed with this: cos_diff_var
         float Dt; // rate constant = 1 / Tau
         float DtC; // complement of rate constant = 1 - Dt
@@ -65,10 +78,16 @@ namespace leabra {
 
         void Update();
         void Defaults();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // CosDiffStats holds cosine-difference statistics at the layer level
-    struct CosDiffStats {
+    struct CosDiffStats: params::StylerObject {
         float Cos = 0; // cosine (normalized dot product) activation difference between ActP and ActM on this alpha-cycle for this layer -- computed by CosDiffFmActs at end of QuarterFinal for quarter = 3
         float Avg = 0; // running average of cosine (normalized dot product) difference between ActP and ActM -- computed with CosDiff.Tau time constant in QuarterFinal, and used for modulating BCM Hebbian learning (see AvgLrn) and overall learning rate
         float Var = 0; // running variance of cosine (normalized dot product) difference between ActP and ActM -- computed with CosDiff.Tau time constant in QuarterFinal, used for modulating overall learning rate
@@ -77,11 +96,17 @@ namespace leabra {
 
         CosDiffStats();
         void Init();
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
     // leabra.LearnNeurParams manages learning-related parameters at the neuron-level.
     // This is mainly the running average activations that drive learning.
-    struct LearnNeurParams {
+    struct LearnNeurParams: params::StylerObject {
         LrnActAvgParams ActAvg;
         AvgLParams AvgL;
         CosDiffParams CosDiff;
@@ -95,11 +120,16 @@ namespace leabra {
 
         void InitActAvg(Neuron &nrn);
 
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // XCalParams are parameters for temporally eXtended Contrastive Attractor Learning function (XCAL)
     // which is the standard learning equation for leabra.
-    struct XCalParams{
+    struct XCalParams: params::StylerObject {
         // multiplier on learning based on the medium-term floating average threshold which produces error-driven learning -- this is typically 1 when error-driven learning is being used, and 0 when pure Hebbian learning is used. The long-term floating average threshold is provided by the receiving unit
         float MLrn;// `default:"1" min:"0"`
 
@@ -127,10 +157,16 @@ namespace leabra {
         void Defaults();
         float DWt(float srval, float thrP);
         float LongLrate(float avgLLrn);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // WtSigParams are sigmoidal weight contrast enhancement function parameters
-    struct WtSigParams{
+    struct WtSigParams: params::StylerObject {
         // gain (contrast, sharpness) of the weight contrast function (1 = linear)
         float Gain; // `default:"1,6" min:"0"`
 
@@ -146,13 +182,19 @@ namespace leabra {
         void Defaults();
         float SigFromLinWt(float lw);
         float LinFromSigWt(float sw);
+        
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     float SigFun(float w, float gain, float off);
     float SigInvFun(float w, float gain, float off);
     float SigFun61(float w);
     float SigInvFun61(float w);
 
-    struct DWtNormParams {
+    struct DWtNormParams: params::StylerObject {
         // whether to use dwt normalization, only on error-driven dwt component, based on pathway-level max_avg value -- slowly decays and instantly resets to any current max
         bool On; //  `default:"true"`
 
@@ -179,11 +221,17 @@ namespace leabra {
         void Update();
         void Defaults();
         float NormFromAbsDWt(float &norm, float absDwt);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // MomentumParams implements standard simple momentum -- accentuates consistent directions of weight change and
     // cancels out dithering -- biologically captures slower timecourse of longer-term plasticity mechanisms.
-    struct MomentumParams{
+    struct MomentumParams: params::StylerObject {
         // whether to use standard simple momentum
         bool On; // bool `default:"true"`
 
@@ -204,13 +252,19 @@ namespace leabra {
         void Update(){MDt = 1/MTau; MDtC = 1 - MDt;};
         void Defaults();
         float MomentFromDWt(float &moment, float dwt);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // WtBalParams are weight balance soft renormalization params:
     // maintains overall weight balance by progressively penalizing weight increases as a function of
     // how strong the weights are overall (subject to thresholding) and long time-averaged activation.
     // Plugs into soft bounding function.
-    struct WtBalParams{
+    struct WtBalParams: params::StylerObject {
         // perform weight balance soft normalization?  if so, maintains overall weight balance across units by progressively penalizing weight increases as a function of amount of averaged receiver weight above a high threshold (hi_thr) and long time-average activation above an act_thr -- this is generally very beneficial for larger models where hog units are a problem, but not as much for smaller models where the additional constraints are not beneficial -- uses a sigmoidal function: WbInc = 1 / (1 + HiGain*(WbAvg - HiThr) + ActGain * (nrn.ActAvg - ActThr)))
         bool On;
 
@@ -237,10 +291,16 @@ namespace leabra {
         void Update();
         void Defaults();
         std::tuple<float, float, float> WtBal(float wbAvg);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
     // leabra.LearnSynParams manages learning-related parameters at the synapse-level.
-    struct LearnSynParams{
+    struct LearnSynParams: params::StylerObject {
         // enable learning for this pathway
         bool Learn;
 
@@ -274,6 +334,12 @@ namespace leabra {
         std::tuple<float, float> CHLdWt(float suAvgSLrn, float suAvgM, float ruAvgSLrn, float ruAvgM, float ruAvgL);
         float BCMdWt(float suAvgSLrn, float ruAvgSLrn, float ruAvgL);
         void WtFromDWt(float wbInc, float wbDec, float &dwt, float &wt, float &lwt, float scale);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
 
 }

@@ -121,6 +121,8 @@ namespace leabra {
         emer::Path* RecvPath(int idx);
         int NumSendPaths();
         emer::Path* SendPath(int idx);
+
+        void InitParamMaps();
     };
 
 };

@@ -14,9 +14,10 @@ ISRN Neuroscience, 2013. https://doi.org/10.1155/2013/354262
 This package supports both spiking and rate-coded activations.
 */
 #pragma once
+#include "params.hpp"
 
 namespace knadapt {
-    struct Chan {
+    struct Chan: params::StylerObject {
         bool On; // if On, use this component of K-Na adaptation
         float Rise; // Rise rate of fast time-scale adaptation as function of Na concentration -- directly multiplies -- 1/rise = tau for rise rate
         float Max; // Maximum potential conductance of fast K channels -- divide nA biological value by 10 for the normalized units here
@@ -28,12 +29,18 @@ namespace knadapt {
         void Defaults();
         void GcFmSpike(float* gKNa, bool spike);
         void GcFmRate(float* gKNa, float act);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
     // Params describes sodium-gated potassium channel adaptation mechanism.
     // Evidence supports at least 3 different time constants:
     // M-type (fast), Slick (medium), and Slack (slow)
-    struct Params {
+    struct Params: params::StylerObject {
         bool On; // if On, apply K-Na adaptation
         float Rate; // extra multiplier for rate-coded activations on rise factors -- adjust to match discrete spiking
         Chan Fast; // fast time-scale adaptation
@@ -47,6 +54,12 @@ namespace knadapt {
         void Update();
         void GcFromSpike(float* gKNaF, float* gKNaM, float* gKNaS, bool spike);
         void GcFromRate(float* gKNaF, float* gKNaM, float* gKNaS, float act);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 /*
 Package chans provides standard neural conductance channels for computing
 a point-neuron approximation based on the standard equivalent RC circuit
@@ -9,7 +10,7 @@ Includes excitatory, leak, inhibition, and dynamic potassium channels.
 namespace chans {
 
     // Chans are ion channels used in computing point-neuron activation function
-    struct Chans {
+    struct Chans: params::StylerObject {
         float E; // excitatory sodium (Na) AMPA channels activated by synaptic glutamate
         float L; // constant leak (potassium, K+) channels -- determines resting potential (typically higher than resting potential of K)
         float I; // inhibitory chloride (Cl-) channels activated by synaptic GABA
@@ -19,6 +20,12 @@ namespace chans {
         void SetAll(float e, float l, float i, float k);
         void SetFromOtherMinus(Chans oth, float minus);
         void SetFromMinusOther(float minus, Chans oth);
+
+        std::string StyleType();
+        std::string StyleClass();
+        std::string StyleName();
+
+        void InitParamMaps();
     };
     
 }

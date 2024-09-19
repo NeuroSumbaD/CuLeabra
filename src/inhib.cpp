@@ -21,6 +21,30 @@ void inhib::SelfInhibParams::Inhib(float *self, float act) {
     }
 }
 
+std::string inhib::SelfInhibParams::StyleType() {
+    return "SelfInhibParams";
+}
+
+std::string inhib::SelfInhibParams::StyleClass() {
+    return "";
+}
+
+std::string inhib::SelfInhibParams::StyleName() {
+    return "";
+}
+
+void inhib::SelfInhibParams::InitParamMaps() {
+    ParamNameMap["On"] = (void *) &On;
+    ParamNameMap["Gi"] = (void *) &Gi;
+    ParamNameMap["Tau"] = (void *) &Tau;
+    ParamNameMap["Dt"] = (void *) &Dt;
+
+    ParamTypeMap["On"] = &typeid(bool);
+    ParamTypeMap["Gi"] = &typeid(float);
+    ParamTypeMap["Tau"] = &typeid(float);
+    ParamTypeMap["Dt"] = &typeid(float);
+}
+
 inhib::ActAvgParams::ActAvgParams(float Init, bool Fixed, bool UseExtAct, bool Usefirst, float Tau, float Adjust) {
     this->Init = Init;
     this->Fixed = Fixed;
@@ -62,9 +86,63 @@ void inhib::ActAvgParams::EffFmAvg(float *eff, float avg) {
 	}
 }
 
+std::string inhib::ActAvgParams::StyleType() {
+    return "ActAvgParams";
+}
+
+std::string inhib::ActAvgParams::StyleClass() {
+    return "";
+}
+
+std::string inhib::ActAvgParams::StyleName() {
+    return "";
+}
+
+void inhib::ActAvgParams::InitParamMaps() {
+    ParamNameMap["Init"] = (void*) &Init;
+    ParamNameMap["Fixed"] = (void*) &Fixed;
+    ParamNameMap["UseExtAct"] = (void*) &UseExtAct;
+    ParamNameMap["UseFirst"] = (void*) &UseFirst;
+    ParamNameMap["Tau"] = (void*) &Tau;
+    ParamNameMap["Adjust"] = (void*) &Adjust;
+    ParamNameMap["Dt"] = (void*) &Dt;
+
+    ParamTypeMap["Init"] = &typeid(float);
+    ParamTypeMap["Fixed"] = &typeid(bool);
+    ParamTypeMap["UseExtAct"] = &typeid(bool);
+    ParamTypeMap["UseFirst"] = &typeid(bool);
+    ParamTypeMap["Tau"] = &typeid(float);
+    ParamTypeMap["Adjust"] = &typeid(float);
+    ParamTypeMap["Dt"] = &typeid(float);
+}
+
 inhib::InhibParams::InhibParams() {
     this->Layer = fffb::Params();
     this->Pool = fffb::Params();
     this->Self = inhib::SelfInhibParams();
     this->ActAvg = inhib::ActAvgParams();
+}
+
+std::string inhib::InhibParams::StyleType() {
+    return "InhibParams";
+}
+
+std::string inhib::InhibParams::StyleClass() {
+    return "";
+}
+
+std::string inhib::InhibParams::StyleName() {
+    return "";
+}
+
+void inhib::InhibParams::InitParamMaps() {
+    ParamNameMap["Layer"] = (void*) &Layer;
+    ParamNameMap["Pool"] = (void*) &Pool;
+    ParamNameMap["Self"] = (void*) &Self;
+    ParamNameMap["ActAvg"] = (void*) &ActAvg;
+
+    ParamTypeMap["Layer"] = &typeid(params::StylerObject);
+    ParamTypeMap["Pool"] = &typeid(params::StylerObject);
+    ParamTypeMap["Self"] = &typeid(params::StylerObject);
+    ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
 }

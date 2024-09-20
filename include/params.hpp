@@ -3,6 +3,7 @@
 #include <map>
 #include <any>
 #include <vector>
+#include <initializer_list>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -70,7 +71,10 @@ namespace params {
     // Sel selector scope which is used to determine what specific objects to apply the
     // parameters to.
     struct Params {
-        std::map<std::string, std::string> map;
+        std::map<std::string, std::string> params;
+
+        Params(std::initializer_list<std::pair<const std::string, std::string>> s): params(s) {};
+
         // std::string ParamByNameTry(std::string name);
         std::string ParamByName(std::string name);
         void SetByName(std::string name, std::string value);
@@ -144,8 +148,11 @@ namespace params {
     // application must be done under explicit program control.
     // typedef Sel** Sheet; // Array of Sel*
     struct Sheet {
-        std::vector<Sel*> sel;
+        std::vector<Sel> sel;
         // Sheet(){sel = std::vector<Sel>();};
+
+        // Constructor that takes an initializer list of Selections
+        Sheet(std::initializer_list<Sel> sels) : sel(sels) {};
 
         std::string ElemLabel(int idx);
         // Sel* SelByNameTry(std::string sel);
@@ -162,9 +169,10 @@ namespace params {
     typedef std::map<std::string, Sheet> Sheets; // Sheets is a map of named sheets -- used in the Set
 
     struct Sets {
-        std::map<std::string, Sheet*> map;
-        // std::string Desc; // description of this param set -- when should it be used?  how is it different from the other sets?
-        // Sheets SheetSet; // Sheet's grouped according to their target and / or function. For example, "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate.
+        std::map<std::string, Sheet> sheets;
+
+        // Constructor that takes an initializer list of key-value pairs
+        Sets(std::initializer_list<std::pair<const std::string, Sheet>> s): sheets(s) {};
 
         // Sheet* SheetByNameTry(std::string name);
         Sheet* SheetByName(std::string name);

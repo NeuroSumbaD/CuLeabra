@@ -476,7 +476,7 @@ bool params::ClassMatch(std::string sel, std::string cls) {
 
 // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 std::string params::Sheet::ElemLabel(int idx){
-    return sel[idx]->Sel;
+    return sel[idx].Sel;
 }
 
 // SelByNameTry returns given selector within the Sheet, by Name.
@@ -495,7 +495,8 @@ std::string params::Sheet::ElemLabel(int idx){
 // SelByName returns given selector within the Sheet, by Name.
 // Returns nil if not found -- use Try version for error
 params::Sel* params::Sheet::SelByName(std::string sel) {
-    for (params::Sel *sl: this->sel){
+    for (params::Sel &slref: this->sel){
+        params::Sel *sl = &slref;
         if (sl->Sel== sel){
             return sl;
         }
@@ -529,7 +530,8 @@ std::string params::Sheet::ParamValue(std::string sel, std::string param) {
 bool params::Sheet::Apply(std::any obj, bool setMsg) {
     bool applied = false;
 	std::vector<std::string> errs;
-	for (Sel *sl: sel) {
+	for (Sel &slref: sel) {
+        Sel *sl = &slref;
 		bool app = sl->Apply(obj, setMsg);
 		if (app) {
 			applied = true;
@@ -548,7 +550,8 @@ bool params::Sheet::Apply(std::any obj, bool setMsg) {
 // for each Layer and Path), so this must be called separately.
 // See SelNoMatchWarn for warning call at end.
 void params::Sheet::SelMatchReset(std::string setName) {
-    for (Sel *sl: sel) {
+    for (Sel &slref: sel) {
+        Sel *sl = &slref;
 		sl->NMatch = 0;
 		sl->SetName = setName;
 	}
@@ -560,7 +563,8 @@ void params::Sheet::SelMatchReset(std::string setName) {
 // Returns an error message with the non-matching sets if any, else nil.
 void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
     std::string msg = "";
-	for (Sel *sl: sel) {
+	for (Sel &slref: sel) {
+        Sel *sl = &slref;
 		if (sl->NMatch == 0) {
 			msg += "\tSel: " + sl->Sel + "\n";
 		}
@@ -586,7 +590,7 @@ void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
 // SheetByName finds given sheet by name -- returns nil if not found.
 // Use this when sure the sheet exists -- otherwise use Try version.
 params::Sheet *params::Sets::SheetByName(std::string name) {
-    return map[name];
+    return &(sheets[name]);
 }
 
 // ValidateSheets ensures that the sheet names are among those listed -- returns

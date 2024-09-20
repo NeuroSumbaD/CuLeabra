@@ -31,6 +31,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Pool() = default;
     };
     
 } // namespace leabra

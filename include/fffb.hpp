@@ -23,6 +23,8 @@ namespace fffb {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Inhib() = default;
     };
     
     // Params parameterizes feedforward (FF) and feedback (FB) inhibition (FFFB)
@@ -51,6 +53,8 @@ namespace fffb {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Params() = default;
     };
     
 };

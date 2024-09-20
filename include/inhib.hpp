@@ -19,6 +19,8 @@ namespace inhib{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~SelfInhibParams() = default;
     };
     
     // ActAvgParams represents expected average activity levels in the layer.
@@ -44,6 +46,8 @@ namespace inhib{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~ActAvgParams() = default;
     };
     
     // InhibParams contains all the inhibition computation params and functions for basic Leabra
@@ -62,5 +66,7 @@ namespace inhib{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~InhibParams() = default;
     };
 };

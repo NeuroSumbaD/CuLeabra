@@ -141,8 +141,8 @@ void inhib::InhibParams::InitParamMaps() {
     ParamNameMap["Self"] = (void*) &Self;
     ParamNameMap["ActAvg"] = (void*) &ActAvg;
 
-    ParamTypeMap["Layer"] = &typeid(params::StylerObject);
-    ParamTypeMap["Pool"] = &typeid(params::StylerObject);
-    ParamTypeMap["Self"] = &typeid(params::StylerObject);
-    ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
+    ParamTypeMap["Layer"] = &typeid(Layer);
+    ParamTypeMap["Pool"] = &typeid(Pool);
+    ParamTypeMap["Self"] = &typeid(Self);
+    ParamTypeMap["ActAvg"] = &typeid(ActAvg);
 }

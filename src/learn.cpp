@@ -131,9 +131,9 @@ void leabra::LearnNeurParams::InitParamMaps() {
 	ParamNameMap["AvgL"] = (void*) &AvgL;
 	ParamNameMap["CosDiff"] = (void*) &CosDiff;
 
-	ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
-	ParamTypeMap["AvgL"] = &typeid(params::StylerObject);
-	ParamTypeMap["CosDiff"] = &typeid(params::StylerObject);
+	ParamTypeMap["ActAvg"] = &typeid(ActAvg);
+	ParamTypeMap["AvgL"] = &typeid(AvgL);
+	ParamTypeMap["CosDiff"] = &typeid(CosDiff);
 }
 
 leabra::AvgLParams::AvgLParams(float init, float gain, float min, float tau, float lrnMax, float lrnMin, bool errMod, float modMin):
@@ -753,12 +753,12 @@ void leabra::LearnSynParams::InitParamMaps() {
 	ParamNameMap["Momentum"] = (void*) &Momentum;
 	ParamNameMap["WtBal"] = (void*) &WtBal;
 
-	ParamTypeMap["Learn"] = &typeid(bool);
-	ParamTypeMap["Lrate"] = &typeid(float);
-	ParamTypeMap["LrateInit"] = &typeid(float);
-	ParamTypeMap["XCal"] = &typeid(params::StylerObject);
-	ParamTypeMap["WtSig"] = &typeid(params::StylerObject);
-	ParamTypeMap["Norm"] = &typeid(params::StylerObject);
-	ParamTypeMap["Momentum"] = &typeid(params::StylerObject);
-	ParamTypeMap["WtBal"] = &typeid(params::StylerObject);
+	ParamTypeMap["Learn"] = &typeid(Learn);
+	ParamTypeMap["Lrate"] = &typeid(Lrate);
+	ParamTypeMap["LrateInit"] = &typeid(LrateInit);
+	ParamTypeMap["XCal"] = &typeid(XCal);
+	ParamTypeMap["WtSig"] = &typeid(WtSig);
+	ParamTypeMap["Norm"] = &typeid(Norm);
+	ParamTypeMap["Momentum"] = &typeid(Momentum);
+	ParamTypeMap["WtBal"] = &typeid(WtBal);
 }

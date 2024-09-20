@@ -42,6 +42,8 @@ namespace nxx1{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Params() = default;
     };
 
 

@@ -28,6 +28,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~SelfInhibParams() = default;
     };
 
     // ActAvgParams represents expected average activity levels in the layer.
@@ -57,6 +59,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~ActAvgParams() = default;
     };
 
     // leabra.InhibParams contains all the inhibition computation params and functions for basic Leabra
@@ -79,6 +83,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~InhibParams() = default;
     };
 
     enum PathTypes {
@@ -130,6 +136,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~WtBalRecvPath() = default;
     };
 
     enum LayerTypes{
@@ -324,6 +332,9 @@ namespace leabra {
         emer::Layer* RecvLayer();
 
         void InitParamMaps();
+
+        // TODO: Make sure this destructor is sufficient (check if Synapses are destroyed properly);
+        ~Path() = default;
     };
 
 } // namespace leabra

@@ -130,9 +130,9 @@ void knadapt::Params::InitParamMaps(){
     ParamNameMap["Med"] = (void*) & Med;
     ParamNameMap["Slow"] = (void*) & Slow;
 
-    ParamTypeMap["On"] = &typeid(bool);
-    ParamTypeMap["Rate"] = &typeid(float);
-    ParamTypeMap["Fast"] = &typeid(params::StylerObject);
-    ParamTypeMap["Med"] = &typeid(params::StylerObject);
-    ParamTypeMap["Slow"] = &typeid(params::StylerObject);
+    ParamTypeMap["On"] = &typeid(On);
+    ParamTypeMap["Rate"] = &typeid(Rate);
+    ParamTypeMap["Fast"] = &typeid(Fast);
+    ParamTypeMap["Med"] = &typeid(Med);
+    ParamTypeMap["Slow"] = &typeid(Slow);
 }

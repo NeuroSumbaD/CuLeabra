@@ -32,8 +32,8 @@ void leabra::OptThreshParams::InitParamMaps() {
 	ParamNameMap["Send"] = (void*) &Send;
 	ParamNameMap["Delta"] = (void*) &Delta;
 
-	ParamTypeMap["Send"] = &typeid(float);
-	ParamTypeMap["Delta"] = &typeid(float);
+	ParamTypeMap["Send"] = &typeid(Send);
+	ParamTypeMap["Delta"] = &typeid(Delta);
 }
 
 leabra::ActInitParams::ActInitParams(float Decay, float Vm, float Act, float Ge) {
@@ -71,10 +71,10 @@ void leabra::ActInitParams::InitParamMaps() {
 	ParamNameMap["Act"] = (void*) &Act;
 	ParamNameMap["Ge"] = (void*) &Ge;
 
-	ParamTypeMap["Decay"] = &typeid(float);
-	ParamTypeMap["Vm"] = &typeid(float);
-	ParamTypeMap["Act"] = &typeid(float);
-	ParamTypeMap["Ge"] = &typeid(float);
+	ParamTypeMap["Decay"] = &typeid(Decay);
+	ParamTypeMap["Vm"] = &typeid(Vm);
+	ParamTypeMap["Act"] = &typeid(Act);
+	ParamTypeMap["Ge"] = &typeid(Ge);
 }
 
 leabra::DtParams::DtParams(float Integ, float VmTau, float AvgTau) {
@@ -123,13 +123,13 @@ void leabra::DtParams::InitParamMaps() {
 	ParamNameMap["GDt"] = (void*) &GDt;
 	ParamNameMap["AvgDt"] = (void*) &AvgDt;
 
-	ParamTypeMap["Integ"] = &typeid(float);
-	ParamTypeMap["VmTau"] = &typeid(float);
-	ParamTypeMap["GTau"] = &typeid(float);
-	ParamTypeMap["AvgTau"] = &typeid(float);
-	ParamTypeMap["VmDt"] = &typeid(float);
-	ParamTypeMap["GDt"] = &typeid(float);
-	ParamTypeMap["AvgDt"] = &typeid(float);
+	ParamTypeMap["Integ"] = &typeid(Integ);
+	ParamTypeMap["VmTau"] = &typeid(VmTau);
+	ParamTypeMap["GTau"] = &typeid(GTau);
+	ParamTypeMap["AvgTau"] = &typeid(AvgTau);
+	ParamTypeMap["VmDt"] = &typeid(VmDt);
+	ParamTypeMap["GDt"] = &typeid(GDt);
+	ParamTypeMap["AvgDt"] = &typeid(AvgDt);
 }
 
 leabra::ClampParams::ClampParams(bool Hard, float RangeMax, float Gain, bool Avg, float AvgGain) {
@@ -174,10 +174,10 @@ void leabra::ClampParams::InitParamMaps() {
 	ParamNameMap["Avg"] = (void*) &Avg;
 	ParamNameMap["AvgGain"] = (void*) &AvgGain;
 
-	ParamTypeMap["Hard"] = &typeid(bool);
-	ParamTypeMap["Gain"] = &typeid(float);
-	ParamTypeMap["Avg"] = &typeid(bool);
-	ParamTypeMap["AvgGain"] = &typeid(float);
+	ParamTypeMap["Hard"] = &typeid(Hard);
+	ParamTypeMap["Gain"] = &typeid(Gain);
+	ParamTypeMap["Avg"] = &typeid(Avg);
+	ParamTypeMap["AvgGain"] = &typeid(AvgGain);
 }
 
 leabra::ActNoiseParams::ActNoiseParams(){Type = ActNoiseType::NoNoise; Defaults();}
@@ -208,8 +208,8 @@ void leabra::ActNoiseParams::InitParamMaps() {
 	ParamNameMap["Type"] = (void*) &Type;
 	ParamNameMap["Fixed"] = (void*) &Fixed;
 
-	ParamTypeMap["Type"] = &typeid(int);
-	ParamTypeMap["Fixed"] = &typeid(bool);
+	ParamTypeMap["Type"] = &typeid(Type);
+	ParamTypeMap["Fixed"] = &typeid(Fixed);
 }
 
 leabra::WtInitParams::WtInitParams(float mean, float var, float par, rands::RandDists type):
@@ -271,8 +271,8 @@ void leabra::WtScaleParams::InitParamMaps() {
 	ParamNameMap["Abs"] = (void*) &Abs;
 	ParamNameMap["Rel"] = (void*) &Rel;
 
-	ParamTypeMap["Abs"] = &typeid(float);
-	ParamTypeMap["Rel"] = &typeid(float);
+	ParamTypeMap["Abs"] = &typeid(Abs);
+	ParamTypeMap["Rel"] = &typeid(Rel);
 }
 
 leabra::ActParams::ActParams():
@@ -519,16 +519,16 @@ void leabra::ActParams::InitParamMaps() {
 	ParamNameMap["ErevSubThr"] = (void*) &ErevSubThr;
 	ParamNameMap["ThrSubErev"] = (void*) &ThrSubErev;
 
-	ParamTypeMap["XX1"] = &typeid(params::StylerObject);
-	ParamTypeMap["OptThresh"] = &typeid(params::StylerObject);
-	ParamTypeMap["Init"] = &typeid(params::StylerObject);
-	ParamTypeMap["Dt"] = &typeid(params::StylerObject);
-	ParamTypeMap["Gbar"] = &typeid(params::StylerObject);
-	ParamTypeMap["Erev"] = &typeid(params::StylerObject);
-	ParamTypeMap["Clamp"] = &typeid(params::StylerObject);
-	ParamTypeMap["Noise"] = &typeid(params::StylerObject);
-	ParamTypeMap["VmRange"] = &typeid(params::StylerObject);
-	ParamTypeMap["KNa"] = &typeid(params::StylerObject);
-	ParamTypeMap["ErevSubThr"] = &typeid(params::StylerObject);
-	ParamTypeMap["ThrSubErev"] = &typeid(params::StylerObject);
+	ParamTypeMap["XX1"] = &typeid(XX1);
+	ParamTypeMap["OptThresh"] = &typeid(OptThresh);
+	ParamTypeMap["Init"] = &typeid(Init);
+	ParamTypeMap["Dt"] = &typeid(Dt);
+	ParamTypeMap["Gbar"] = &typeid(Gbar);
+	ParamTypeMap["Erev"] = &typeid(Erev);
+	ParamTypeMap["Clamp"] = &typeid(Clamp);
+	ParamTypeMap["Noise"] = &typeid(Noise);
+	ParamTypeMap["VmRange"] = &typeid(VmRange);
+	ParamTypeMap["KNa"] = &typeid(KNa);
+	ParamTypeMap["ErevSubThr"] = &typeid(ErevSubThr);
+	ParamTypeMap["ThrSubErev"] = &typeid(ThrSubErev);
 }

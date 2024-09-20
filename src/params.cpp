@@ -22,17 +22,17 @@ std::string anyToString(const T& value) {
 
 
 std::string params::Params::ParamByName(std::string name) {
-    if (map.find(name) == map.end()){
+    if (params.find(name) == params.end()){
         std::string err = "params::Params: parameter named " + name + " not found";
         throw std::invalid_argument(err);
     }
     else {
-        return map[name];
+        return params[name];
     }
 }
 
 void params::Params::SetByName(std::string name, std::string value) {
-    map[name] = value;
+    params[name] = value;
 }
 
 // Path returns the second part of the path after the target type,
@@ -46,7 +46,7 @@ std::string params::Params::Path(std::string path) {
 // object the params apply to.  Uses the first item in the map (which is random)
 // everything in the map must have the same target.
 std::string params::Params::TargetType() {
-    for (const auto& [key, value] : map) {
+    for (const auto& [key, value] : params) {
         return strings::split(key, '.')[0];
     }
     return "";
@@ -68,7 +68,7 @@ std::string params::Params::Apply(std::any obj, bool setMsg) {
 
     std::vector<std::string> errs;
 
-    for (auto& [key, value] : map) {
+    for (auto& [key, value] : params) {
         std::string path = Path(key);
 
         try {
@@ -698,10 +698,14 @@ std::string params::StylerObject::SetByName(std::string varName, std::string val
             std::istringstream(item) >> std::boolalpha >> val;
             vectorPtr->push_back(val); // TODO figure out how to handle 
         }
-    } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
+    // } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
         // TODO HANDLE THE CASE OF NESTED PARAMS?
         // ...maybe do nothing...
     } else {
+        // if (StylerObject *obj = dynamic_cast<StylerObject*>(ParamNameMap[varName])) {
+        //     // TODO HANDLE THE CASE OF NESTED PARAMS?
+        // // ...maybe do nothing...
+        // }
         err = "Error: type of variable named " + varName + " not handled.";
     }
     return err;
@@ -728,11 +732,15 @@ float params::StylerObject::GetByName(std::string varName) {
         bool *ptr = (bool *)varPtr;
         // *ptr = val;
         var = *ptr;
-    } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
+    // } else if (ParamTypeMap[varName] == &typeid(params::StylerObject)) {
         // TODO HANDLE THE CASE OF NESTED PARAMS?
         // ...maybe do nothing...
     } else {
-        throw std::invalid_argument("Error: type of variable named " + varName + " not handled.");
+        // if (StylerObject *obj = dynamic_cast<StylerObject*>(ParamNameMap[varName])) {
+        //     // TODO HANDLE THE CASE OF NESTED PARAMS?
+        // // ...maybe do nothing...
+        // }
+        throw std::invalid_argument("Error: type of variable named " + varName + " not handled. Type info: " + ParamTypeMap[varName]->name());
     }
     return var;
 }

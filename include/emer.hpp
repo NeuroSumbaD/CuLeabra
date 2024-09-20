@@ -69,7 +69,8 @@ namespace emer {
         // VarRange(varNm string) (min, max float32, err error)
         
         //Params
-        // void ApplyParams(params::Sheet& pars, bool setMsg);
+        bool ApplyParams(params::Sheet& pars, bool setMsg);
+        bool ApplyParams(params::Sets& pars, bool setMsg, std::string name="Base");
         // std::string NonDefaultParams();
         // void SaveAllParams(fstream file);
         // void SaveNonDefaultParams(fstream file);

@@ -24,5 +24,5 @@ std::string leabra::Pool::StyleName() {
 void leabra::Pool::InitParamMaps() {
     ParamNameMap["Inhib"] = (void*) &Inhib;
 
-    ParamTypeMap["Inhib"] = &typeid(params::StylerObject);
+    ParamTypeMap["Inhib"] = &typeid(Inhib);
 }

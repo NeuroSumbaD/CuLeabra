@@ -153,6 +153,45 @@ void emer::Network::LayoutBoundsUpdate() {
 	MaxPos = mx;
 }
 
+// ApplyParams applies given parameter style Sheet to layers and paths in this network.
+// Calls UpdateParams to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+// returns true if any params were set, and error if there were any errors.
+bool emer::Network::ApplyParams(params::Sheet &pars, bool setMsg) {
+	bool applied = false;
+	std::vector<std::string> errs;
+	// en := nt.EmerNetwork
+	int nlay = NumLayers();
+	for (int li = 0; li < nlay; li++) {
+		emer::Layer &ly = *EmerLayer(li);
+		bool app = ly.ApplyParams(pars, setMsg);
+		if (app) {
+			applied = true;
+		}
+		// if err != nil {
+		// 	errs = append(errs, err)
+		// }
+	}
+	return applied;
+}
+
+// Applies a sheet from the Sets of parameter sheets provided. Defaults to the 'base'
+// sheet if the name is not provided. If name="ALL" then all the sheets are applied.
+bool emer::Network::ApplyParams(params::Sets &pars, bool setMsg, std::string name) {
+	if (name == "ALL") {
+		for (auto &[name,sheet]: pars.sheets) {
+			bool app = ApplyParams(sheet, setMsg);
+			if (!app){
+				std::cerr << "Parameter sheet '" << name << "' not applied." << std::endl;
+				return false;
+			}
+		}
+		return true;
+	}
+    return ApplyParams(pars.sheets[name], setMsg);
+}
+
 void emer::Network::SetRandSeed(int seed){
 	RandSeed = seed;
 	ResetRandSeed();

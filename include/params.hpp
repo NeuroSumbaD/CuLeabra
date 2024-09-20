@@ -22,6 +22,7 @@ namespace params {
         std::map<std::string, const std::type_info*> ParamTypeMap;
 
         StylerObject();
+        virtual ~StylerObject() = default;
 
         // StyleType returns the name of this type for CSS-style matching.
         // This is used for CSS Sel selector with no prefix.
@@ -149,7 +150,9 @@ namespace params {
     // typedef Sel** Sheet; // Array of Sel*
     struct Sheet {
         std::vector<Sel> sel;
-        // Sheet(){sel = std::vector<Sel>();};
+        
+        // Default constructor
+        Sheet():sel(){};
 
         // Constructor that takes an initializer list of Selections
         Sheet(std::initializer_list<Sel> sels) : sel(sels) {};
@@ -170,6 +173,9 @@ namespace params {
 
     struct Sets {
         std::map<std::string, Sheet> sheets;
+
+        // Default constructor
+        Sets():sheets(){};
 
         // Constructor that takes an initializer list of key-value pairs
         Sets(std::initializer_list<std::pair<const std::string, Sheet>> s): sheets(s) {};

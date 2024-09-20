@@ -31,6 +31,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~LrnActAvgParams() = default;
     };
 
     // AvgLParams are parameters for computing the long-term floating average value, AvgL
@@ -63,6 +65,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~AvgLParams() = default;
     };
 
     // CosDiffParams specify how to integrate cosine of difference between plus and minus phase activations
@@ -84,6 +88,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~CosDiffParams() = default;
     };
 
     // CosDiffStats holds cosine-difference statistics at the layer level
@@ -102,6 +108,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~CosDiffStats() = default;
     };
     
     // leabra.LearnNeurParams manages learning-related parameters at the neuron-level.
@@ -125,6 +133,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~LearnNeurParams() = default;
     };
 
     // XCalParams are parameters for temporally eXtended Contrastive Attractor Learning function (XCAL)
@@ -163,6 +173,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~XCalParams() = default;
     };
 
     // WtSigParams are sigmoidal weight contrast enhancement function parameters
@@ -188,6 +200,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~WtSigParams() = default;
     };
     float SigFun(float w, float gain, float off);
     float SigInvFun(float w, float gain, float off);
@@ -227,6 +241,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~DWtNormParams() = default;
     };
 
     // MomentumParams implements standard simple momentum -- accentuates consistent directions of weight change and
@@ -258,6 +274,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~MomentumParams() = default;
     };
 
     // WtBalParams are weight balance soft renormalization params:
@@ -297,6 +315,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~WtBalParams() = default;
     };
 
     // leabra.LearnSynParams manages learning-related parameters at the synapse-level.
@@ -340,6 +360,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~LearnSynParams() = default;
     };
 
 }

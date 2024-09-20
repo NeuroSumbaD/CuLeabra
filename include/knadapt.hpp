@@ -35,6 +35,8 @@ namespace knadapt {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Chan() = default;
     };
     
     // Params describes sodium-gated potassium channel adaptation mechanism.
@@ -60,6 +62,8 @@ namespace knadapt {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Params() = default;
     };
     
 }

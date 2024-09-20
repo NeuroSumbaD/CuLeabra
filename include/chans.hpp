@@ -26,6 +26,8 @@ namespace chans {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Chans() = default;
     };
     
 }

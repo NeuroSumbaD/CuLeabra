@@ -998,10 +998,10 @@ void leabra::Layer::InitParamMaps() {
 	ParamNameMap["Learn"] = (void*) &Learn;
 	ParamNameMap["CosDiff"] = (void*) &CosDiff;
 
-	ParamTypeMap["Act"] = &typeid(params::StylerObject);
-	ParamTypeMap["Inhib"] = &typeid(params::StylerObject);
-	ParamTypeMap["Learn"] = &typeid(params::StylerObject);
-	ParamTypeMap["CosDiff"] = &typeid(params::StylerObject);
+	ParamTypeMap["Act"] = &typeid(Act);
+	ParamTypeMap["Inhib"] = &typeid(Inhib);
+	ParamTypeMap["Learn"] = &typeid(Learn);
+	ParamTypeMap["CosDiff"] = &typeid(CosDiff);
 }
 
 leabra::LayerShape::LayerShape(int x, int y, int poolsX, int poolsY): X(x),Y(y),PoolsX(poolsX),PoolsY(poolsY){}

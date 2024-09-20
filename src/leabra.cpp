@@ -124,10 +124,10 @@ void leabra::InhibParams::InitParamMaps(){
 	ParamNameMap["Self"] = (void*) &Self;
 	ParamNameMap["ActAvg"] = (void*) &ActAvg;
 
-	ParamTypeMap["Layer"] = &typeid(params::StylerObject);
-	ParamTypeMap["Pool"] = &typeid(params::StylerObject);
-	ParamTypeMap["Self"] = &typeid(params::StylerObject);
-	ParamTypeMap["ActAvg"] = &typeid(params::StylerObject);
+	ParamTypeMap["Layer"] = &typeid(Layer);
+	ParamTypeMap["Pool"] = &typeid(Pool);
+	ParamTypeMap["Self"] = &typeid(Self);
+	ParamTypeMap["ActAvg"] = &typeid(ActAvg);
 }
 
 leabra::Path::Path(std::string name, std::string cls):emer::Path(name, cls){Send=nullptr; Recv=nullptr;}
@@ -675,10 +675,10 @@ void leabra::Path::InitParamMaps() {
 	ParamNameMap["Learn"] = (void*) &Learn;
 	ParamNameMap["GScale"] = (void*) &GScale;
 
-	ParamTypeMap["WtInit"] = &typeid(params::StylerObject);
-	ParamTypeMap["WtScale"] = &typeid(params::StylerObject);
-	ParamTypeMap["Learn"] = &typeid(params::StylerObject);
-	ParamTypeMap["GScale"] = &typeid(float);
+	ParamTypeMap["WtInit"] = &typeid(WtInit);
+	ParamTypeMap["WtScale"] = &typeid(WtScale);
+	ParamTypeMap["Learn"] = &typeid(Learn);
+	ParamTypeMap["GScale"] = &typeid(GScale);
 }
 
 std::string leabra::WtBalRecvPath::StyleType() {

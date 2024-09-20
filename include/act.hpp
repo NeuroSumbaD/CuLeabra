@@ -32,6 +32,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~OptThreshParams() = default;
     };
 
     // ActInitParams are initial values for key network state variables.
@@ -51,6 +53,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~ActInitParams() = default;
     };
 
     // DtParams are time and rate constants for temporal derivatives in Leabra (Vm, net input)
@@ -74,6 +78,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~DtParams() = default;
     };
 
     // ClampParams are for specifying how external inputs are clamped onto network activation values
@@ -95,6 +101,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~ClampParams() = default;
     };
 
     struct WtInitParams: rands::Dist {
@@ -125,6 +133,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~WtScaleParams() = default;
     };
 
     enum ActNoiseType {
@@ -199,6 +209,8 @@ namespace leabra{
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~ActParams() = default;
     };
     
 }

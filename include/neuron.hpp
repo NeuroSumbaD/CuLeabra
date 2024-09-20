@@ -66,5 +66,7 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Neuron() = default;
     };
 }

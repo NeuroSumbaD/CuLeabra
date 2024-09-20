@@ -27,6 +27,8 @@ namespace leabra {
         std::string StyleName();
 
         void InitParamMaps();
+
+        ~Synapse() = default;
     };
     
 } // namespace leabra

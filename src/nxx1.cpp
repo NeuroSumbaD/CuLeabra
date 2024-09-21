@@ -10,6 +10,7 @@ nxx1::Params::Params(float Thr, float Gain, float NVar, float VmActThr,
     SigMultPow(SigMultPow), SigGain(SigGain), InterpRange(InterpRange),
     GainCorRange(GainCorRange), GainCor(GainCor){ // TODO: Initializer list is ugly... find cleaner way to do this
     Update(); // Initializes derived member variables
+    InitParamMaps();
 }
 
 void nxx1::Params::Defaults(){

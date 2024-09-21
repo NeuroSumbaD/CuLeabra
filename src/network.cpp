@@ -76,7 +76,7 @@ leabra::Layer *leabra::Network::AddLayer4D(std::string name, int nPoolsY, int nP
     return AddLayer(name, {nPoolsY, nPoolsX, nNeurY, nNeurX}, typ);
 }
 
-std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *> leabra::Network::ConnectLayerNames(std::string send, std::string recv, paths::Pattern pat, PathTypes typ) {
+std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *> leabra::Network::ConnectLayerNames(std::string send, std::string recv, paths::Pattern *pat, PathTypes typ) {
 	leabra::Layer *rlay, *slay;
 	leabra::Path *pt;
 
@@ -97,9 +97,9 @@ std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *> leabra::Network::Co
 // adding to the recv and send pathway lists on each side of the connection.
 // Does not yet actually connect the units within the layers -- that
 // requires Build.
-leabra::Path *leabra::Network::ConnectLayers(Layer *send, Layer *recv, paths::Pattern pat, PathTypes typ) {
+leabra::Path *leabra::Network::ConnectLayers(Layer *send, Layer *recv, paths::Pattern *pat, PathTypes typ) {
 	leabra::Path *pt = new leabra::Path();
-	pt->Connect(send, recv, &pat, typ);
+	pt->Connect(send, recv, pat, typ);
 	recv->RecvPaths.push_back(*pt);
 	send->SendPaths.push_back(*pt);
 	return pt;
@@ -110,7 +110,7 @@ leabra::Path *leabra::Network::ConnectLayers(Layer *send, Layer *recv, paths::Pa
 // to the high layer, and receives a Back pathway in the opposite direction.
 // Returns error if not successful.
 // Does not yet actually connect the units within the layers -- that requires Build.
-std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *, leabra::Path *> leabra::Network::BidirConnectLayerNames(std::string low, std::string high, paths::Pattern pat) {
+std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *, leabra::Path *> leabra::Network::BidirConnectLayerNames(std::string low, std::string high, paths::Pattern *pat) {
 	leabra::Layer *lowlay, *highlay;
 	leabra::Path *fwdpj, *backpj;
 
@@ -133,7 +133,7 @@ std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *, leabra::Path *> lea
 // and receives a Back pathway in the opposite direction.
 // Does not yet actually connect the units within the layers -- that
 // requires Build.
-std::tuple<leabra::Path *, leabra::Path *> leabra::Network::BidirConnectLayers(Layer *low, Layer *high, paths::Pattern pat) {
+std::tuple<leabra::Path *, leabra::Path *> leabra::Network::BidirConnectLayers(Layer *low, Layer *high, paths::Pattern *pat) {
 	leabra::Path *fwdpj, *backpj;
 	fwdpj = ConnectLayers(low, high, pat, ForwardPath);
 	backpj = ConnectLayers(high, low, pat, BackPath);
@@ -143,7 +143,7 @@ std::tuple<leabra::Path *, leabra::Path *> leabra::Network::BidirConnectLayers(L
 // LateralConnectLayer establishes a self-pathway within given layer.
 // Does not yet actually connect the units within the layers -- that
 // requires Build.
-leabra::Path *leabra::Network::LateralConnectLayer(Layer *lay, paths::Pattern pat) {
+leabra::Path *leabra::Network::LateralConnectLayer(Layer *lay, paths::Pattern *pat) {
 	leabra::Path *pt = nullptr;
     return LateralConnectLayerPath(lay, pat, pt);
 }
@@ -151,8 +151,8 @@ leabra::Path *leabra::Network::LateralConnectLayer(Layer *lay, paths::Pattern pa
 // LateralConnectLayerPath makes lateral self-pathway using given pathway.
 // Does not yet actually connect the units within the layers -- that
 // requires Build.
-leabra::Path *leabra::Network::LateralConnectLayerPath(Layer *lay, paths::Pattern pat, Path *pt) {
-	pt->Connect(lay, lay, &pat, LateralPath);
+leabra::Path *leabra::Network::LateralConnectLayerPath(Layer *lay, paths::Pattern *pat, Path *pt) {
+	pt->Connect(lay, lay, pat, LateralPath);
 	// TODO: Check if there are consequences to copying pt
 	lay->RecvPaths.push_back(*pt);	
 	lay->SendPaths.push_back(*pt);

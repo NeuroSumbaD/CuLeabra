@@ -89,6 +89,8 @@ namespace tensor {
             Values.reserve(nln);
         };
 
+        void SetShape(std::vector<int> sizes, std::vector<std::string> names);
+
         // Shape returns a pointer to the shape that fully parametrizes the tensor shape
         Shape* GetShape(){return &Shp;};
 
@@ -139,6 +141,11 @@ namespace tensor {
                 Values[i] = val;
             }
         }
+
+        void Set(std::vector<int> i, T val){
+            int j = Shp.Offset(i);
+            Values[j] = val;
+        }
     };
 
     
@@ -147,4 +154,11 @@ namespace tensor {
 
     std::tuple<int, int, int, int> Projection2DShape(Shape &shp, bool oddRow);
     int Projection2DIndex(Shape &shp, bool oddRow, int row, int col);
+    
+    template <typename T>
+    void Tensor<T>::SetShape(std::vector<int> sizes, std::vector<std::string> names) {
+        Shp.SetShape(sizes, names);
+        int nln = Len();
+        Values.reserve(nln);
+    }
 } // namespace tensor

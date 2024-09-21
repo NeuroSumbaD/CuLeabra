@@ -3,6 +3,7 @@
 leabra::Pool::Pool():Inhib(), ActM(), ActP(), ActAvgs() {
     StIndex = 0;
     EdIndex = 0;
+    InitParamMaps();
 }
 
 void leabra::Pool::Init(){

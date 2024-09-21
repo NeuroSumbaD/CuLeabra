@@ -642,9 +642,9 @@ std::string params::Sets::ParamValue(std::string sheet, std::string sel, std::st
     return sp->ParamValue(sel, param);
 }
 
-params::StylerObject::StylerObject() {
-    InitParamMaps();
-}
+// params::StylerObject::StylerObject() {
+//     InitParamMaps();
+// }
 
 std::string params::StylerObject::SetByName(std::string varName, std::string value) {
     std::string err = "";

@@ -27,8 +27,25 @@ namespace math {
         Vector2(int scalar);
         Vector2(int x, int y);
 
-        Vector2 MulScalar(float s);
+        Vector2 Sub(Vector2 other);
+        Vector2 Add(Vector2 other);
+        Vector2 Mul(Vector2 other);
+        Vector2 Div(Vector2 other);
+
+        Vector2 SubScalar(float scalar);
+        Vector2 AddScalar(float scalar);
+        Vector2 MulScalar(float scalar);
+        Vector2 DivScalar(float scalar);
+
+        float DistanceToSquared(Vector2 other);
     };
+
+    typedef Vector2 Vec2;
+
+    float WrapMinDist(float ci, float max, float ctr);
+
+    float GaussVecDistNoNorm(Vec2 a, Vec2 b, float sigma);
+    float Logistic(float x, float gain, float off);
 } // namespace math
 
 namespace vecint {

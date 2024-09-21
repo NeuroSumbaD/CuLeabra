@@ -5,6 +5,7 @@ inhib::SelfInhibParams::SelfInhibParams(bool On, float Gi, float Tau) {
     this->Gi = Gi;
     this->Tau = Tau;
     Update();
+    InitParamMaps();
 }
 
 void inhib::SelfInhibParams::Update() {
@@ -51,6 +52,7 @@ inhib::ActAvgParams::ActAvgParams(float Init, bool Fixed, bool UseExtAct, bool U
     this->UseExtAct = UseExtAct;
     this->UseFirst = UseFirst;
     Update();
+    InitParamMaps();
 }
 
 void inhib::ActAvgParams::Update() {
@@ -121,6 +123,7 @@ inhib::InhibParams::InhibParams() {
     this->Pool = fffb::Params();
     this->Self = inhib::SelfInhibParams();
     this->ActAvg = inhib::ActAvgParams();
+    InitParamMaps();
 }
 
 std::string inhib::InhibParams::StyleType() {

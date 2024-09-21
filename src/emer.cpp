@@ -1,7 +1,10 @@
 #include "emer.hpp"
 
-const std::vector<std::string> LayerDimNames2D = {"Y", "X"};
-const std::vector<std::string> LayerDimNames4D = {"PoolY", "PoolX", "NeurY", "NeurX"};
+namespace emer{
+	const std::vector<std::string> LayerDimNames2D = {"Y", "X"};
+	const std::vector<std::string> LayerDimNames4D = {"PoolY", "PoolX", "NeurY", "NeurX"};
+} // namespace emer
+
 
 emer::Network::Network(std::string name, std::string weightsFile, int randSeed):
 	Name(name), WeightsFile(weightsFile), LayerNameMap(), LayerClassMap(), MinPos(), MaxPos(), MetaData(), Rand(), RandSeed(randSeed){}
@@ -233,7 +236,9 @@ bool emer::Path::ApplyParams(params::Sheet &pars, bool setMsg) {
 	return app;
 }
 
-emer::Layer::Layer(std::string name, int index, std::vector<int> shape):Name(name), Off(true), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){}
+emer::Layer::Layer(std::string name, int index, std::vector<int> shape):Name(name), Off(true), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){
+	// InitParamMaps();
+}
 
 std::string emer::Layer::StyleType() {
 	return "Layer";
@@ -486,6 +491,7 @@ bool emer::Layer::ApplyParams(params::Sheet &pars, bool setMsg) {
 emer::Path::Path(std::string name, std::string cls):
 	Name(name), Class(cls), Info(), Notes() {
 	Pattern = nullptr;
+	// InitParamMaps();
 }
 
 std::string emer::Path::StyleType() {

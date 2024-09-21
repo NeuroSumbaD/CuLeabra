@@ -49,7 +49,7 @@ namespace knadapt {
         Chan Med; // medium time-scale adaptation
         Chan Slow; // slow time-scale adaptation
 
-        Params(){Defaults();};
+        Params(){Defaults();InitParamMaps();};
         Params(bool on = true, float rate = 0.8);
         
         void Defaults();

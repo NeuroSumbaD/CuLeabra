@@ -54,6 +54,9 @@ namespace leabra {
         float Spike;
         float ISI;
         float ISIAvg;
+
+        Neuron(){InitParamMaps();}
+        
         bool HasFlag(NeurFlags flag);
         void SetFlag(bool on, std::vector<int> flags);
         // void ClearFlag(NeurFlags flag);

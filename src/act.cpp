@@ -6,6 +6,8 @@
 leabra::OptThreshParams::OptThreshParams(float Send, float Delta) {
     this->Send = Send;
     this->Delta = Delta;
+
+	InitParamMaps();
 }
 
 void leabra::OptThreshParams::Defaults() {
@@ -41,6 +43,8 @@ leabra::ActInitParams::ActInitParams(float Decay, float Vm, float Act, float Ge)
     this->Vm = Vm;
     this->Act = Act;
     this->Ge = Ge;
+
+	InitParamMaps();
 }
 
 void leabra::ActInitParams::Defaults() {
@@ -82,6 +86,7 @@ leabra::DtParams::DtParams(float Integ, float VmTau, float AvgTau) {
     this->VmTau = VmTau;
     this->AvgTau = AvgTau;
     Update(); // Initialize derived member variables
+	InitParamMaps();
 }
 
 void leabra::DtParams::Update() {
@@ -138,6 +143,7 @@ leabra::ClampParams::ClampParams(bool Hard, float RangeMax, float Gain, bool Avg
     this->Gain = Gain;
     this->Avg = Avg;
     this->AvgGain = AvgGain;
+	InitParamMaps();
 }
 
 // AvgGe computes Avg-based Ge clamping value if using that option.
@@ -225,6 +231,7 @@ void leabra::WtInitParams::Defaults() {
 }
 
 leabra::WtScaleParams::WtScaleParams(float abs, float rel): Abs(abs), Rel(rel) {
+	InitParamMaps();
 }
 
 void leabra::WtScaleParams::Defaults(){Abs = 1; Rel = 1;}
@@ -280,6 +287,7 @@ leabra::ActParams::ActParams():
 		VmRange.Max = 2.0;
 		ErevSubThr.SetFromOtherMinus(Erev, XX1.Thr);
 		ThrSubErev.SetFromMinusOther(XX1.Thr, Erev);
+		InitParamMaps();
 }
 
 void leabra::ActParams::Defaults() {

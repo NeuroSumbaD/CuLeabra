@@ -87,28 +87,28 @@ namespace emer {
         // implemented specifically for a given algorithmic implementation.
 
         // NumLayers returns the number of layers in the network.
-        virtual int NumLayers();
+        virtual int NumLayers() = 0;
 
         // EmerLayer returns layer as emer.Layer interface at given index.
         // Does not do extra bounds checking.
-        virtual Layer* EmerLayer(int idx);
+        virtual Layer* EmerLayer(int idx) = 0;
 
         // MaxParallelData returns the maximum number of data inputs that can be
         // processed in parallel by the network.
         // The NetView supports display of up to this many data elements.
-        virtual int MaxParallelData();
+        virtual int MaxParallelData() = 0;
 
         // NParallelData returns the current number of data inputs currently being
         // processed in parallel by the network.
         // Logging supports recording each of these where appropriate.
-        virtual int NParallelData();
+        virtual int NParallelData() = 0;
 
         // Defaults sets default parameter values for everything in the Network.
-        virtual void Defaults();
+        virtual void Defaults() = 0;
 
         // UpdateParams() updates parameter values for all Network parameters,
         // based on any other params that might have changed.
-        virtual void UpdateParams();
+        virtual void UpdateParams() = 0;
     };
 
     extern const std::vector<std::string> LayerDimNames2D;// = {"Y", "X"};
@@ -231,7 +231,7 @@ namespace emer {
         
         // TypeName is the type or category of layer, defined
         // by the algorithm (and usually set by an enum).
-        virtual std::string TypeName();
+        virtual std::string TypeName() = 0;
 
         // UnitVarIndex returns the index of given variable within
         // the Neuron, according to *this layer's* UnitVarNames() list
@@ -251,16 +251,16 @@ namespace emer {
         // virtual std::tuple<float,float> VarRange(std::string varNm);
 
         // NumRecvPaths returns the number of receiving pathways.
-        virtual int NumRecvPaths();
+        virtual int NumRecvPaths() = 0;
 
         // RecvPath returns a specific receiving pathway.
-        virtual Path* RecvPath(int idx);
+        virtual Path* RecvPath(int idx) = 0;
 
         // NumSendPaths returns the number of sending pathways.
-        virtual int NumSendPaths();
+        virtual int NumSendPaths() = 0;
 
         // SendPath returns a specific sending pathway.
-        virtual Path* SendPath(int idx);
+        virtual Path* SendPath(int idx) = 0;
 
         // RecvPathValues fills in values of given synapse variable name,
         // for pathway from given sending layer and neuron 1D index,
@@ -291,7 +291,7 @@ namespace emer {
         // UpdateParams() updates parameter values for all Layer
         // and recv pathway parameters,
         // based on any other params that might have changed.
-        virtual void UpdateParams();
+        virtual void UpdateParams() = 0;
 
         // SetParam sets parameter at given path to given value.
         // returns error if path not found or value cannot be set.
@@ -377,27 +377,27 @@ namespace emer {
 
         // TypeName is the type or category of path, defined
         // by the algorithm (and usually set by an enum).
-        virtual std::string TypeName();
+        virtual std::string TypeName() = 0;
 
         // SendLayer returns the sending layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Send field with the actual Layer struct type.
-        virtual Layer* SendLayer();
+        virtual Layer* SendLayer() = 0;
 
         // RecvLayer returns the receiving layer for this pathway,
         // as an emer.Layer interface.  The actual Path implmenetation
         // can use a Recv field with the actual Layer struct type.
-        virtual Layer* RecvLayer();
+        virtual Layer* RecvLayer() = 0;
 
         // NumSyns returns the number of synapses for this path.
         // This is the max idx for SynValue1D and the number
         // of vals set by SynValues.
-        virtual int NumSyns();
+        virtual int NumSyns() = 0;
 
         // SynIndex returns the index of the synapse between given send, recv unit indexes
         // (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
         // This requires searching within connections for receiving unit (a bit slow).
-        virtual int SynIndex(int sidx, int ridx);
+        virtual int SynIndex(int sidx, int ridx) = 0;
 
         // SynVarNames returns the names of all the variables on the synapse
         // This is typically a global list so do not modify!
@@ -427,7 +427,7 @@ namespace emer {
 
         // UpdateParams() updates parameter values for all Path parameters,
         // based on any other params that might have changed.
-        virtual void UpdateParams();
+        virtual void UpdateParams() = 0;
 
         // AllParams returns a listing of all parameters in the Pathway.
         // virtual std::string AllParams();

@@ -1,6 +1,8 @@
 #include "chans.hpp"
 
-chans::Chans::Chans(float e, float l, float i, float k): E(e), L(l), I(i), K(k){}
+chans::Chans::Chans(float e, float l, float i, float k): E(e), L(l), I(i), K(k){
+    InitParamMaps();
+}
 
 // SetAll sets all the values
 void chans::Chans::SetAll(float e, float l, float i, float k) {

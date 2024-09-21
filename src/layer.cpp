@@ -3,6 +3,7 @@
 leabra::Layer::Layer(std::string name, int index, Network *net): 
 	emer::Layer(name), Index(index), Net(net), RecvPaths(), SendPaths(), Act(), Inhib(), Learn(), Neurons(), Pools(), CosDiff() {
 	Inhib.Layer.On = true;
+	InitParamMaps();
 }
 
 void leabra::Layer::Defaults() {

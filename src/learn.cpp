@@ -4,6 +4,7 @@
 leabra::XCalParams::XCalParams(float mLrn, bool setLLrn, float lLrn, float dRev, float dThr, float lrnThr):
 	MLrn(mLrn), SetLLrn(setLLrn), LLrn(lLrn), DRev(dRev), DThr(dThr), LrnThr(lrnThr){ 
 	Update();
+	InitParamMaps();
 }
 
 void leabra::XCalParams::Update()
@@ -76,7 +77,9 @@ void leabra::XCalParams::InitParamMaps() {
 	ParamTypeMap["DRevRatio"] = &typeid(float);
 }
 
-leabra::LearnNeurParams::LearnNeurParams():ActAvg(), AvgL(), CosDiff(){}
+leabra::LearnNeurParams::LearnNeurParams():ActAvg(), AvgL(), CosDiff(){
+	InitParamMaps();
+}
 
 void leabra::LearnNeurParams::Update()
 {
@@ -139,6 +142,7 @@ void leabra::LearnNeurParams::InitParamMaps() {
 leabra::AvgLParams::AvgLParams(float init, float gain, float min, float tau, float lrnMax, float lrnMin, bool errMod, float modMin):
 	Init(init),Gain(gain),Tau(tau),LrnMax(lrnMax),LrnMin(lrnMin),ErrMod(errMod),ModMin(modMin) {
 	Update();
+	InitParamMaps();
 }
 
 // AvgLFromAvgM computes long-term average activation value, and learning factor, from given
@@ -218,6 +222,7 @@ void leabra::AvgLParams::InitParamMaps() {
 leabra::LrnActAvgParams::LrnActAvgParams(float SSTau, float STau, float MTau, float LrnM, float Init):
 	SSTau(SSTau),STau(STau),MTau(MTau),LrnM(LrnM),Init(Init) {
 	Update();
+	InitParamMaps();
 }
 
 void leabra::LrnActAvgParams::AvgsFromAct(float ruAct, float &avgSS, float &avgS, float &avgM, float &avgSLrn)
@@ -282,6 +287,7 @@ void leabra::LrnActAvgParams::InitParamMaps() {
 
 leabra::CosDiffParams::CosDiffParams(float tau):Tau(tau) {
 	Update();
+	InitParamMaps();
 }
 
 void leabra::CosDiffParams::AvgVarFromCos(float &avg, float &vr, float cos)
@@ -335,6 +341,7 @@ void leabra::CosDiffParams::InitParamMaps() {
 
 leabra::CosDiffStats::CosDiffStats() {
 	Init();
+	InitParamMaps();
 }
 
 void leabra::CosDiffStats::Init()
@@ -374,6 +381,7 @@ void leabra::CosDiffStats::InitParamMaps() {
 
 leabra::WtSigParams::WtSigParams(float gain, float off, bool softBound): Gain(gain), Off(off), SoftBound(softBound){
 	Update();
+	InitParamMaps();
 }
 
 void leabra::WtSigParams::Update() {
@@ -478,6 +486,7 @@ float leabra::SigInvFun61(float w) {
 leabra::DWtNormParams::DWtNormParams(bool on, float decayTau, float lrComp, float normMin, bool stats):
     On(on), DecayTau(decayTau), NormMin(normMin), LrComp(lrComp), Stats(stats) {
 		Update();
+		InitParamMaps();
 }
 
 void leabra::DWtNormParams::Update() {
@@ -537,6 +546,7 @@ void leabra::DWtNormParams::InitParamMaps() {
 
 leabra::WtBalParams::WtBalParams(float on, bool targs, float avgThr, float hiThr, float hiGain, float loThr, float loGain):
 	On(on), Targs(targs), AvgThr(avgThr), HiThr(hiThr), HiGain(hiGain), LoThr(loThr), LoGain(loGain) {
+		InitParamMaps();
 }
 
 void leabra::WtBalParams::Update() {
@@ -606,6 +616,7 @@ void leabra::WtBalParams::InitParamMaps() {
 leabra::MomentumParams::MomentumParams(bool on, float mTau, float lrComp):
 	On(on), MTau(mTau), LrComp(lrComp){
 	Update();
+	InitParamMaps();
 }
 
 void leabra::MomentumParams::Defaults(){
@@ -648,7 +659,9 @@ void leabra::MomentumParams::InitParamMaps() {
 }
 
 leabra::LearnSynParams::LearnSynParams(bool learn, float lrate):
-	Learn(learn), Lrate(lrate), LrateInit(lrate), XCal(), WtSig(), Norm(), Momentum(), WtBal() {}
+	Learn(learn), Lrate(lrate), LrateInit(lrate), XCal(), WtSig(), Norm(), Momentum(), WtBal() {
+		InitParamMaps();
+}
 
 void leabra::LearnSynParams::Update()
 {

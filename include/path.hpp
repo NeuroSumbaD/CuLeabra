@@ -37,6 +37,8 @@ namespace paths {
 
         // proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
         float CtrMove = 0.5;
+
+        void Defaults();
     };
 
     // Pattern defines a pattern of connectivity between two layers.
@@ -46,7 +48,7 @@ namespace paths {
     struct Pattern {
         std::string type = "Pattern";
         // Name returns the name of the pattern -- i.e., the "type" name of the actual pattern generatop
-        virtual std::string Name();
+        virtual std::string Name() = 0;
 
         // Connect connects layers with the given shapes, returning the pattern of connectivity
         // as a bits tensor with shape = recv + send shapes, using row-major ordering with outer-most
@@ -55,7 +57,7 @@ namespace paths {
         // recvn and send tensors, each the shape of send and recv respectively.
         // The same flag should be set to true if the send and recv layers are the same (i.e., a self-connection)
         // often there are some different options for such connections.
-        virtual std::tuple<tensor::Int32*, tensor::Int32*, tensor::Bits*> Connect(tensor::Shape &send, tensor::Shape &recv, bool same);
+        virtual std::tuple<tensor::Int32*, tensor::Int32*, tensor::Bits*> Connect(tensor::Shape &send, tensor::Shape &recv, bool same) = 0;
     };
 
     std::tuple<tensor::Int32*, tensor::Int32*, tensor::Bits*> NewTensors(tensor::Shape &send, tensor::Shape &recv);
@@ -117,6 +119,11 @@ namespace paths {
 
         void TopoWeights(tensor::Shape &send, tensor::Shape &recv, tensor::Tensor<float> &wts);
 
+        void TopoWeightsGauss2D(tensor::Shape &send, tensor::Shape &recv, tensor::Tensor<float> &wts);
+        void TopoWeightsGauss4D(tensor::Shape &send, tensor::Shape &recv, tensor::Tensor<float> &wts);
+
+        void TopoWeightsSigmoid2D(tensor::Shape &send, tensor::Shape &recv, tensor::Tensor<float> &wts);
+        void TopoWeightsSigmoid4D(tensor::Shape &send, tensor::Shape &recv, tensor::Tensor<float> &wts);
     };
 
     float gaussWts(int si, int ri, tensor::Shape &send, tensor::Shape &recv);

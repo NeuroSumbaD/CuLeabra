@@ -17,7 +17,7 @@ namespace leabra {
         float Tau; // [def: 1.4] time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) for integrating unit self feedback inhibitory values -- prevents oscillations that otherwise occur -- relatively rapid 1.4 typically works, but may need to go longer if oscillations are a problem
         float Dt; // rate = 1 / tau
 
-        SelfInhibParams(bool on=false, float gi=0.4, float tau=1.4):On(on),Gi(gi),Tau(tau){Update();};
+        SelfInhibParams(bool on=false, float gi=0.4, float tau=1.4):On(on),Gi(gi),Tau(tau){Update();InitParamMaps();};
         
         void Inhib(float &self, float act);
         void Update(){Dt = 1/Tau;};
@@ -45,7 +45,7 @@ namespace leabra {
         float Adjust;
         float Dt;
 
-        ActAvgParams(float init=0.15, bool fixed=false, bool useExtAct=false, bool useFirst=true, float tau=100, float adjust=1):Init(init),Fixed(fixed),UseExtAct(useExtAct),UseFirst(useFirst),Tau(tau),Adjust(adjust){Update();};
+        ActAvgParams(float init=0.15, bool fixed=false, bool useExtAct=false, bool useFirst=true, float tau=100, float adjust=1):Init(init),Fixed(fixed),UseExtAct(useExtAct),UseFirst(useFirst),Tau(tau),Adjust(adjust){Update();InitParamMaps();};
 
         float EffInit();
         void AvgFromAct(float &avg, float act);
@@ -73,7 +73,7 @@ namespace leabra {
         SelfInhibParams Self; // neuron self-inhibition parameters -- can be beneficial for producing more graded, linear response -- not typically used in cortical networks
         ActAvgParams ActAvg; // running-average activation computation values -- for overall estimates of layer activation levels, used in netinput scaling
 
-        InhibParams():Layer(),Pool(),Self(),ActAvg(){};
+        InhibParams():Layer(),Pool(),Self(),ActAvg(){InitParamMaps();};
 
         void Update();
         void Defaults();
@@ -127,7 +127,7 @@ namespace leabra {
         // weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance
         float Dec;
 
-        WtBalRecvPath(){Avg = 0; Fact = 0; Inc = 1; Dec = 1;};
+        WtBalRecvPath(){Avg = 0; Fact = 0; Inc = 1; Dec = 1;InitParamMaps();};
 
         void Init(){Avg = 0;Fact = 0;Inc = 1;Dec = 1;};
 

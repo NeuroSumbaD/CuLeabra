@@ -4,6 +4,7 @@ fffb::Inhib::Inhib() {
     Zero();
     this->Ge = minmax::AvgMax32();
     this->Act = minmax::AvgMax32();
+    InitParamMaps();
 }
 
 // Zero clears inhibition but does not affect Ge, Act averages
@@ -67,6 +68,7 @@ fffb::Params::Params(float Gi, float FF, float FB, float FBTau, float MaxVsAvg, 
     this->MaxVsAvg = MaxVsAvg;
     this->FF0 = FF0;
     Update();
+    InitParamMaps();
 }
 
 void fffb::Params::Update() {

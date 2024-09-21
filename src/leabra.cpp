@@ -130,7 +130,11 @@ void leabra::InhibParams::InitParamMaps(){
 	ParamTypeMap["ActAvg"] = &typeid(ActAvg);
 }
 
-leabra::Path::Path(std::string name, std::string cls):emer::Path(name, cls){Send=nullptr; Recv=nullptr;}
+leabra::Path::Path(std::string name, std::string cls):emer::Path(name, cls){
+	Send=nullptr;
+	Recv=nullptr;
+	InitParamMaps();
+}
 
 // UpdateParams updates all params given any changes that might have been made to individual values
 void leabra::Path::UpdateParams() {

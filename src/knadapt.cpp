@@ -2,6 +2,7 @@
 
 knadapt::Chan::Chan(bool on, float rise, float max, float tau): On(on), Rise(rise), Max(max), Tau(tau) {
     Update();
+    InitParamMaps();
 }
 
 void knadapt::Chan::Defaults()
@@ -70,6 +71,7 @@ knadapt::Params::Params(bool on, float rate) {
     Slow = Chan(true, 0.001, 1, 1000);
 
     // Update(); Redundant because Chan calls its own update
+    InitParamMaps();
 }
 
 void knadapt::Params::Defaults() {

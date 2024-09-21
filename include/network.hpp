@@ -31,12 +31,12 @@ namespace leabra {
         Layer* AddLayer(std::string name, std::vector<int> shape, LayerTypes typ);
         Layer* AddLayer2D(std::string name, int shapeY, int shapeX, LayerTypes typ);
         Layer* AddLayer4D(std::string name, int nPoolsY, int nPoolsX, int nNeurY, int nNeurX, LayerTypes typ);
-        std::tuple<Layer*, Layer*, Path*> ConnectLayerNames(std::string send, std::string recv, paths::Pattern pat, PathTypes typ);
-        Path* ConnectLayers(Layer* send, Layer* recv, paths::Pattern pat, PathTypes typ);
-        std::tuple<Layer*, Layer*, Path*, Path *> BidirConnectLayerNames(std::string low, std::string high, paths::Pattern pat);
-        std::tuple<leabra::Path *, leabra::Path *> BidirConnectLayers(Layer* low, Layer* high, paths::Pattern pat);
-        Path* LateralConnectLayer(Layer* lay, paths::Pattern pat);
-        Path* LateralConnectLayerPath(Layer* lay, paths::Pattern pat, Path* pt);
+        std::tuple<Layer*, Layer*, Path*> ConnectLayerNames(std::string send, std::string recv, paths::Pattern *pat, PathTypes typ);
+        Path* ConnectLayers(Layer* send, Layer* recv, paths::Pattern *pat, PathTypes typ);
+        std::tuple<Layer*, Layer*, Path*, Path *> BidirConnectLayerNames(std::string low, std::string high, paths::Pattern *pat);
+        std::tuple<leabra::Path *, leabra::Path *> BidirConnectLayers(Layer* low, Layer* high, paths::Pattern *pat);
+        Path* LateralConnectLayer(Layer* lay, paths::Pattern *pat);
+        Path* LateralConnectLayerPath(Layer* lay, paths::Pattern *pat, Path* pt);
         void Build();
         // std::tuple<int,int> VarRange(std::string varName); // VarRange returns the min / max values for given variable
 

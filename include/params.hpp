@@ -21,7 +21,7 @@ namespace params {
         std::map<std::string, void*> ParamNameMap;
         std::map<std::string, const std::type_info*> ParamTypeMap;
 
-        StylerObject();
+        // StylerObject();
         virtual ~StylerObject() = default;
 
         // StyleType returns the name of this type for CSS-style matching.
@@ -29,23 +29,23 @@ namespace params {
         // This type is used *in addition* to the actual Go type name
         // of the object, and is a kind of type-category (e.g., Layer
         // or Path in emergent network objects).
-        virtual std::string StyleType();
+        virtual std::string StyleType() = 0;
 
         // StyleClass returns the space-separated list of class selectors (tags).
         // Parameters with a . prefix target class tags.
         // Do NOT include the . in the Class tags on Styler objects;
         // The . is only used in the Sel selector on the params.Sel.
-        virtual std::string StyleClass();
+        virtual std::string StyleClass() = 0;
 
         // StyleName returns the name of this object.
         // Parameters with a # prefix target object names, which are typically
         // unique.  Note, do not include the # prefix in the actual object name,
         // only in the Sel selector on params.Sel.
-        virtual std::string StyleName();
+        virtual std::string StyleName() = 0;
 
         // InitParamMaps is overridden for each object and initializes the param maps
         // that allow the params objects to access and modify params by string name
-        virtual void InitParamMaps();
+        virtual void InitParamMaps() = 0;
 
         // Finds the appropriate parameter to set from the string given
         std::string SetByName(std::string varName, std::string value);

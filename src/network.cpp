@@ -39,13 +39,14 @@ void leabra::Network::UpdateParams() {
 
 // AddLayerInit is implementation routine that takes a given layer and
 // adds it to the network, and initializes and configures it properly.
-void leabra::Network::AddLayerInit(Layer *ly, std::string name, std::vector<int> shape, LayerTypes typ) {
+leabra::Layer* leabra::Network::AddLayerInit(std::string name, std::vector<int> shape, LayerTypes typ) {
 	// emer::InitLayer(ly, name);
-	*ly = leabra::Layer(name);
+	Layer *ly =  new leabra::Layer(name);
 	ly->SetShape(shape);
 	ly->Type = typ;
 	Layers.push_back(ly);
 	UpdateLayerMaps();
+	return ly;
 }
 
 // AddLayer adds a new layer with given name and shape to the network.
@@ -56,8 +57,7 @@ void leabra::Network::AddLayerInit(Layer *ly, std::string name, std::vector<int>
 // e.g., 4D 3, 2, 4, 5 = 3 rows (Y) of 2 cols (X) of pools, with each unit
 // group having 4 rows (Y) of 5 (X) units.
 leabra::Layer* leabra::Network::AddLayer(std::string name, std::vector<int> shape, LayerTypes typ) {
-	Layer *ly = nullptr;
-	AddLayerInit(ly, name, shape, typ);
+	Layer *ly = AddLayerInit(name, shape, typ);
 	return ly;
 }
 

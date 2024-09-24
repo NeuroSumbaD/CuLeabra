@@ -3,6 +3,8 @@
 #include "layer.hpp"
 #include "path.hpp"
 #include "params.hpp"
+#include "context.hpp"
+#include "pattable.hpp"
 
 // TODO: Find a way to clean up this syntax
 // TODO: Find a way to create and read JSON param files
@@ -120,12 +122,107 @@ void ConfigNet(leabra::Network *net, int Hidden1SizeX = 7, int Hidden1SizeY = 7,
 
 	net->Build();
 	net->Defaults();
-    net->ApplyParams(ParamSets, true);
+    bool applied = net->ApplyParams(ParamSets, true);
+    if (!applied) {
+        throw std::runtime_error("ERROR: ParamSet not applied...");
+    }
 	net->InitWeights();
+}
+
+void NewRun(leabra::Network *net, leabra::Context *ctx) {
+    ctx->Reset();
+    net->InitWeights();
+}
+
+void ApplyParams(leabra::Network *net, params::Sets *Sets) {
+    net->ApplyParams(*Sets, true);
+}
+
+void SimInit(leabra::Network *net, leabra::Context *ctx) {
+    net->SetRandSeed(0);
+    ApplyParams(net, &ParamSets); // possibly redundant??
+    NewRun(net, ctx);
+}
+
+void RunNoGUI() {
+    // SimInit();
+    // Loops.Run(etime.Train);
+}
+
+
+// BELOW METHODS ARE FROM LEABRA V1
+// some of these methods may not work as intended so I'll have to do some digging to check them
+
+// AlphaCyc runs one alpha-cycle (100 msec, 4 quarters)			 of processing.
+// External inputs must have already been applied prior to calling,
+// using ApplyExt method on relevant layers (see TrainTrial, TestTrial).
+// If train is true, then learning DWt or WtFmDWt calls are made.
+// Handles netview updating within scope of AlphaCycle
+void AlphaCyc(leabra::Network *net, leabra::Context *ctx, bool train) {
+	// ss.Win.PollEvents() // this can be used instead of running in a separate goroutine
+	net->AlphaCycInit(train);
+	ctx->AlphaCycStart();
+	for (int qtr = 0; qtr < 4; qtr++) {
+		for (int cyc = 0; cyc < ctx->CycPerQtr; cyc++) {
+			net->Cycle(ctx);
+			// ss.StatCounters(train)
+			if (!train) {
+				// ss.Log(etime.Test, etime.Cycle)
+			}
+			ctx->CycleInc();
+			// ss.ViewUpdt.UpdateCycle(cyc)
+		}
+		net->QuarterFinal(ctx);
+		ctx->QuarterInc();
+		// ss.ViewUpdt.UpdateTime(etime.GammaCycle)
+	}
+	// ss.StatCounters(train)
+
+	if (train) {
+		net->Dwt();
+		// ss.ViewUpdt.RecordSyns() // note: critical to update weights here so DWt is visible
+		net->WtFromDwt();
+	}
+	// ss.ViewUpdt.UpdateTime(etime.AlphaCycle)
+	if (!train) {
+		// ss.GUI.UpdatePlot(etime.Test, etime.Cycle) // make sure always updated at end
+	}
+}
+
+// ApplyInputs applies input patterns from given envirbonment.
+// It is good practice to have this be a separate method with appropriate
+// args so that it can be used for various different contexts
+// (training, testing, etc).
+void ApplyInputs(leabra::Network *net, leabra::Context *ctx, pattable::Table *table) {
+	// ss.Net.InitExt() // clear any existing inputs -- not strictly necessary if always
+	// going to the same layers, but good practice and cheap anyway
+
+	std::vector<std::string> lays = {"Input", "Output"};
+	for (std::string &lnm: lays) {
+		leabra::Layer *ly = dynamic_cast<leabra::Layer*>(net->LayerByName(lnm));
+        // TODO: insert some check here to make sure it correctly returns something
+		// pats := en.State(ly.Nm)
+        tensor::Tensor<float> *pats = table->GetPattern(ly->Name);
+		if (pats != nullptr) {
+			ly->ApplyExt(*pats);
+		}
+	}
 }
 
 int main(){
     leabra::Network *net = new leabra::Network("RA25");
+    ConfigNet(net);
+    pattable::Table table = pattable::Table("random_5x5_25.tsv");
+
+    std::cout << "Hello Net!" << std::endl;
+
+    std::cout << "My name is " << net->Name << " does everything look correct?" << std::endl;
+
+    int index = 0;
+    for (leabra::Layer *lay: net->Layers) {
+        std::cout << "Layer "<< index++ << "(" << lay->Index <<") is called " << lay->Name << " and has inhibitory conductance of " << lay->Inhib.Layer.Gi << "." << std::endl;
+    }
+
 
     return 0;
 }

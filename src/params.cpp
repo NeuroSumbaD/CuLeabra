@@ -62,14 +62,14 @@ std::string params::Params::Apply(std::any obj, bool setMsg) {
     std::string objNm = "";
     try {
         params::StylerObject* sty = std::any_cast<params::StylerObject*>(obj);
-        std::string objNm = sty->StyleName();
+        objNm = sty->StyleName();
     } catch (const std::bad_any_cast& e) {
     }
 
     std::vector<std::string> errs;
 
-    for (auto& [key, value] : params) {
-        std::string path = Path(key);
+    for (auto& [path, value] : params) {
+        // std::string path = Path(key);
 
         try {
             params::Hypers* hv = std::any_cast<params::Hypers*>(obj);
@@ -85,7 +85,7 @@ std::string params::Params::Apply(std::any obj, bool setMsg) {
             std::string err = params::SetParam(obj, path, value);
             if (err == ""){
                 if (setMsg){
-                    std::string errStr = objNm + " Set param path: " + key +
+                    std::string errStr = objNm + " Set param path: " + path +
                         " to value: " + value;
                     std::cout << errStr << std::endl;
                 }
@@ -397,8 +397,8 @@ std::string params::SetParam(std::any obj, std::string path, std::string val) {
 	// 	npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
 	// 	return nil
 	// }
-    StylerObject &parentObj = *std::any_cast<StylerObject*>(obj);
-    return parentObj.SetByPath(path, val);
+    StylerObject *parentObj = std::any_cast<StylerObject*>(obj);
+    return parentObj->SetByPath(path, val);
 }
 
 // GetParam gets parameter value at given path on given object.
@@ -648,6 +648,9 @@ std::string params::Sets::ParamValue(std::string sheet, std::string sel, std::st
 
 std::string params::StylerObject::SetByName(std::string varName, std::string value) {
     std::string err = "";
+    if (ParamNameMap.size()==0 || ParamTypeMap.size()==0) {
+        throw std::runtime_error("ERROR: One or both param maps are not initialized properly.");
+    }
     void *varPtr = ParamNameMap[varName];
     if (ParamNameMap.count(varName) == 0) {
         err = "Error: variable named " + varName + " not found.";
@@ -748,11 +751,21 @@ float params::StylerObject::GetByName(std::string varName) {
 std::string params::StylerObject::SetByPath(std::string path, std::string value) {
     std::vector<std::string> paths = strings::split(path, '.');
     std::string &name = paths[0];
+    if (name == this->StyleType()) {
+        paths.erase(paths.begin());
+        name = paths[0];
+    }
     if (paths.size() == 1) {
         return SetByName(name, value);
     } else {
-        StylerObject *child = (StylerObject*)ParamNameMap[paths[0]];
-        paths.erase(paths.begin());
+        // paths.erase(paths.begin());
+        if (ParamNameMap.count(name)==0){
+            throw std::runtime_error("ERROR: StylerObject " + this->StyleName() +
+                " of type " + this->StyleClass() + " does not have member " + name + "\n");
+        }
+        StylerObject *child = (StylerObject*)ParamNameMap[name];
+        paths.erase(paths.begin()); // this is some hacky sh*t...
+        // TODO: Re-think the Styler Objects and make the syntax less confusing...
         return child->SetByPath(strings::join(paths,"."), value);
     }
 }

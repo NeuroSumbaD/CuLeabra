@@ -45,4 +45,9 @@ void chans::Chans::InitParamMaps() {
     ParamNameMap["L"] = (void*) &L;
     ParamNameMap["I"] = (void*) &I;
     ParamNameMap["K"] = (void*) &K;
+
+    ParamTypeMap["E"] = &typeid(E);
+    ParamTypeMap["L"] = &typeid(L);
+    ParamTypeMap["I"] = &typeid(I);
+    ParamTypeMap["K"] = &typeid(K);
 }

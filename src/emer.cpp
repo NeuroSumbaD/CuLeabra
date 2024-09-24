@@ -108,10 +108,10 @@ void emer::Network::LayoutLayers() {
 	// en := nt.EmerNetwork
 	int nlay = NumLayers();
 	for (int index = 0; index < 5; index++) {
-		emer::Layer *lstly;
+		emer::Layer *lstly = nullptr;
 		for (int li = 0; li < nlay; li++) {
 			emer::Layer *ly = EmerLayer(li);
-			emer::Layer *oly;
+			emer::Layer *oly = nullptr;
 			if (lstly != nullptr && ly->Pos.Rel == relpos::NoRel) {
 				if (ly->Pos.Pos.X != 0 || ly->Pos.Pos.Y != 0 || ly->Pos.Pos.Z != 0) {
 					// Position has been modified, don't mess with it.
@@ -162,15 +162,20 @@ void emer::Network::LayoutBoundsUpdate() {
 // it always prints a message if a parameter fails to be set.
 // returns true if any params were set, and error if there were any errors.
 bool emer::Network::ApplyParams(params::Sheet &pars, bool setMsg) {
-	bool applied = false;
+	bool applied = true;
 	std::vector<std::string> errs;
 	// en := nt.EmerNetwork
 	int nlay = NumLayers();
 	for (int li = 0; li < nlay; li++) {
 		emer::Layer &ly = *EmerLayer(li);
 		bool app = ly.ApplyParams(pars, setMsg);
-		if (app) {
-			applied = true;
+		if (!app) {
+			applied = false;
+			break;
+		} else {
+			if (!setMsg){
+				std::cout << "Params set on layer " << ly.Name << std::endl;
+			}
 		}
 		// if err != nil {
 		// 	errs = append(errs, err)
@@ -227,7 +232,8 @@ void emer::Path::SetParam(std::string path, std::string val) {
 // it always prints a message if a parameter fails to be set.
 // returns true if any params were set, and error if there were any errors.
 bool emer::Path::ApplyParams(params::Sheet &pars, bool setMsg) {
-    bool app = pars.Apply((params::StylerObject *)this, setMsg);
+	std::any obj((StylerObject*)this);
+    bool app = pars.Apply(obj, setMsg);
 	// note: must use EmerPath to get to actual Path, which then uses Styler interface
 	// to return the Params struct.
 	if (app) {
@@ -466,7 +472,8 @@ void emer::Layer::SetParam(std::string path, std::string val) {
 bool emer::Layer::ApplyParams(params::Sheet &pars, bool setMsg) {
     bool applied = false;
 	// std::vector<std::string> errs;
-	bool app = pars.Apply(this, setMsg); // essential to go through AxonLay
+	std::any obj((StylerObject*)this);
+	bool app = pars.Apply(obj, setMsg); // essential to go through AxonLay
 	if (app) {
 		UpdateParams();
 		applied = true;

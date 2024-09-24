@@ -27,7 +27,7 @@ namespace leabra {
 
         void Defaults();
         void UpdateParams();
-        void AddLayerInit(Layer* ly, std::string name, std::vector<int> shape, LayerTypes typ);
+        Layer* AddLayerInit(std::string name, std::vector<int> shape, LayerTypes typ);
         Layer* AddLayer(std::string name, std::vector<int> shape, LayerTypes typ);
         Layer* AddLayer2D(std::string name, int shapeY, int shapeX, LayerTypes typ);
         Layer* AddLayer4D(std::string name, int nPoolsY, int nPoolsX, int nNeurY, int nNeurX, LayerTypes typ);

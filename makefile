@@ -5,6 +5,7 @@ CC := g++
 NVCC := nvcc
 CFLAGS := -std=c++20 -I./include #-Wall
 PYBINDFLAGS := -shared -fPIC $$(python3 -m pybind11 --includes)
+DEBUGFLAGS := -g3 -O0
 #pybind11 module returns the include paths -I/usr/include/python3.12/ -I/usr/lib/python3/dist-packages/pybind11/include
 #can also add -O3 to include optimization step 
 NVCCFLAGS := -I./include -I/usr/include/python3.12/ -I/usr/include/pybind11/
@@ -35,19 +36,19 @@ all: $(TARGET)
 # The automatic variable "$@" is replaced with the file name
 # The automatic variable "$^" is replaced with a list of the dependencies
 $(TARGET): $(OBJS)
-	$(CC) $(PYBINDFLAGS) -o $(OBJ_DIR)/$@$$(python3-config --extension-suffix) $^
+	$(CC) $(DEBUGFLAGS) $(PYBINDFLAGS) -o $(OBJ_DIR)/$@$$(python3-config --extension-suffix) $^
 #	$(NVCC) $(LDFLAGS) -o $@$$(python3-config --extension-suffix) $^
 
 # %.o: %.cpp
 # The automatic variable "$<" is replaced with the first dependency
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.hpp
 	$(info making object file: $@)
-	$(CC) $(CFLAGS) $(PYBINDFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(PYBINDFLAGS) -c -o $@ $<
 
 # %.o: %.cu
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cu
 	$(info making object file: $@)
-	$(NVCC) $(CFLAGS) -c -o $@ $<
+	$(NVCC) $(CFLAGS) $(DEBUGFLAGS) -c -o $@ $<
 
 
 # UNIT TESTING FOR MODULES
@@ -56,10 +57,10 @@ tests: $(TESTS)
 $(TEST_DIR)/%: $(TEST_DIR)/%.o $(OBJS)
 	$(info making test: $@)
 	$(info with dependencies: $^)
-	$(CC) $(CFLAGS) -fPIC -o  $@ $^
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -fPIC -o  $@ $^
 
 $(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
-	$(CC) $(CFLAGS) -fPIC -c -o  $@ $^
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -fPIC -c -o  $@ $^
 
 clean:
 	rm -f $(OBJS) $(OBJ_DIR)/$(TARGET)*

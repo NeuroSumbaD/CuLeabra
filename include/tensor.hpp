@@ -72,21 +72,17 @@ namespace tensor {
     // All of the data analysis and plot packages skip NaNs.
     template <typename T = float>
     struct Tensor {
-        std::vector<T> Values;
         Shape Shp;
+        std::vector<T> Values;
         std::map<std::string, std::string> Meta;
 
-        Tensor(std::vector<int>& shape):Shp(shape){
+        Tensor(std::vector<int>& shape):Shp(shape),Values(){
             int nln = Shp.Len();
-            Values = std::vector<T>();
-            Values.reserve(nln);
+            Values.resize(nln);
         };        
-        Tensor(Shape &shape){
-            Shp = shape;
-
+        Tensor(Shape &shape):Shp(shape),Values(){
             int nln = Shp.Len();
-            Values = std::vector<T>();
-            Values.reserve(nln);
+            Values.resize(nln);
         };
 
         void SetShape(std::vector<int> sizes, std::vector<std::string> names);
@@ -124,7 +120,8 @@ namespace tensor {
         // MetaData retrieves value of given key
         std::string MetaData(std::string key){
             if (Meta.count(key) == 0) {
-                std::cerr << "Tensor metadata does not have key: " + key << std::endl;
+                // std::cerr << "Tensor metadata does not have key: " + key << std::endl;
+                throw std::invalid_argument("Tensor metadata does not have key: " + key + "\n");
             } else {
                 return Meta[key];
             };
@@ -159,6 +156,6 @@ namespace tensor {
     void Tensor<T>::SetShape(std::vector<int> sizes, std::vector<std::string> names) {
         Shp.SetShape(sizes, names);
         int nln = Len();
-        Values.reserve(nln);
+        Values.resize(nln); //TODO: check that this is the wanted behavior
     }
 } // namespace tensor

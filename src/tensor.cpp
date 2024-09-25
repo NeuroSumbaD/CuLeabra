@@ -27,7 +27,7 @@ tensor::Shape::Shape(std::vector<int> &shape) {
     Sizes = shape;
     Strides = RowMajorStrides(shape);
     Names = std::vector<std::string>();
-    for (int i = 0; i < shape.size(); i++) Names.push_back("");
+    for (uint i = 0; i < shape.size(); i++) Names.push_back("");
 }
 
 tensor::Shape::Shape(std::vector<int>& shape, std::vector<std::string>& names) {
@@ -53,7 +53,7 @@ tensor::Shape::Shape(std::vector<int>& shape, std::vector<int>& strides, std::ve
         Names = names;
     } else {
         Names = std::vector<std::string>();
-        for (int i = 0; i < shape.size(); i++) Names.push_back("");
+        for (uint i = 0; i < shape.size(); i++) Names.push_back("");
     }
 }
 
@@ -70,7 +70,7 @@ int tensor::Shape::NumDims() {
 // No checking is done on the length or size of the index values relative to the shape of the tensor.
 int tensor::Shape::Offset(std::vector<int> index) {
     int offset = 0;
-	for (int i = 0; i < index.size(); i++) {
+	for (uint i = 0; i < index.size(); i++) {
         int v = index[i];
 		offset += v * Strides[i];
 	}
@@ -291,3 +291,7 @@ int tensor::Projection2DIndex(Shape &shp, bool oddRow, int row, int col) {
 	}
 	return 0;
 }
+
+
+template class tensor::Tensor<float>;
+template class tensor::Tensor<int>;

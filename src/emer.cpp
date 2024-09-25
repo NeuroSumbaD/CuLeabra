@@ -406,7 +406,7 @@ std::tuple<std::vector<int>, std::vector<int>> emer::Layer::Layer2DSampleIndexes
 // RecvPathBySendName returns the receiving Path with given
 // sending layer name (the first one if multiple exist).
 emer::Path *emer::Layer::RecvPathBySendName(std::string sender) {
-	for (int pi = 0; pi << NumRecvPaths(); pi++) {
+	for (int pi = 0; pi < NumRecvPaths(); pi++) {
 		Path &pt = *RecvPath(pi);
 		if (pt.SendLayer()->StyleName() == sender) {
 			return &pt;
@@ -420,7 +420,7 @@ emer::Path *emer::Layer::RecvPathBySendName(std::string sender) {
 // SendPathByRecvName returns the sending Path with given
 // recieving layer name (the first one if multiple exist).
 emer::Path *emer::Layer::SendPathByRecvName(std::string recv) {
-    for (int pi = 0; pi << NumRecvPaths(); pi++) {
+    for (int pi = 0; pi < NumRecvPaths(); pi++) {
 		Path &pt = *SendPath(pi);
 		if (pt.RecvLayer()->StyleName() == recv) {
 			return &pt;
@@ -434,7 +434,7 @@ emer::Path *emer::Layer::SendPathByRecvName(std::string recv) {
 // sending layer name, with the given type name
 // (the first one if multiple exist).
 emer::Path *emer::Layer::RecvPathBySendNameType(std::string sender, std::string typeName) {
-    for (int pi = 0; pi << NumRecvPaths(); pi++) {
+    for (int pi = 0; pi < NumRecvPaths(); pi++) {
 		Path &pt = *RecvPath(pi);
 		if (pt.SendLayer()->StyleName() == sender && pt.TypeName() == typeName) {
 			return &pt;
@@ -448,7 +448,7 @@ emer::Path *emer::Layer::RecvPathBySendNameType(std::string sender, std::string 
 // recieving layer name, with the given type name
 // (the first one if multiple exist).
 emer::Path *emer::Layer::SendPathByRecvNameType(std::string recv, std::string typeName) {
-	for (int pi = 0; pi << NumRecvPaths(); pi++) {
+	for (int pi = 0; pi < NumRecvPaths(); pi++) {
 		Path &pt = *SendPath(pi);
 		if (pt.RecvLayer()->StyleName() == recv && pt.TypeName() == typeName) {
 			return &pt;

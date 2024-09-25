@@ -42,7 +42,7 @@ namespace rands {
         float Float();
         void NewSeed(int seed);
 
-        int Intn(int n);
+        uint Intn(uint n);
         std::vector<int> Perm(int n);
     };
 

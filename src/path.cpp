@@ -329,7 +329,7 @@ void paths::PoolTile::TopoWeightsSigmoid2D(tensor::Shape &send, tensor::Shape &r
 						math::Vec2 sp = math::Vec2(float(sux), float(suy));
 						float sigx = math::Logistic(sgn.X*sp.X, pgain, spctr.X);
 						float sigy = math::Logistic(sgn.Y*sp.Y, pgain, spctr.Y);
-						float pwt = sigx * sigy;
+						pwt = sigx * sigy;
 					}
 					float wt = fwt * pwt;
 					float rwt = TopoRange.ProjValue(wt);

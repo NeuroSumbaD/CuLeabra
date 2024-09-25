@@ -34,14 +34,14 @@ void rands::SysRand::NewSeed(int seed) {
 
 // Intn returns, as an int, a non-negative pseudo-random number in the half-open interval [0,n).
 // It panics if n <= 0.
-int rands::SysRand::Intn(int n) {
+uint rands::SysRand::Intn(uint n) {
     if (n <= 0) {
 		throw std::invalid_argument("Invalid argument to Intn");
 	}
-	if (n > (1<<31-1)) {
+	if (n > (((uint)1<<31)-1)) {
         throw std::invalid_argument("Argument to Intn greater than 32 bits");
 	}
-    auto dist = std::uniform_int_distribution(0,n);
+    auto dist = std::uniform_int_distribution<uint>(0,n);
     return dist(engine);
 	// return int(Int63n(int(n)));
 }
@@ -90,6 +90,8 @@ float rands::Dist::Gen(SysRand &rnd) {
             return GaussianGen(Mean, Var, rnd);
         case Beta:
             return Mean + BetaGen(Var, Par, rnd);
+        case RandDists::Mean:
+            return Mean;
 	}
 	return Mean;
 }

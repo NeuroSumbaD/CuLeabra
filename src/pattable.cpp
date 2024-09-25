@@ -39,17 +39,19 @@ pattable::ColumnInfo parseHeader(const std::string& headerLine, char delimitter)
             std::string tensorIndexString = column.substr(bracketPos + 1, column.find(']') - bracketPos - 1);
             std::vector<std::string> tensorIndicesString = strings::split(strings::split(tensorIndexString, ':')[1], ',');
             std::vector<int> tensorIndices(tensorIndicesString.size());
+            int i = 0;
             for (std::string index: tensorIndicesString) {
-                tensorIndices.push_back(std::stoi(index));
+                tensorIndices[i++] = std::stoi(index);
             }
             
             // Print or store the tensor dimensions if angle brackets are found
             if (angleBracketPos != std::string::npos) {
                 std::string tensorDims = column.substr(angleBracketPos + 1, column.find('>') - angleBracketPos - 1);
-                std::vector<std::string> tensorDimensionsString = strings::split(tensorDims, ',');
+                std::vector<std::string> tensorDimensionsString = strings::split(strings::split(tensorDims,':')[1], ',');
                 std::vector<int> tensorDimensions(tensorDimensionsString.size());
+                int i = 0;
                 for (std::string index: tensorDimensionsString) {
-                    tensorDimensions.push_back(std::stoi(index));
+                    tensorDimensions[i++] = std::stoi(index);
                 }
 
                 columnInfo.LayerShapes[layerName] = tensorDimensions;
@@ -70,6 +72,11 @@ pattable::ColumnInfo parseHeader(const std::string& headerLine, char delimitter)
 void processRow(pattable::Table *table, const std::string& rowLine, char delimitter) {
     std::vector<std::string> columns = strings::split(rowLine, delimitter);
 
+    // Ignore "_H:" and "_D:" from emer formatting
+    if (columns[0]=="_H:" || columns[0]=="_D:") {
+        columns.erase(columns.begin());
+    }
+
     // First column contains the event name
     std::string eventName = columns[0];
     table->events[eventName] = pattable::Event();
@@ -80,7 +87,7 @@ void processRow(pattable::Table *table, const std::string& rowLine, char delimit
     for (size_t col = 1; col < columns.size(); ++col) {
         float activityValue = std::stof(columns[col]);
 
-        std::string layerName = table->info.LayerNames[col];
+        std::string layerName = table->info.LayerNames[col-1];
         if (layerName != previousLayer) { // initialize pattern tensor
             std::vector<int> layerShape = table->info.LayerShapes[layerName];
             table->events[eventName][layerName] = new tensor::Tensor<float>(layerShape);
@@ -92,7 +99,7 @@ void processRow(pattable::Table *table, const std::string& rowLine, char delimit
         }
         previousLayer = layerName;
 
-        int tensorIndex = table->events[eventName][layerName]->Shp.Offset(table->info.LayerIndices[col]);
+        int tensorIndex = table->events[eventName][layerName]->Shp.Offset(table->info.LayerIndices[col-1]);
         table->events[eventName][layerName]->SetValue(tensorIndex, activityValue);
         // std::cout << "Activity: " << activityValue << " ";
     }
@@ -126,7 +133,7 @@ void pattable::Table::ReadFile(std::string fileName) {
 
     // TODO: Allow the permutation to be regenerated, overwritten, or not used
     uint numEvents = eventNames.size();
-    permutation = rands::Perm(numEvents);
+    permutation = rands::Perm(numEvents); //TODO: CHECK THIS FUNCTION (MULTIPLE ZEROS!!!)
 }
 
 // Returns a Tensor Pattern corresponding to the event

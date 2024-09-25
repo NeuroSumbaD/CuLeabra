@@ -214,6 +214,18 @@ int main(){
     ConfigNet(net);
     pattable::Table table = pattable::Table("random_5x5_25.tsv");
 
+    for (std::string event: table.eventNames) {
+        std::cout << "Event named " << event << " has the following patterns:\n";
+        for (auto &[layerName, pattern]: table.events[event]) {
+            std::cout << "\t" << layerName << ": " ;
+            std::cout << pattern->Values[0];
+            for (int i=1; i < pattern->Len(); i++) {
+                std::cout << ", " << pattern->Values[i];
+            }
+            std::cout << std::endl;
+        }
+    }
+
     std::cout << "Hello Net!" << std::endl;
 
     std::cout << "My name is " << net->Name << " does everything look correct?" << std::endl;

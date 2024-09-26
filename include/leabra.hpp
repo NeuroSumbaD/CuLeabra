@@ -234,7 +234,7 @@ namespace leabra {
 
         // synaptic state values, ordered by the sending layer
         // units which owns them -- one-to-one with SConIndex array.
-        std::vector<Synapse*> Syns;
+        std::vector<Synapse> Syns;
 
         // scaling factor for integrating synaptic input conductances (G's).
         // computed in AlphaCycInit, incorporates running-average activity levels.

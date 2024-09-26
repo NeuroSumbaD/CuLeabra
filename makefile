@@ -18,6 +18,7 @@ SRC_DIR := src
 OBJ_DIR := culeabra
 INC_DIR := include
 TEST_DIR := tests
+PYLIB_SUFFIX := $(shell python3-config --extension-suffix)
 
 # Source files
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
@@ -28,7 +29,7 @@ TESTS := $(patsubst $(TEST_DIR)/%.cpp,$(TEST_DIR)/%,$(wildcard $(TEST_DIR)/*.cpp
 # OBJS := $(SRCS:.cpp=.o)
 
 # Target executable
-TARGET := _culeabra
+TARGET := _culeabra$(PYLIB_SUFFIX)
 # TARGET := my_matrix_multiplier
 
 all: $(TARGET)
@@ -36,7 +37,7 @@ all: $(TARGET)
 # The automatic variable "$@" is replaced with the file name
 # The automatic variable "$^" is replaced with a list of the dependencies
 $(TARGET): $(OBJS)
-	$(CC) $(DEBUGFLAGS) $(PYBINDFLAGS) -o $(OBJ_DIR)/$@$$(python3-config --extension-suffix) $^
+	$(CC) $(DEBUGFLAGS) $(PYBINDFLAGS) -o $(OBJ_DIR)/$@ $^
 #	$(NVCC) $(LDFLAGS) -o $@$$(python3-config --extension-suffix) $^
 
 # %.o: %.cpp

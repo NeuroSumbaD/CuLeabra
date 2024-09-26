@@ -58,7 +58,7 @@ void leabra::Layer::BuildSubPools() {
 // BuildPools builds the inhibitory pools structures -- nu = number of units in layer
 void leabra::Layer::BuildPools(int nu) {
 	int np = 1 + NumPools();
-	Pools.reserve(np);
+	Pools.resize(np);
 	Pool &lpl = Pools[0];
 	lpl.StIndex = 0;
 	lpl.EdIndex = nu;
@@ -83,7 +83,7 @@ void leabra::Layer::Build() {
 	if (nu == 0) {
 		std::cerr << "Build Layer "<< Name <<": no units specified in Shape" << std::endl;
 	}
-	Neurons.reserve(nu);
+	Neurons.resize(nu);
 	BuildPools(nu);
 	
 	BuildPaths();

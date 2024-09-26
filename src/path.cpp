@@ -32,7 +32,7 @@ std::tuple<tensor::Int32 *, tensor::Int32 *, tensor::Bits *> paths::Full::Connec
 // NewTensors returns the tensors used for Connect method, based on layer sizes
 std::tuple<tensor::Int32 *, tensor::Int32 *, tensor::Bits *> paths::NewTensors(tensor::Shape &send, tensor::Shape &recv) {
     tensor::Int32 *sendn = new tensor::Int32(send);
-    tensor::Int32 *recvn = new tensor::Int32(send);
+    tensor::Int32 *recvn = new tensor::Int32(recv);
     tensor::Shape csh = tensor::AddShapes(recv, send);
     tensor::Bits *cons = new tensor::Bits(csh);
     return std::tuple<tensor::Int32 *, tensor::Int32 *, tensor::Bits *>(sendn, recvn, cons);

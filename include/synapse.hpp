@@ -18,7 +18,7 @@ namespace leabra {
         float Moment;
         float Scale;
 
-        Synapse(){InitParamMaps();}
+        Synapse(){InitParamMaps();};
 
         float* SynapseVarByName(std::string varNm);
         float* VarByName(std::string varNm);

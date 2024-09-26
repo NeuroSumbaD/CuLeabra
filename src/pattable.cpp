@@ -112,6 +112,10 @@ pattable::Table::Table(std::string fileName): MetaData(), events(), permutation(
 
 void pattable::Table::ReadFile(std::string fileName) {
     std::ifstream file(fileName);
+    if (file.fail()) {
+        throw std::runtime_error("ERROR: No file with name " + fileName + " found in the current directory.");
+    }
+
     std::string line;
 
     char delimitter;

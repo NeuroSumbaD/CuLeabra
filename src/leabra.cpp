@@ -205,12 +205,12 @@ void leabra::Path::Build() {
     if (tconr != tcons) {
         std::cerr << String() << " programmer error: total recv cons " << tconr << " != total send cons " << tcons << std::endl;
 	}
-	RConIndex.reserve(tconr);
-	RSynIndex.reserve(tconr);
-	SConIndex.reserve(tcons);
+	RConIndex.resize(tconr);
+	RSynIndex.resize(tconr);
+	SConIndex.resize(tcons);
     
     auto sconN = std::vector<int>(); // temporary mem needed to tracks cur n of sending cons
-    sconN.reserve(slen);
+    sconN.resize(slen);
 
     std::vector<bool> &cbits = cons->Values;
 	for (int ri = 0; ri < rlen; ri++) {
@@ -241,9 +241,9 @@ void leabra::Path::Build() {
 			rci++;
 		}
 	}
-	Syns.reserve(SConIndex.size());
-	GInc.reserve(rlen);
-	WbRecv.reserve(rlen);
+	Syns.resize(SConIndex.size());
+	GInc.resize(rlen);
+	WbRecv.resize(rlen);
 }
 
 // SetNIndexSt sets the *ConN and *ConIndexSt values given n tensor from Pat.
@@ -251,8 +251,8 @@ void leabra::Path::Build() {
 int leabra::Path::SetNIndexSt(std::vector<int> &n, minmax::AvgMax32 &avgmax, std::vector<int> &idxst, tensor::Int32 &tn) {
     int ln = tn.Len();
 	std::vector<int> &tnv = tn.Values;
-	n.reserve(ln);
-	idxst.reserve(ln);
+	n.resize(ln);
+	idxst.resize(ln);
 	int idx = 0;
 	// avgmax.Init();
 	for (int i = 0; i < ln; i++) {
@@ -321,9 +321,9 @@ void leabra::Path::SetScalesRPool(tensor::Tensor<float> scales) {
 					for (int ci = 0; ci < nc; ci++) {
 						// si := int(pj.RConIndex[st+ci]) // could verify coords etc
 						int rsi = RSynIndex[st+ci];
-						Synapse *sy = Syns[rsi];
+						Synapse &sy = Syns[rsi];
 						float sc = scales.Values[scst + ci];
-						sy->Scale = sc;
+						sy.Scale = sc;
 					}
 				}
 			}
@@ -345,9 +345,9 @@ void leabra::Path::SetWtsFunc(std::function<float(int si, int ri, tensor::Shape 
 			int si = RConIndex[st+ci];
 			float wt = wtFun(si, ri, ssh, rsh);
 			int rsi = RSynIndex[st+ci];
-			Synapse *sy = Syns[rsi];
-			sy->Wt = wt * sy->Scale;
-			Learn.LWtFromWt(*sy);
+			Synapse &sy = Syns[rsi];
+			sy.Wt = wt * sy.Scale;
+			Learn.LWtFromWt(sy);
 		}
 	}
 }
@@ -366,8 +366,8 @@ void leabra::Path::SetScalesFunc(std::function<float(int si, int ri, tensor::Sha
 			int si = RConIndex[st+ci];
 			float sc = scaleFun(si, ri, ssh, rsh);
 			int rsi = RSynIndex[st+ci];
-			Synapse *sy = Syns[rsi];
-			sy->Scale = sc;
+			Synapse &sy = Syns[rsi];
+			sy.Scale = sc;
 		}
 	}
 }
@@ -397,8 +397,8 @@ void leabra::Path::InitWeightsSyn(Synapse &syn) {
 
 // InitWeights initializes weight values according to Learn.WtInit params
 void leabra::Path::InitWeights() {
-	for (Synapse *sy: Syns) {
-		InitWeightsSyn(*sy);
+	for (Synapse &sy: Syns) {
+		InitWeightsSyn(sy);
 	}
 	for (WtBalRecvPath &wb: WbRecv) {
 		wb.Init();
@@ -415,7 +415,7 @@ void leabra::Path::InitWtSym(Path &rpt) {
 		int nc = SConN[si];
 		int st = SConIndexSt[si];
 		for (int ci = 0; ci < nc; ci++) {
-			Synapse &sy = *Syns[st+ci];
+			Synapse &sy = Syns[st+ci];
 			int ri = SConIndex[st+ci];
 			// now we need to find the reciprocal synapse on rpt!
 			// look in ri for sending connections
@@ -447,7 +447,7 @@ void leabra::Path::InitWtSym(Path &rpt) {
 					int rrii = rsst + up;
 					int rri = rpt.SConIndex[rrii];
 					if (rri == si) {
-						Synapse &rsy = *Syns[rrii];
+						Synapse &rsy = Syns[rrii];
 						rsy.Wt = sy.Wt;
 						rsy.LWt = sy.LWt;
 						rsy.Scale = sy.Scale;
@@ -461,7 +461,7 @@ void leabra::Path::InitWtSym(Path &rpt) {
 					int rrii = rsst + dn;
 					int rri = rpt.SConIndex[rrii];
 					if (rri == si) {
-						Synapse &rsy = *Syns[rrii];
+						Synapse &rsy = Syns[rrii];
 						rsy.Wt = sy.Wt;
 						rsy.LWt = sy.LWt;
 						rsy.Scale = sy.Scale;
@@ -495,7 +495,7 @@ void leabra::Path::SendGDelta(int si, float delta){
 	// slicing is ugly in c++...
 	auto synStart = Syns.begin() + st;
 	auto synEnd = Syns.begin() + st + nc;
-	auto syns = std::vector<leabra::Synapse *>(synStart, synEnd);
+	auto syns = std::vector<leabra::Synapse>(synStart, synEnd);
 
 	auto sconStart = SConIndex.begin() + st;
 	auto sconEnd = SConIndex.begin() + st + nc;
@@ -503,7 +503,7 @@ void leabra::Path::SendGDelta(int si, float delta){
 
 	for (uint ci = 0; ci < syns.size();  ci++) {
 		int ri = scons[ci];
-		GInc[ri] += scdel * syns[ci]->Wt;
+		GInc[ri] += scdel * syns[ci].Wt;
 	}
 }
 
@@ -542,14 +542,14 @@ void leabra::Path::DWt() {
 
 		auto start = Syns.begin() + st;
 		auto end = Syns.begin() + st + nc;
-		auto syns = std::vector<leabra::Synapse *>(start, end);
+		auto syns = std::vector<leabra::Synapse>(start, end);
 
 		auto sconStart = SConIndex.begin() + st;
 		auto sconEnd = SConIndex.begin() + st + nc;
 		auto scons = std::vector<int>(sconStart, sconEnd);
 
 		for (uint ci = 0; ci < syns.size(); ci++) {
-			Synapse &sy = *syns[ci];
+			Synapse &sy = syns[ci];
 			int ri = scons[ci];
 			Neuron &rn = rlay.Neurons[ri];
 			float err, bcm;
@@ -575,13 +575,13 @@ void leabra::Path::DWt() {
 		if (Learn.Norm.On) {
 			float maxNorm = 0;
 			for (uint ci = 0; ci < syns.size(); ci++) {
-				Synapse &sy = *syns[ci];
+				Synapse &sy = syns[ci];
 				if (sy.Norm > maxNorm) {
 					maxNorm = sy.Norm;
 				}
 			}
 			for (uint ci = 0; ci < syns.size(); ci++) {
-				Synapse &sy = *syns[ci];
+				Synapse &sy = syns[ci];
 				sy.Norm = maxNorm;
 			}
 		}
@@ -595,14 +595,14 @@ void leabra::Path::WtFromDWt() {
 	}
 	if (Learn.WtBal.On) {
 		for (uint si = 0; si < Syns.size(); si++) {
-			Synapse &sy = *Syns[si];
+			Synapse &sy = Syns[si];
 			int ri = SConIndex[si];
 			WtBalRecvPath &wb = WbRecv[ri];
 			Learn.WtFromDWt(wb.Inc, wb.Dec, sy.DWt, sy.Wt, sy.LWt, sy.Scale);
 		}
 	} else {
 		for (uint si = 0; si < Syns.size(); si++) {
-			Synapse &sy = *Syns[si];
+			Synapse &sy = Syns[si];
 			Learn.WtFromDWt(1, 1, sy.DWt, sy.Wt, sy.LWt, sy.Scale);
 		}
 	}
@@ -634,7 +634,7 @@ void leabra::Path::WtBalFromWt() {
 		int sumN = 0;
 		for (uint ci = 0; ci < rsidxs.size(); ci++) {
 			int rsi = rsidxs[ci];
-			Synapse &sy = *Syns[rsi];
+			Synapse &sy = Syns[rsi];
 			if (sy.Wt >= Learn.WtBal.AvgThr) {
 				sumWt += sy.Wt;
 				sumN++;

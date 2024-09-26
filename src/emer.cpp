@@ -242,7 +242,7 @@ bool emer::Path::ApplyParams(params::Sheet &pars, bool setMsg) {
 	return app;
 }
 
-emer::Layer::Layer(std::string name, int index, std::vector<int> shape):Name(name), Off(true), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){
+emer::Layer::Layer(std::string name, int index, std::vector<int> shape):Name(name), Off(false), Shape(shape), Pos(), Index(0), SampleIndexes(), SampleShape(shape), MetaData(){
 	// InitParamMaps();
 }
 

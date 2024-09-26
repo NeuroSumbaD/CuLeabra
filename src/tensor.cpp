@@ -81,7 +81,7 @@ int tensor::Shape::Offset(std::vector<int> index) {
 std::vector<int> tensor::Shape::Index(int offset) {
     int nd = Sizes.size();
     std::vector<int> index;
-    index.reserve(nd);
+    index.resize(nd);
 	int rem = offset;
 	for (int i = (nd - 1); i >= 0; i--) {
 		int s = Sizes[i];
@@ -113,10 +113,10 @@ bool tensor::Shape::IndexIsValid(std::vector<int> idx) {
 // SetShape sets the shape size and optional names
 // RowMajor ordering is used by default.
 void tensor::Shape::SetShape(std::vector<int> sizes, std::vector<std::string> names) {
-    Sizes.reserve(sizes.size());
+    Sizes.resize(sizes.size());
     Sizes = sizes; // TODO: Check that this copies the vector
 	Strides = RowMajorStrides(sizes);
-	Names.reserve(Sizes.size());
+	Names.resize(Sizes.size());
 	if (names.size() == sizes.size()) {
 		Names = names;
 	}

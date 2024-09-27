@@ -13,7 +13,7 @@ namespace leabra {
 
     struct Network: emer::Network {
         std::vector<Layer*> Layers;
-        std::map<std::string, Layer*> LayerMap;
+        // std::map<std::string, Layer*> LayerMap; // Name mismatch from emer::Network
         int NThreads;
         int WtBalInterval; // how frequently to update the weight balance average weight factor -- relatively expensive.
         int WtBalCtr; // counter for how long it has been since last WtBal.

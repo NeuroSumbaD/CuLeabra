@@ -1,7 +1,17 @@
 #include "neuron.hpp"
 #include "bitflag.hpp"
 
-bool leabra::Neuron::HasFlag(NeurFlags flag) {
+leabra::Neuron::Neuron()
+    :SubPool(0),Act(0),ActLrn(0),Ge(0),Gi(0),Gk(0),Inet(0),Vm(0),Targ(0),Ext(0),
+    AvgSS(0),AvgS(0),AvgM(0),AvgL(0),AvgLLrn(0),AvgSLrn(0),ActQ0(0),ActQ1(0),
+    ActQ2(0),ActQM(0),ActM(0),ActP(0),ActDif(0),ActDel(0),ActAvg(0),Noise(0),
+    GiSyn(0),GiSelf(0),ActSent(0),GeRaw(0),GiRaw(0),GknaFast(0),GknaMed(0),
+    GknaSlow(0),Spike(0),ISI(0),ISIAvg(0){
+    InitParamMaps();
+}
+
+bool leabra::Neuron::HasFlag(NeurFlags flag)
+{
     return bitflag::Has32(this->Flags, flag);
 }
 

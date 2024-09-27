@@ -1,6 +1,8 @@
 #include "rand.hpp"
 #include <ctime>
 #include <iostream>
+#include <algorithm>
+#include <numeric> 
 
 namespace rands {
     SysRand* globalRandGenerator = nullptr;
@@ -49,18 +51,25 @@ uint rands::SysRand::Intn(uint n) {
 // Perm returns, as a slice of n ints, a pseudo-random permutation of the integers
 // in the half-open interval [0,n).
 std::vector<int> rands::SysRand::Perm(int n) {
-    std::vector<int> m(n);
+    // std::vector<int> m(n);
     // In the following loop, the iteration when i=0 always swaps m[0] with m[0].
 	// A change to remove this useless iteration is to assign 1 to i in the init
 	// statement. But Perm also effects r. Making this change will affect
 	// the final state of r. So this change can't be made for compatibility
 	// reasons for Go 1.
-	for (int i = 0; i < n; i++) {
-		int j = Intn(i + 1);
-		m[i] = m[j];
-		m[j] = i;
-	}
-	return m;
+	// for (int i = 0; i < n; i++) {
+	// 	int j = Intn(i + 1);
+	// 	m[i] = m[j];
+	// 	m[j] = i;
+	// }
+    // Above matches leabra
+
+    // Below uses c++ standard library
+    std::vector<int> perm(n);
+    std::iota(perm.begin(), perm.end(), 0);
+    // Shuffle the vector to get a random permutation
+    std::shuffle(perm.begin(), perm.end(), engine);
+    return perm;
 }
 
 rands::Dist::Dist(float mean, float var, float par, RandDists type): Mean(mean), Var(var), Par(par), DistType(type){}

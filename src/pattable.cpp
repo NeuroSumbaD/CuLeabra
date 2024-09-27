@@ -106,7 +106,7 @@ void processRow(pattable::Table *table, const std::string& rowLine, char delimit
 }
 
 //Table is created by reading from a CSV
-pattable::Table::Table(std::string fileName): MetaData(), events(), permutation(){
+pattable::Table::Table(std::string fileName): MetaData(), events(){
     ReadFile(fileName);
 }
 
@@ -136,26 +136,28 @@ void pattable::Table::ReadFile(std::string fileName) {
     }
 
     // TODO: Allow the permutation to be regenerated, overwritten, or not used
-    uint numEvents = eventNames.size();
-    permutation = rands::Perm(numEvents); //TODO: CHECK THIS FUNCTION (MULTIPLE ZEROS!!!)
+    // uint numEvents = eventNames.size();
+    // permutation = rands::Perm(numEvents); //TODO: CHECK THIS FUNCTION (MULTIPLE ZEROS!!!)
 }
 
 // Returns a Tensor Pattern corresponding to the event
-tensor::Tensor<float> *pattable::Table::GetPattern(std::string name) {
-    if (EventIndex > eventNames.size()) {
-        EventIndex = 0;
-    }
+tensor::Tensor<float> *pattable::Table::GetPattern(std::string eventName, std::string layerName) {
 
-    std::string eventName = eventNames[permutation[EventIndex]];
-    tensor::Tensor<float> *pattern = events[eventName][name];
+    return events[eventName][layerName];
+    // if (EventIndex > eventNames.size()) {
+    //     EventIndex = 0;
+    // }
 
-    if (numLayers == 0) { 
-        numLayers = events[eventName].size();
-        // increment once all the layer patterns have been applied
-        EventIndex++;
-    } else {
-        numLayers--;
-    }
+    // std::string eventName = eventNames[permutation[EventIndex]];
+    // tensor::Tensor<float> *pattern = events[eventName][name];
 
-    return pattern;
+    // if (numLayers == 0) { 
+    //     numLayers = events[eventName].size();
+    //     // increment once all the layer patterns have been applied
+    //     EventIndex++;
+    // } else {
+    //     numLayers--;
+    // }
+
+    // return pattern;
 }

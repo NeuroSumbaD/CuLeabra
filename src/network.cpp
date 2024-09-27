@@ -100,8 +100,8 @@ std::tuple<leabra::Layer *, leabra::Layer *, leabra::Path *> leabra::Network::Co
 leabra::Path *leabra::Network::ConnectLayers(Layer *send, Layer *recv, paths::Pattern *pat, PathTypes typ) {
 	leabra::Path *pt = new leabra::Path();
 	pt->Connect(send, recv, pat, typ);
-	recv->RecvPaths.push_back(*pt);
-	send->SendPaths.push_back(*pt);
+	recv->RecvPaths.push_back(pt);
+	send->SendPaths.push_back(pt);
 	return pt;
 }
 
@@ -154,8 +154,8 @@ leabra::Path *leabra::Network::LateralConnectLayer(Layer *lay, paths::Pattern *p
 leabra::Path *leabra::Network::LateralConnectLayerPath(Layer *lay, paths::Pattern *pat, Path *pt) {
 	pt->Connect(lay, lay, pat, LateralPath);
 	// TODO: Check if there are consequences to copying pt
-	lay->RecvPaths.push_back(*pt);	
-	lay->SendPaths.push_back(*pt);
+	lay->RecvPaths.push_back(pt);	
+	lay->SendPaths.push_back(pt);
 	return pt;
 }
 
@@ -379,25 +379,25 @@ void leabra::Network::InitTopoScales() {
 			continue;
 		}
 		auto &rpjn = ly->RecvPaths;
-		for (Path &pt: rpjn) {
-			if (pt.Off) {
+		for (Path *pt: rpjn) {
+			if (pt->Off) {
 				continue;
 			}
-			paths::Pattern *pat = pt.Pattern;
+			paths::Pattern *pat = pt->Pattern;
 			if (pat->type == "PoolTile"){
 				auto ptn = (paths::PoolTile*) pat;
 				if (!ptn->HasTopoWeights()) {
 					continue;
 				}
-				Layer &slay = *pt.Send;
+				Layer &slay = *pt->Send;
 				ptn->TopoWeights(slay.Shape, ly->Shape, scales);
-				pt.SetScalesRPool(scales);
+				pt->SetScalesRPool(scales);
 			} else if (pat->type == "Circle"){
 				auto ptn = (paths::Circle*) pat;
 				if (!ptn->TopoWeights) {
 					continue;
 				}
-				pt.SetScalesFunc(ptn->GaussWts);
+				pt->SetScalesFunc(ptn->GaussWts);
 			}
 		}
 	}

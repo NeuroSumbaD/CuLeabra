@@ -7,6 +7,7 @@
     In the future, I will also try to extend this interface to use Python Generators
     to stream events from some external library to the leabra network.
 */
+#pragma once
 #include <map>
 #include <vector>
 #include <string>
@@ -32,20 +33,17 @@ namespace pattable {
         std::map<std::string, std::string> MetaData;
         Events events;
         ColumnInfo info;
-
         std::vector<std::string> eventNames;
-        std::vector<int> permutation;
-        uint EventIndex = 0;
-        uint numLayers = 0;
+        
 
-        Table():MetaData(),events(), permutation(){};
+        Table():MetaData(),events(){};
         Table(std::string fileName);
 
         // void AddToTable(std::string layerName, std::vector<int> shape, std::vector<std::string> names);
 
         void ReadFile(std::string fileName);
 
-        tensor::Tensor<float> *GetPattern(std::string name);
+        tensor::Tensor<float> *GetPattern(std::string eventName, std::string layerName);
     };
     
 } // namespace pattable

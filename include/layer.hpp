@@ -30,8 +30,8 @@ namespace leabra {
         int Index;
         Network* Net;// our parent network, in case we need to use it to find other layers etc; set when added by network.
         LayerTypes Type;
-        std::vector<Path> RecvPaths;
-        std::vector<Path> SendPaths;
+        std::vector<Path*> RecvPaths;
+        std::vector<Path*> SendPaths;
         ActParams Act;
         InhibParams Inhib;
         LearnNeurParams Learn;
@@ -44,6 +44,7 @@ namespace leabra {
 
         void Defaults();
         void UpdateParams();
+        Path* RecipToSendPath(Path * spj);
         Pool* GetPool(int idx); // Pool returns pointer to pool at given index
 
         //Build
@@ -107,8 +108,8 @@ namespace leabra {
         // Threading / Reports
         std::tuple<int, int, int> CostEst();
         // Stats
-        std::tuple<int, int> MSE(float tol);
-        float SSE(float tol);
+        std::tuple<int, int> MSE(float tol = 0.5);
+        float SSE(float tol = 0.5);
         // Lesion
         void UnLesionNeurons();
         int LesionNeurons(float prop);

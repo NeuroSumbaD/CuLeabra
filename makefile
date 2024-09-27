@@ -4,12 +4,14 @@
 CC := g++
 NVCC := nvcc
 CFLAGS := -std=c++20 -I./include -Wall
-PYBINDFLAGS := -shared -fPIC $$(python3 -m pybind11 --includes)
+PYLIBS := $(shell python3-config --ldflags) -lpython3.12
+PYBINDINCLUDES := $(shell python3 -m pybind11 --includes)
+PYBINDFLAGS := -shared -fPIC
 DEBUGFLAGS := -g3 -O0
 #pybind11 module returns the include paths -I/usr/include/python3.12/ -I/usr/lib/python3/dist-packages/pybind11/include
 #can also add -O3 to include optimization step 
-NVCCFLAGS := -I./include -I/usr/include/python3.12/ -I/usr/include/pybind11/
-NVCCPYBINDFLAGS := -Xcompiler -fPIC -shared
+NVCCFLAGS := -I./include
+NVCCPYBINDFLAGS := -Xcompiler -fPIC -shared $(shell python3-config --ldflags) -lpython3.12
 LDFLAGS := -lcudart
 
 # Source files
@@ -37,19 +39,19 @@ all: $(TARGET)
 # The automatic variable "$@" is replaced with the file name
 # The automatic variable "$^" is replaced with a list of the dependencies
 $(TARGET): $(OBJS)
-	$(CC) $(DEBUGFLAGS) $(PYBINDFLAGS) -o $(OBJ_DIR)/$@ $^
+	$(CC) $(DEBUGFLAGS) $(PYBINDFLAGS) $(PYBINDINCLUDES) -o $(OBJ_DIR)/$@ $^ $(PYLIBS)
 #	$(NVCC) $(LDFLAGS) -o $@$$(python3-config --extension-suffix) $^
 
 # %.o: %.cpp
 # The automatic variable "$<" is replaced with the first dependency
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.hpp
 	$(info making object file: $@)
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(PYBINDFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(PYBINDFLAGS) $(PYBINDINCLUDES) -c -o $@ $< $(PYLIBS)
 
 # %.o: %.cu
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cu
 	$(info making object file: $@)
-	$(NVCC) $(CFLAGS) $(DEBUGFLAGS) -c -o $@ $<
+	$(NVCC) $(CFLAGS) $(DEBUGFLAGS) $(NVCCPYBINDFLAGS) $(PYBINDINCLUDES) -c -o $@ $< $(PYLIBS)
 
 
 # UNIT TESTING FOR MODULES
@@ -58,10 +60,10 @@ tests: $(TESTS)
 $(TEST_DIR)/%: $(TEST_DIR)/%.o $(OBJS)
 	$(info making test: $@)
 	$(info with dependencies: $^)
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -fPIC -o  $@ $^
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(PYBINDINCLUDES) -fPIC -o  $@ $^ $(PYLIBS)
 
 $(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -fPIC -c -o  $@ $^
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) $(PYBINDINCLUDES) -fPIC -c -o  $@ $^ $(PYLIBS)
 
 clean:
 	rm -f $(OBJS) $(OBJ_DIR)/$(TARGET)*

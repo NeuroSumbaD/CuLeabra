@@ -11,8 +11,8 @@ void leabra::Layer::Defaults() {
     Inhib.Defaults();
     Learn.Defaults();
     Inhib.Layer.On = true;
-    for (Path &pt: RecvPaths) {
-        pt.Defaults();
+    for (Path *pt: RecvPaths) {
+        pt->Defaults();
     }
 }
 
@@ -21,9 +21,24 @@ void leabra::Layer::UpdateParams() {
     Inhib.Update();
     Learn.Update();
     Inhib.Layer.On = true;
-    for (Path &pt: RecvPaths) {
-        pt.UpdateParams();
+    for (Path *pt: RecvPaths) {
+        pt->UpdateParams();
     }
+}
+
+// RecipToSendPath finds the reciprocal pathway relative to the given sending pathway
+// found within the SendPaths of this layer.  This is then a recv path within this layer:
+//
+//	S=A -> R=B recip: R=A <- S=B -- ly = A -- we are the sender of srj and recv of rpj.
+//
+// returns nullptr if not found.
+leabra::Path *leabra::Layer::RecipToSendPath(Path *spj) {
+	for (Path *rpj: RecvPaths) {
+		if (rpj->Send == spj->Recv) {
+			return rpj;
+		}
+	}
+    return nullptr;
 }
 
 leabra::Pool *leabra::Layer::GetPool(int idx) {
@@ -69,11 +84,11 @@ void leabra::Layer::BuildPools(int nu) {
 
 // BuildPaths builds the pathways, recv-side
 void leabra::Layer::BuildPaths() {
-	for (Path &pt: RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt: RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.Build();
+		pt->Build();
 	}
 }
 
@@ -93,11 +108,11 @@ void leabra::Layer::Build() {
 // i.e., resetting learning Also calls InitActs.
 void leabra::Layer::InitWeights() {
 	UpdateParams();
-	for (Path &pt: SendPaths) {
-		if (pt.Off) {
+	for (Path *pt: SendPaths) {
+		if (pt->Off) {
 			continue;
 		}
-        pt.InitWeights();
+        pt->InitWeights();
 	}
     for (uint pi = 0; pi < Pools.size(); pi++) {
 		leabra::Pool &pl = Pools[pi];
@@ -143,25 +158,25 @@ void leabra::Layer::InitActs() {
 // InitWeightsSym initializes the weight symmetry.
 // higher layers copy weights from lower layers.
 void leabra::Layer::InitWtSym() { //TODO: check if this is useful...
-    for (leabra::Path &pt: SendPaths) {
-        if (pt.Off) {
+    for (leabra::Path *pt: SendPaths) {
+        if (pt->Off) {
 			continue;
 		}
-		if (!pt.WtInit.Sym) {
+		if (!pt->WtInit.Sym) {
 			continue;
 		}
 		// key ordering constraint on which way weights are copied
-		if (pt.Recv->Index < pt.Send->Index) {
+		if (pt->Recv->Index < pt->Send->Index) {
 			continue;
 		}
-		// rpt= RecipToSendPath(pt);
-		// if !has {
-		// 	continue
-		// }
-		// if !(rpt.WtInit.Sym) {
-		// 	continue
-		// }
-		// pt.InitWtSym(rpt)
+		Path *rpt = RecipToSendPath(pt);
+		if (rpt == nullptr) {
+			continue;
+		}
+		if (!rpt->WtInit.Sym) {
+			continue;
+		}
+		pt->InitWtSym(*rpt);
     }
 }
 
@@ -452,35 +467,35 @@ void leabra::Layer::AvgLFromAvgM() {
 void leabra::Layer::GScaleFromAvgAct() {
 	float totGeRel = 0;
 	float totGiRel = 0;
-	for (Path &pt : RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt : RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		Layer &slay = *pt.Send;
+		Layer &slay = *pt->Send;
 		Pool &slpl = slay.Pools[0];
 		float savg = slpl.ActAvgs.ActPAvgEff;
 		int snu = slay.Neurons.size();
-		int ncon = pt.RConNAvgMax.Avg;
-		pt.GScale = pt.WtScale.FullScale(savg, float(snu), ncon);
+		int ncon = pt->RConNAvgMax.Avg;
+		pt->GScale = pt->WtScale.FullScale(savg, float(snu), ncon);
 
-		if (pt.Type == InhibPath) {
-			totGiRel += pt.WtScale.Rel;
+		if (pt->Type == InhibPath) {
+			totGiRel += pt->WtScale.Rel;
 		} else {
-			totGeRel += pt.WtScale.Rel;
+			totGeRel += pt->WtScale.Rel;
 		}
 	}
 
-	for (Path &pt : RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt: RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		if (pt.Type == InhibPath) {
+		if (pt->Type == InhibPath) {
 			if (totGiRel > 0) {
-				pt.GScale /= totGiRel;
+				pt->GScale /= totGiRel;
 			}
 		} else {
 			if (totGeRel > 0) {
-				pt.GScale /= totGeRel;
+				pt->GScale /= totGeRel;
 			}
 		}
 	}
@@ -545,11 +560,11 @@ void leabra::Layer::InitGInc() {
 		}
 		Act.InitGInc(nrn);
 	}
-	for (Path &pt: RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt: RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.InitGInc();
+		pt->InitGInc();
 	}
 }
 
@@ -564,21 +579,21 @@ void leabra::Layer::SendGDelta(Context *ctx) {
 		if (nrn.Act > Act.OptThresh.Send) {
 			float delta = nrn.Act - nrn.ActSent;
 			if (std::abs(delta) > Act.OptThresh.Delta) {
-				for (Path &sp: SendPaths) {
-					if (sp.Off) {
+				for (Path *sp: SendPaths) {
+					if (sp->Off) {
 						continue;
 					}
-					sp.SendGDelta(ni, delta);
+					sp->SendGDelta(ni, delta);
 				}
 				nrn.ActSent = nrn.Act;
 			}
 		} else if (nrn.ActSent > Act.OptThresh.Send) {
 			float delta = -nrn.ActSent; // un-send the last above-threshold activation to get back to 0
-			for (Path &sp: SendPaths) {
-				if (sp.Off) {
+			for (Path *sp: SendPaths) {
+				if (sp->Off) {
 					continue;
 				}
-				sp.SendGDelta(ni, delta);
+				sp->SendGDelta(ni, delta);
 			}
 			nrn.ActSent = 0;
 		}
@@ -595,11 +610,11 @@ void leabra::Layer::GFromInc(Context *ctx) {
 // This is called by GFromInc overall method, but separated out for cases that need to
 // do something different.
 void leabra::Layer::RecvGInc(Context *ctx) {
-	for (Path &pt: RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt: RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.RecvGInc();
+		pt->RecvGInc();
 	}
 }
 
@@ -669,9 +684,9 @@ void leabra::Layer::InhibFromPool(Context *ctx) {
 		if (nrn.IsOff()) {
 			continue;
 		}
-		Pool &pl = Pools[nrn.SubPool];
+		Pool *pl = &Pools[nrn.SubPool];
 		Inhib.Self.Inhib(nrn.GiSelf, nrn.Act);
-		nrn.Gi = pl.Inhib.Gi + nrn.GiSelf + nrn.GiSyn;
+		nrn.Gi = pl->Inhib.Gi + nrn.GiSelf + nrn.GiSyn;
 	}
 }
 
@@ -814,42 +829,42 @@ bool leabra::Layer::IsTarget() {
 
 // DWt computes the weight change (learning) -- calls DWt method on sending pathways
 void leabra::Layer::DWt() {
-	for (Path &pt: SendPaths) {
-		if (pt.Off) {
+	for (Path *pt: SendPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.DWt();
+		pt->DWt();
 	}
 }
 
 // WtFromDWt updates the weights from delta-weight changes -- on the sending pathways
 void leabra::Layer::WtFromDWt() {
-	for (Path &pt: SendPaths) {
-		if (pt.Off) {
+	for (Path *pt: SendPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.WtFromDWt();
+		pt->WtFromDWt();
 	}
 }
 
 // WtBalFromWt computes the Weight Balance factors based on average recv weights
 void leabra::Layer::WtBalFromWt() {
-	for (Path &pt: RecvPaths) {
-		if (pt.Off) {
+	for (Path *pt: RecvPaths) {
+		if (pt->Off) {
 			continue;
 		}
-		pt.WtBalFromWt();
+		pt->WtBalFromWt();
 	}
 }
 
 // LrateMult sets the new Lrate parameter for Paths to LrateInit * mult.
 // Useful for implementing learning rate schedules.
 void leabra::Layer::LrateMult(float mult) {
-	for (Path &pt: RecvPaths) {
+	for (Path *pt: RecvPaths) {
 		// if p.Off { // keep all sync'd
 		// 	continue
 		// }
-		pt.LrateMult(mult);
+		pt->LrateMult(mult);
 	}
 }
 
@@ -863,8 +878,8 @@ std::tuple<int, int, int> leabra::Layer::CostEst() {
 	int perNeur = 300; // cost per neuron, relative to synapse which is 1
 	int neur = Neurons.size() * perNeur;
 	int syn = 0;
-	for (Path &pt: SendPaths) {
-		int ns = pt.Syns.size();
+	for (Path *pt: SendPaths) {
+		int ns = pt->Syns.size();
 		syn += ns;
 	}
 	int tot = neur + syn;
@@ -982,7 +997,7 @@ int leabra::Layer::NumRecvPaths() {
 }
 
 emer::Path *leabra::Layer::RecvPath(int idx) {
-    return &RecvPaths[idx];
+    return RecvPaths[idx];
 }
 
 int leabra::Layer::NumSendPaths() {
@@ -990,7 +1005,7 @@ int leabra::Layer::NumSendPaths() {
 }
 
 emer::Path *leabra::Layer::SendPath(int idx) {
-    return &SendPaths[idx];
+    return SendPaths[idx];
 }
 
 void leabra::Layer::InitParamMaps() {

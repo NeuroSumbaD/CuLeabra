@@ -4,6 +4,8 @@
 #include <any>
 #include <vector>
 #include <initializer_list>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h> 
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -75,6 +77,10 @@ namespace params {
         std::map<std::string, std::string> params;
 
         Params(std::initializer_list<std::pair<const std::string, std::string>> s): params(s) {};
+
+        Params(std::map<std::string, std::string> s): params(s) {};
+
+        Params(const pybind11::dict & d);
 
         // std::string ParamByNameTry(std::string name);
         std::string ParamByName(std::string name);
@@ -180,6 +186,11 @@ namespace params {
         // Constructor that takes an initializer list of key-value pairs
         Sets(std::initializer_list<std::pair<const std::string, Sheet>> s): sheets(s) {};
 
+        // Constructor to support conversion from python objects
+        Sets(std::map<std::string, Sheet> s): sheets(s){};
+
+        // Sets(const pybind11::dict &d);
+
         // Sheet* SheetByNameTry(std::string name);
         Sheet* SheetByName(std::string name);
         void SetFloat(std::string sheet, std::string sel, std::string param, float val);
@@ -194,3 +205,5 @@ namespace params {
     bool SelMatch(std::string sel, std::string name, std::string cls, std::string styp);//, std::string gotyp);
     bool ClassMatch(std::string sel, std::string cls);
 };
+
+void pybind_ParamContainers(pybind11::module_ &m);

@@ -708,3 +708,27 @@ void leabra::WtBalRecvPath::InitParamMaps() {
 	ParamTypeMap["Inc"] = &typeid(float);
 	ParamTypeMap["Dec"] = &typeid(float);
 }
+
+void pybind_LeabraLayerTypes(pybind11::module_ &m) {
+	pybind11::enum_<leabra::LayerTypes>(m, "LayerTypes")
+        .value("SuperLayer", leabra::LayerTypes::SuperLayer)
+		.value("InputLayer", leabra::LayerTypes::InputLayer)
+		.value("TargetLayer", leabra::LayerTypes::TargetLayer)
+		.value("CompareLayer", leabra::LayerTypes::CompareLayer)
+		.value("CTLayer", leabra::LayerTypes::CTLayer)
+		.value("PulvinarLayer", leabra::LayerTypes::PulvinarLayer)
+		.value("TRNLayer", leabra::LayerTypes::TRNLayer)
+		.value("PTMaintLayer", leabra::LayerTypes::PTMaintLayer)
+		.value("PTPredLayer", leabra::LayerTypes::PTPredLayer)
+        .export_values();
+}
+
+void pybind_LeabraPathTypes(pybind11::module_ &m) {
+	pybind11::enum_<leabra::PathTypes>(m, "PathTypes")
+        .value("ForwardPath", leabra::PathTypes::ForwardPath)
+		.value("BackPath", leabra::PathTypes::BackPath)
+		.value("LateralPath", leabra::PathTypes::LateralPath)
+		.value("InhibPath", leabra::PathTypes::InhibPath)
+		.value("CTCtxtPath", leabra::PathTypes::CTCtxtPath)
+		.export_values();
+}

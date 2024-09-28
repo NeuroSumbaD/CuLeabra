@@ -1,6 +1,7 @@
 #pragma once
 #include <fstream>
 #include <functional>
+#include <pybind11/pybind11.h>
 
 #include "learn.hpp"
 #include "act.hpp"
@@ -169,3 +170,5 @@ namespace paths {
     
 
 } // namespace paths
+
+void pybind_Patterns(pybind11::module_ &m);

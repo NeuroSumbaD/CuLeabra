@@ -587,6 +587,12 @@ void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
 //     throw std::invalid_argument(err);
 // }
 
+// params::Sets::Sets(const pybind11::dict &d): sheets(){
+//     for(auto &key: d){
+
+//     }
+// }
+
 // SheetByName finds given sheet by name -- returns nil if not found.
 // Use this when sure the sheet exists -- otherwise use Try version.
 params::Sheet *params::Sets::SheetByName(std::string name) {
@@ -784,4 +790,29 @@ float params::StylerObject::GetByPath(std::string path) {
 
 void *params::StylerObject::GetStyleObject() {
     return (void *)this;
+}
+
+void pybind_ParamContainers(pybind11::module_ &m) {
+    pybind11::class_<params::Params>(m, "Params")
+        .def(pybind11::init<std::map<std::string, std::string>>())
+    ;
+
+    pybind11::class_<params::Sel>(m, "Sel")
+        .def(pybind11::init<>())
+        // .def(pybind11::init<pybind11::dict>())
+        .def_readwrite("Sel", &params::Sel::Sel)
+        .def_readwrite("Desc", &params::Sel::Desc)
+        .def_readwrite("ParamsSet", &params::Sel::ParamsSet)
+        .def_readwrite("SetName", &params::Sel::SetName)
+    ;
+
+    pybind11::class_<params::Sheet>(m, "Sheet")
+        .def(pybind11::init<std::initializer_list<params::Sel>>())
+        .def(pybind11::init<pybind11::list>())
+    ;
+
+    pybind11::class_<params::Sets>(m, "Sets")
+        .def(pybind11::init<std::map<std::string, params::Sheet>>())
+        .def(pybind11::init<pybind11::dict>())
+    ;
 }

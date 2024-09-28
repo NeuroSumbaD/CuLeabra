@@ -24,6 +24,8 @@ void leabra::Sim::Init() {
             TrialSSE[lay->Name].reserve(Env->NumTrials());
         }
     }
+
+    isInitialized = true;
 }
 
 // AlphaCyc runs one alpha-cycle (100 msec, 4 quarters)			 of processing.
@@ -81,6 +83,10 @@ void leabra::Sim::ApplyParams() {
 }
 
 void leabra::Sim::Run(int numEpochs, bool train) {
+    if (!isInitialized) {
+        throw std::runtime_error("ERROR: Tried to intiate run before Sim.Init().");
+        // TODO: Find a way to detect changes in the network and generate warnings
+    }
     for (auto &[layerName, vector]: EpochSSE){
         vector.reserve(vector.size()+numEpochs);
     }
@@ -118,7 +124,7 @@ int leabra::TabulatedEnv::NumTrials() {
 }
 
 leabra::Sim::Sim(Network *net, params::Sets *params, Environment *env):
-    Net(net), Params(params), Env(env){
+    Net(net), Params(params), Env(env), isInitialized(false){
     Ctx = new leabra::Context();
 }
 
@@ -185,4 +191,26 @@ void leabra::TabulatedEnv::TableFromFile(std::string fileName) {
     table = new pattable::Table(fileName);
     numEvents = table->eventNames.size();
     permutation = rands::Perm(numEvents);
+}
+
+void pybind_LeabraSim(pybind11::module_ &m) {
+    pybind11::class_<leabra::Sim>(m, "Sim")
+        .def(pybind11::init<leabra::Network*, params::Sets*, leabra::Environment*>(),
+            pybind11::arg("net") = nullptr,
+            pybind11::arg("params") = nullptr,
+            pybind11::arg("env") = nullptr
+            )
+        .def_readonly("Net", &leabra::Sim::Net)
+        .def_readonly("Params", &leabra::Sim::Params)
+        .def_readonly("Env", &leabra::Sim::Env)
+        .def_readonly("Ctx", &leabra::Sim::Ctx)
+        .def("Init", &leabra::Sim::Init)
+        .def("StepTrial", &leabra::Sim::StepTrial)
+        .def("StepEpoch", &leabra::Sim::StepEpoch)
+        .def("ApplyParams", &leabra::Sim::ApplyParams)
+        .def("Run", &leabra::Sim::Run,
+            pybind11::arg("numEpochs"),
+            pybind11::arg("train") = true
+            )
+    ;
 }

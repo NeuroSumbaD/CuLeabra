@@ -3,6 +3,8 @@
     simulations with Leabra-style networks
 */
 #pragma once
+#include <memory>
+#include <pybind11/pybind11.h>
 #include "pattable.hpp"
 #include "tensor.hpp"
 #include "params.hpp"
@@ -52,6 +54,8 @@ namespace leabra {
         params::Sets *Params;
         Environment *Env;
 
+        bool isInitialized;
+
         std::map<std::string, std::vector<float>> EpochSSE; // map of target layer names and their SSE over each epoch
         std::map<std::string, std::vector<float>> TrialSSE; // map of target layer names and their SSE for each trial
         
@@ -74,3 +78,5 @@ namespace leabra {
     
     
 } // namespace leabra
+
+void pybind_LeabraSim(pybind11::module_ &m);

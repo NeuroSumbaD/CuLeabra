@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <pybind11/pybind11.h>
 #include "tensor.hpp"
 #include "emer.hpp"
 #include "leabra.hpp"
@@ -71,3 +72,6 @@ namespace leabra {
     };
     
 } // namespace leabra
+
+
+void pybind_LeabraNet(pybind11::module_ &m);

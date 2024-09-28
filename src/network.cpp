@@ -494,3 +494,24 @@ void leabra::Network::UnLesionNeurons() {
 		ly->UnLesionNeurons();
 	}
 }
+
+void pybind_LeabraNet(pybind11::module_ &m) {
+	// pybind11::class_<leabra::Network, leabra::Network*>(m, "Network")
+    //     .def(pybind11::init<std::string, int>(),
+	// 		pybind11::arg("name"),
+    //         pybind11::arg("wtBalInterval") = 10
+    //     	)
+	pybind11::class_<leabra::Network>(m, "Network")
+		.def(pybind11::init<std::string, int>(),
+			pybind11::arg("name"),
+			pybind11::arg("wtBalInterval") = 10
+			)
+		.def_readonly("Name", &leabra::Network::Name)
+		.def("AddLayer", &leabra::Network::AddLayer)
+		.def("AddLayer2D", &leabra::Network::AddLayer2D)
+		.def("AddLayer4D", &leabra::Network::AddLayer4D)
+		.def("ConnectLayers", &leabra::Network::ConnectLayers)
+		.def("BidirConnectLayers", &leabra::Network::BidirConnectLayers)
+		.def("LateralConnectLayer", &leabra::Network::LateralConnectLayer)
+	;
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <fstream>
+#include <pybind11/pybind11.h>
 #include "emer.hpp"
 #include "tensor.hpp"
 #include "time.hpp"
@@ -338,3 +339,6 @@ namespace leabra {
     };
 
 } // namespace leabra
+
+void pybind_LeabraLayerTypes(pybind11::module_ &m);
+void pybind_LeabraPathTypes(pybind11::module_ &m);

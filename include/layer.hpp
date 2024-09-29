@@ -127,3 +127,5 @@ namespace leabra {
     };
 
 };
+
+void pybind_LeabraLayer(pybind11::module_ &m);

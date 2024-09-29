@@ -440,12 +440,18 @@ void paths::SigmoidTopo::Defaults() {
 }
 
 void pybind_Patterns(pybind11::module_ &m) {
-	// pybind11::class_<paths::Pattern, paths::Pattern*>(m, "Pattern");
-	// pybind11::class_<paths::Full, paths::Pattern, paths::Full*>(m, "Full");
-	// pybind11::class_<paths::Circle, paths::Pattern, paths::Circle*>(m, "Circle");
-	// pybind11::class_<paths::PoolTile, paths::Pattern, paths::PoolTile*>(m, "PoolTile");
 	pybind11::class_<paths::Pattern>(m, "Pattern");
-	pybind11::class_<paths::Full, paths::Pattern>(m, "Full");
-	pybind11::class_<paths::Circle, paths::Pattern>(m, "Circle");
-	pybind11::class_<paths::PoolTile, paths::Pattern>(m, "PoolTile");
+
+	pybind11::class_<paths::Full, paths::Pattern>(m, "Full")
+		.def(pybind11::init<>())
+	;
+
+	// pybind11::class_<paths::Circle, paths::Pattern>(m, "Circle")
+	// 	.def(pybind11::init<>())
+	// ;
+
+	// pybind11::class_<paths::PoolTile, paths::Pattern>(m, "PoolTile")
+	// 	.def(pybind11::init<>())
+	// ;
+
 }

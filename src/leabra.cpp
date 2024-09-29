@@ -732,3 +732,20 @@ void pybind_LeabraPathTypes(pybind11::module_ &m) {
 		.value("CTCtxtPath", leabra::PathTypes::CTCtxtPath)
 		.export_values();
 }
+
+void pybind_LeabraPath(pybind11::module_ &m) {
+	pybind11::class_<leabra::Path>(m, "Path")
+		.def(pybind11::init<std::string, std::string>(),
+			pybind11::arg("name") = "",
+			pybind11::arg("cls") = ""
+		)
+		.def_readonly("Name", &leabra::Path::Name)
+		.def_readonly("Send", &leabra::Path::Send)
+		.def_readonly("Recv", &leabra::Path::Recv)
+		.def_readonly("Type", &leabra::Path::Type)
+		.def_readonly("GScale", &leabra::Path::GScale)
+		.def("SynIndex", &leabra::Path::SynIndex)
+	;
+
+	// TODO: Allow access to inspect other variables/params for the path
+}

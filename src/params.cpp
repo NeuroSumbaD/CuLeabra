@@ -20,8 +20,14 @@ std::string anyToString(const T& value) {
     return oss.str();
 }
 
+params::Params::Params(const pybind11::dict &d):params() {
+    for (auto item: d){
+        params[item.first.cast<std::string>()] = item.second.cast<std::string>();
+    }
+}
 
-std::string params::Params::ParamByName(std::string name) {
+std::string params::Params::ParamByName(std::string name)
+{
     if (params.find(name) == params.end()){
         std::string err = "params::Params: parameter named " + name + " not found";
         throw std::invalid_argument(err);
@@ -235,15 +241,41 @@ void params::to_json(json &j, const params::Hypers &flx) {
     }
 }
 
-void params::Sel::SetFloat(std::string param, float val) {
+params::Sel_ params::CreateSel(pybind11::dict d) {
+    params::Sel_ Sel = {};
+    if (d.contains("Sel")) {
+        Sel.Sel = d["Sel"].cast<std::string>();
+    } else {
+        throw std::runtime_error("Sel_ ERROR: Missing Sel member");
+    }
+
+    if (d.contains("Desc")) {
+        Sel.Desc = d["Desc"].cast<std::string>();
+    }
+
+    // Handling nested field: either a dict or a pre-built NestedStruct
+    if (d.contains("ParamsSet")) {
+        pybind11::object ParamsSet_obj = d["ParamsSet"];
+        if (pybind11::isinstance<pybind11::dict>(ParamsSet_obj)) {
+            Sel.ParamsSet = params::Params(ParamsSet_obj.cast<pybind11::dict>());
+        } else if (pybind11::isinstance<params::Params>(ParamsSet_obj)) {
+            Sel.ParamsSet = ParamsSet_obj.cast<params::Params>();
+        } else {
+            throw std::runtime_error("Sel_ ERROR:Invalid type for 'ParamsSet' field");
+        }
+    }
+    return Sel;
+}
+
+void params::Sel_::SetFloat(std::string param, float val) {
     this->ParamsSet.SetByName(param, std::to_string(val));
 }
 
-void params::Sel::SetString(std::string param, std::string val) {
+void params::Sel_::SetString(std::string param, std::string val) {
     this->ParamsSet.SetByName(param, val);
 }
 
-std::string params::Sel::ParamValue(std::string param) {
+std::string params::Sel_::ParamValue(std::string param) {
     return ParamsSet.ParamByName(param);
 }
 
@@ -253,7 +285,7 @@ std::string params::Sel::ParamValue(std::string param) {
 // If it does apply, or is not a Styler, then the Params values are set.
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // It always prints a message if a parameter fails to be set, and returns an error.
-bool params::Sel::Apply(std::any obj, bool setMsg) {
+bool params::Sel_::Apply(std::any obj, bool setMsg) {
     if (!TargetTypeMatch(obj) || !SelMatch(obj)) {
 		return false;//, nil
 	}
@@ -269,7 +301,7 @@ bool params::Sel::Apply(std::any obj, bool setMsg) {
 }
 
 // TargetTypeMatch return true if target type applies to object
-bool params::Sel::TargetTypeMatch(std::any obj) {
+bool params::Sel_::TargetTypeMatch(std::any obj) {
     std::string trg = ParamsSet.TargetType();
     std::string trgh = HyperSet.TargetType();
     try {
@@ -291,7 +323,7 @@ bool params::Sel::TargetTypeMatch(std::any obj) {
 }
 
 // SelMatch returns true if Sel selector matches the target object properties
-bool params::Sel::SelMatch(std::any obj) {
+bool params::Sel_::SelMatch(std::any obj) {
     try {
         StylerObject *styler = std::any_cast<params::StylerObject*>(obj);
         // std::string gotyp = styler->Name();
@@ -474,6 +506,22 @@ bool params::ClassMatch(std::string sel, std::string cls) {
 //     return jsonStr;
 // }
 
+params::Sheet::Sheet(pybind11::list ls): sel() {
+    int index = 0;
+    for (auto item: ls){
+        Sel_ *selItem;
+        if (pybind11::isinstance<pybind11::dict>(item)){
+            *selItem = CreateSel(item.cast<pybind11::dict>());
+        } else if (pybind11::isinstance<params::Sel_>(item)) {
+            selItem = new Sel_(item.cast<params::Sel_>());
+        } else {
+            throw std::runtime_error("Sheet ERROR: Item at index " + std::to_string(index) + " is not a Sel object");
+        }
+        sel.push_back(*selItem);
+        index++;
+    }
+}
+
 // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 std::string params::Sheet::ElemLabel(int idx){
     return sel[idx].Sel;
@@ -494,9 +542,9 @@ std::string params::Sheet::ElemLabel(int idx){
 
 // SelByName returns given selector within the Sheet, by Name.
 // Returns nil if not found -- use Try version for error
-params::Sel* params::Sheet::SelByName(std::string sel) {
-    for (params::Sel &slref: this->sel){
-        params::Sel *sl = &slref;
+params::Sel_* params::Sheet::SelByName(std::string sel) {
+    for (params::Sel_ &slref: this->sel){
+        params::Sel_ *sl = &slref;
         if (sl->Sel== sel){
             return sl;
         }
@@ -506,19 +554,19 @@ params::Sel* params::Sheet::SelByName(std::string sel) {
 
 // SetFloat sets the value of given parameter, in selection sel
 void params::Sheet::SetFloat(std::string sel, std::string param, float val) {
-    params::Sel* sl = SelByName(sel);
+    params::Sel_* sl = SelByName(sel);
     sl->SetFloat(param, val);
 }
 
 // SetString sets the value of given parameter, in selection sel
 void params::Sheet::SetString(std::string sel, std::string param, std::string val) {
-    params::Sel* sl = SelByName(sel);
+    params::Sel_* sl = SelByName(sel);
     sl->SetString(param, val);
 }
 
 // ParamVal returns the value of given parameter, in selection sel
 std::string params::Sheet::ParamValue(std::string sel, std::string param) {
-    params::Sel* sl = SelByName(sel);
+    params::Sel_* sl = SelByName(sel);
     return sl->ParamValue(param);
 }
 
@@ -530,8 +578,8 @@ std::string params::Sheet::ParamValue(std::string sel, std::string param) {
 bool params::Sheet::Apply(std::any obj, bool setMsg) {
     bool applied = false;
 	std::vector<std::string> errs;
-	for (Sel &slref: sel) {
-        Sel *sl = &slref;
+	for (Sel_ &slref: sel) {
+        Sel_ *sl = &slref;
 		bool app = sl->Apply(obj, setMsg);
 		if (app) {
 			applied = true;
@@ -550,8 +598,8 @@ bool params::Sheet::Apply(std::any obj, bool setMsg) {
 // for each Layer and Path), so this must be called separately.
 // See SelNoMatchWarn for warning call at end.
 void params::Sheet::SelMatchReset(std::string setName) {
-    for (Sel &slref: sel) {
-        Sel *sl = &slref;
+    for (Sel_ &slref: sel) {
+        Sel_ *sl = &slref;
 		sl->NMatch = 0;
 		sl->SetName = setName;
 	}
@@ -563,8 +611,8 @@ void params::Sheet::SelMatchReset(std::string setName) {
 // Returns an error message with the non-matching sets if any, else nil.
 void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
     std::string msg = "";
-	for (Sel &slref: sel) {
-        Sel *sl = &slref;
+	for (Sel_ &slref: sel) {
+        Sel_ *sl = &slref;
 		if (sl->NMatch == 0) {
 			msg += "\tSel: " + sl->Sel + "\n";
 		}
@@ -587,11 +635,18 @@ void params::Sheet::SelNoMatchWarn(std::string setName, std::string objName) {
 //     throw std::invalid_argument(err);
 // }
 
-// params::Sets::Sets(const pybind11::dict &d): sheets(){
-//     for(auto &key: d){
-
-//     }
-// }
+params::Sets::Sets(const pybind11::dict d): sheets() {
+    int index = 0;
+    for (auto item: d){
+        if (pybind11::isinstance<params::Sheet>(item.second)) {
+            sheets[item.first.cast<std::string>()] = item.second.cast<params::Sheet>();
+        } else if (pybind11::isinstance<pybind11::list>(item.second)) {
+            sheets[item.first.cast<std::string>()] = item.second.cast<pybind11::list>();
+        } else {
+            throw std::runtime_error("Sheets ERROR: item at index " + std::to_string(index) + " cannot be converted to a Sheet.");
+        }
+    }
+}
 
 // SheetByName finds given sheet by name -- returns nil if not found.
 // Use this when sure the sheet exists -- otherwise use Try version.
@@ -795,19 +850,22 @@ void *params::StylerObject::GetStyleObject() {
 void pybind_ParamContainers(pybind11::module_ &m) {
     pybind11::class_<params::Params>(m, "Params")
         .def(pybind11::init<std::map<std::string, std::string>>())
+        .def(pybind11::init<pybind11::dict>())
     ;
 
-    pybind11::class_<params::Sel>(m, "Sel")
-        .def(pybind11::init<>())
+    pybind11::class_<params::Sel_>(m, "Sel")
+        // .def(pybind11::init<>())
         // .def(pybind11::init<pybind11::dict>())
-        .def_readwrite("Sel", &params::Sel::Sel)
-        .def_readwrite("Desc", &params::Sel::Desc)
-        .def_readwrite("ParamsSet", &params::Sel::ParamsSet)
-        .def_readwrite("SetName", &params::Sel::SetName)
+        .def_readwrite("Sel", &params::Sel_::Sel)
+        .def_readwrite("Desc", &params::Sel_::Desc)
+        .def_readwrite("ParamsSet", &params::Sel_::ParamsSet)
+        .def_readwrite("SetName", &params::Sel_::SetName)
     ;
+
+    m.def("CreateSel", &params::CreateSel);
 
     pybind11::class_<params::Sheet>(m, "Sheet")
-        .def(pybind11::init<std::initializer_list<params::Sel>>())
+        .def(pybind11::init<std::initializer_list<params::Sel_>>())
         .def(pybind11::init<pybind11::list>())
     ;
 

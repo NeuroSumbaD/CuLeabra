@@ -342,3 +342,4 @@ namespace leabra {
 
 void pybind_LeabraLayerTypes(pybind11::module_ &m);
 void pybind_LeabraPathTypes(pybind11::module_ &m);
+void pybind_LeabraPath(pybind11::module_ &m);

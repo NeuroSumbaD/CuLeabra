@@ -80,7 +80,7 @@ namespace params {
 
         Params(std::map<std::string, std::string> s): params(s) {};
 
-        Params(const pybind11::dict & d);
+        Params(const pybind11::dict &d);
 
         // std::string ParamByNameTry(std::string name);
         std::string ParamByName(std::string name);
@@ -124,7 +124,7 @@ namespace params {
     // params.Sel specifies a selector for the scope of application of a set of
     // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
     // and no prefix = type)
-    struct Sel {
+    struct Sel_ {
         
         std::string Sel, // selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
             Desc; // description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params.
@@ -132,6 +132,8 @@ namespace params {
         Hypers HyperSet; // Put your hyperparams here
         int NMatch; // number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
         std::string SetName; // name of current Set being applied
+
+        // Sel_(pybind11::dict d);
 
         void SetFloat(std::string param, float val);
         void SetString(std::string param, std::string val);
@@ -141,6 +143,8 @@ namespace params {
         bool TargetTypeMatch(std::any obj);
         bool SelMatch(std::any obj);
     };
+
+    Sel_ CreateSel(pybind11::dict d);
 
     // Sheet is a CSS-like style-sheet of params.Sel values, each of which represents
     // a different set of specific parameter values applied according to the Sel selector:
@@ -155,17 +159,22 @@ namespace params {
     // application must be done under explicit program control.
     // typedef Sel** Sheet; // Array of Sel*
     struct Sheet {
-        std::vector<Sel> sel;
+        std::vector<Sel_> sel;
         
         // Default constructor
         Sheet():sel(){};
 
         // Constructor that takes an initializer list of Selections
-        Sheet(std::initializer_list<Sel> sels) : sel(sels) {};
+        Sheet(std::initializer_list<Sel_> sels) : sel(sels) {};
+        Sheet(std::vector<Sel_> sels) : sel(sels) {};
+
+        // Constructor to process pybind11::list
+        Sheet(pybind11::list ls);
+
 
         std::string ElemLabel(int idx);
         // Sel* SelByNameTry(std::string sel);
-        Sel* SelByName(std::string sel);
+        Sel_* SelByName(std::string sel);
         void SetFloat(std::string sel, std::string param, float val);
         void SetString(std::string sel, std::string param, std::string val);
         std::string ParamValue(std::string sel, std::string param);
@@ -189,7 +198,8 @@ namespace params {
         // Constructor to support conversion from python objects
         Sets(std::map<std::string, Sheet> s): sheets(s){};
 
-        // Sets(const pybind11::dict &d);
+        // Constructor to handle pybind11::doct elements
+        Sets(const pybind11::dict d);
 
         // Sheet* SheetByNameTry(std::string name);
         Sheet* SheetByName(std::string name);

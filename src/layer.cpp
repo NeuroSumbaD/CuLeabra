@@ -1,4 +1,5 @@
 #include "layer.hpp"
+#include "network.hpp"
 
 leabra::Layer::Layer(std::string name, int index, Network *net): 
 	emer::Layer(name), Index(index), Net(net), RecvPaths(), SendPaths(), Act(), Inhib(), Learn(), Neurons(), Pools(), CosDiff() {
@@ -1021,3 +1022,14 @@ void leabra::Layer::InitParamMaps() {
 }
 
 leabra::LayerShape::LayerShape(int x, int y, int poolsX, int poolsY): X(x),Y(y),PoolsX(poolsX),PoolsY(poolsY){}
+
+void pybind_LeabraLayer(pybind11::module_ &m) {
+	pybind11::class_<leabra::Layer>(m, "Layer")
+		.def_readonly("Name", &leabra::Layer::Name)
+		.def_readonly("Index", &leabra::Layer::Index)
+		.def_readonly("Net", &leabra::Layer::Net)
+		.def_readonly("Act", &leabra::Layer::Act)
+		.def_readwrite("Off", &leabra::Layer::Off)
+		.def("NumPools", &leabra::Layer::NumPools)
+	;
+}

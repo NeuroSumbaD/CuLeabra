@@ -90,8 +90,8 @@ params::Sets ParamSets =
                     }
                 },
             }
-        },
-};
+        }
+    };
 
 void ConfigNet(leabra::Network *net, int Hidden1SizeX = 7, int Hidden1SizeY = 7, int Hidden2SizeX = 7, int Hidden2SizeY = 7) {
     // Seed automatically created from constructor

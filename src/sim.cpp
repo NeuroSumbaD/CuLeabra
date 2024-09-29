@@ -204,6 +204,8 @@ void pybind_LeabraSim(pybind11::module_ &m) {
         .def_readonly("Params", &leabra::Sim::Params)
         .def_readonly("Env", &leabra::Sim::Env)
         .def_readonly("Ctx", &leabra::Sim::Ctx)
+        .def_readonly("TrialSSE", &leabra::Sim::TrialSSE)
+        .def_readonly("EpochSSE", &leabra::Sim::EpochSSE)
         .def("Init", &leabra::Sim::Init)
         .def("StepTrial", &leabra::Sim::StepTrial)
         .def("StepEpoch", &leabra::Sim::StepEpoch)
@@ -212,5 +214,25 @@ void pybind_LeabraSim(pybind11::module_ &m) {
             pybind11::arg("numEpochs"),
             pybind11::arg("train") = true
             )
+    ;
+}
+
+void pybind_LeabraEnv(pybind11::module_ &m) {
+    pybind11::class_<leabra::Environment>(m, "Environment")
+        .def_readonly("StepTime", &leabra::Environment::StepTime)
+        .def("Step", &leabra::Environment::Step)
+        .def("GetLayerInput", &leabra::Environment::GetLayerInput)
+        .def("NumTrials", &leabra::Environment::NumTrials)
+    ;
+
+    pybind11::class_<leabra::TabulatedEnv, leabra::Environment>(m, "TabulatedEnv")
+        .def(pybind11::init<>())
+        .def(pybind11::init<std::string>(),
+            pybind11::arg("fileName")
+        )
+        .def_readonly("StepTime", &leabra::TabulatedEnv::StepTime)
+        .def("Step", &leabra::TabulatedEnv::Step)
+        .def("GetLayerInput", &leabra::TabulatedEnv::GetLayerInput)
+        .def("NumTrials", &leabra::TabulatedEnv::NumTrials)
     ;
 }

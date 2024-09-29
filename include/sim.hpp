@@ -80,3 +80,4 @@ namespace leabra {
 } // namespace leabra
 
 void pybind_LeabraSim(pybind11::module_ &m);
+void pybind_LeabraEnv(pybind11::module_ &m);
